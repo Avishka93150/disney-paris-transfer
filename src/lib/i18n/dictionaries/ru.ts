@@ -31,6 +31,15 @@ export const ru: Dictionary = {
     about: 'О нас',
     faq: 'Вопросы и ответы',
     contact: 'Контакты',
+    parisTransfers: 'Трансферы Париж',
+    disneyTransfers: 'Трансферы Disneyland',
+    viewAll: 'Все трансферы',
+    groups: {
+      airports: 'Трансферы из аэропортов Парижа',
+      city: 'Париж и окрестности',
+      disney: 'Трансферы Disneyland Paris',
+      versailles: 'Трансферы Версаль',
+    },
   },
   footer: {
     blurb:

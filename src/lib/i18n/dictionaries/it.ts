@@ -31,6 +31,15 @@ export const it: Dictionary = {
     about: 'Chi siamo',
     faq: 'Domande frequenti',
     contact: 'Contatti',
+    parisTransfers: 'Transfer Parigi',
+    disneyTransfers: 'Transfer Disneyland',
+    viewAll: 'Tutti i transfer',
+    groups: {
+      airports: 'Transfer aeroporti di Parigi',
+      city: 'Parigi e dintorni',
+      disney: 'Transfer Disneyland Paris',
+      versailles: 'Transfer Versailles',
+    },
   },
   footer: {
     blurb:

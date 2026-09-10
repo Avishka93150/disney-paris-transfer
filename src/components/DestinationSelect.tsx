@@ -41,15 +41,15 @@ export function DestinationSelect({
   const kind = destinationKindOf(value);
 
   return (
-    <label className="field-label">
+    <label className="field-label min-w-0">
       {label}
-      <span className="relative block">
+      <span className="relative block min-w-0 w-full">
         <span className="pointer-events-none absolute top-1/2 left-3 z-[1] -translate-y-1/2 text-brand">
           <DestinationIcon kind={kind} className="h-[18px] w-[18px]" />
         </span>
         <select
           name={name}
-          className={`${selectClassName} !pl-10`}
+          className={`${selectClassName} min-w-0 w-full max-w-full !pl-10`}
           value={value}
           onChange={(event) => onChange(event.target.value)}
         >
