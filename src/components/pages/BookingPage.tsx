@@ -53,7 +53,10 @@ export function BookingPage({
   const paxParam = Number.parseInt(one(searchParams, 'pax') ?? '', 10);
   const vehicleParam = one(searchParams, 'vehicle');
   const timeParam = one(searchParams, 'time');
-  const pax = Number.isFinite(paxParam) && paxParam >= 1 && paxParam <= 8 ? paxParam : 2;
+  const packageParam = one(searchParams, 'package') ?? '';
+  const selectedPackage = packages.find((item) => item.slug === packageParam);
+  const paxFromQuery = Number.isFinite(paxParam) && paxParam >= 1 && paxParam <= 8 ? paxParam : null;
+  const pax = paxFromQuery ?? (selectedPackage ? Math.min(selectedPackage.maxPax, 2) : 2);
   const preferred =
     vehicleParam && (VEHICLE_IDS as readonly string[]).includes(vehicleParam)
       ? vehicleParam
@@ -67,6 +70,7 @@ export function BookingPage({
     trip: (one(searchParams, 'trip') === 'rt' ? 'rt' : 'ow') as TripType,
     vehicle: fitted?.id ?? 'advise',
     time: parseClock(timeParam) == null ? '' : (timeParam as string),
+    packageSlug: selectedPackage?.slug ?? '',
   };
 
   // Coming back from Stripe.

@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { PriceCalculator } from '@/components/PriceCalculator';
+import { RateTable } from '@/components/RateTable';
 import { SiteFooter } from '@/components/SiteFooter';
 import { SiteHeader } from '@/components/SiteHeader';
 import { TransferPhoto } from '@/components/TransferPhoto';
@@ -178,26 +179,14 @@ export function RouteDetailPage({ locale, route }: { locale: Locale; route: Rout
               <h2 className="m-0 mb-6 font-display text-[28px]">
                 {fill(detail.tableTitle, { from: fromName, to: toName })}
               </h2>
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[420px] border-collapse overflow-hidden rounded-xl border border-line text-sm">
-                  <thead>
-                    <tr className="bg-sand text-left">
-                      <th className="px-3.5 py-2.5 font-extrabold">{dict.prices.colPax}</th>
-                      <th className="px-3.5 py-2.5 font-extrabold">{dict.prices.colOneWay}</th>
-                      <th className="px-3.5 py-2.5 font-extrabold">{dict.prices.colRoundTrip}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {rows.map((row) => (
-                      <tr key={row.tier} className="border-t border-line-strong">
-                        <td className="px-3.5 py-2 font-bold">{row.tier}</td>
-                        <td className="px-3.5 py-2 font-extrabold text-brand">{row.ow} €</td>
-                        <td className="px-3.5 py-2 font-bold text-ink-soft">{row.rt} €</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <RateTable
+                dict={dict}
+                rows={rows}
+                caption={`${fromName} ↔ ${toName}`}
+                hrefFor={(row, trip) =>
+                  `${path(locale, 'booking')}?from=${route.from}&to=${route.to}&pax=${row.pax}&trip=${trip}`
+                }
+              />
             </div>
           </section>
         ) : null}

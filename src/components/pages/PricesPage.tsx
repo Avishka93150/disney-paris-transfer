@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { PricesTables } from '@/components/PricesTables';
 import { SiteFooter } from '@/components/SiteFooter';
 import { SiteHeader } from '@/components/SiteHeader';
@@ -52,9 +53,10 @@ export function PricesPage({ locale }: { locale: Locale }) {
 
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {packages.map((item) => (
-                  <div
+                  <Link
                     key={item.slug}
-                    className="flex flex-col gap-2 rounded-2xl border border-line bg-surface p-5"
+                    href={`${path(locale, 'booking')}?package=${encodeURIComponent(item.slug)}`}
+                    className="flex flex-col gap-2 rounded-2xl border border-line bg-surface p-5 text-ink no-underline hover:border-brand hover:shadow-card"
                   >
                     <div className="flex items-baseline justify-between gap-2.5">
                       <div className="text-base font-extrabold">{item.name}</div>
@@ -68,13 +70,10 @@ export function PricesPage({ locale }: { locale: Locale }) {
                     <div className="text-[13px] font-bold text-ink-mute">
                       {fill(dict.pricing.packageUpTo, { pax: item.maxPax })}
                     </div>
-                    <PrimaryLink
-                      href={path(locale, 'booking')}
-                      className="mt-auto !px-5 !py-2.5 !text-sm"
-                    >
+                    <span className="mt-auto rounded-full bg-brand px-5 py-2.5 text-center text-sm font-extrabold text-surface">
                       {dict.prices.bookThis}
-                    </PrimaryLink>
-                  </div>
+                    </span>
+                  </Link>
                 ))}
               </div>
             </Container>
@@ -116,9 +115,10 @@ export function PricesPage({ locale }: { locale: Locale }) {
               {TOUR_IDS.map((id) => {
                 const tour = dict.tours[id];
                 return (
-                  <div
+                  <Link
                     key={id}
-                    className="flex flex-col gap-2 rounded-2xl border border-line bg-cream p-5"
+                    href={`${path(locale, 'booking')}?to=${encodeURIComponent(tourDestValue(id))}`}
+                    className="flex flex-col gap-2 rounded-2xl border border-line bg-cream p-5 text-ink no-underline hover:border-brand hover:shadow-card"
                   >
                     <div className="flex items-baseline justify-between gap-2.5">
                       <div className="text-base font-extrabold">{tour.name}</div>
@@ -127,13 +127,10 @@ export function PricesPage({ locale }: { locale: Locale }) {
                       </div>
                     </div>
                     <p className="m-0 text-sm leading-[1.6] text-ink-soft">{tour.desc}</p>
-                    <PrimaryLink
-                      href={`${path(locale, 'booking')}?to=${encodeURIComponent(tourDestValue(id))}`}
-                      className="mt-auto !px-5 !py-2.5 !text-sm"
-                    >
+                    <span className="mt-auto rounded-full bg-brand px-5 py-2.5 text-center text-sm font-extrabold text-surface">
                       {dict.prices.bookThis}
-                    </PrimaryLink>
-                  </div>
+                    </span>
+                  </Link>
                 );
               })}
             </div>

@@ -27,6 +27,7 @@ type Defaults = {
   trip: TripType;
   vehicle: string;
   time: string;
+  packageSlug?: string;
 };
 
 type PaymentOffer = { enabled: boolean; amountCents: number; mode: 'full' | 'deposit' };
@@ -65,13 +66,13 @@ export function BookingForm({
   const [trip, setTrip] = useState<TripType>(defaults.trip);
   const [vehicle, setVehicle] = useState(defaults.vehicle);
   const [time, setTime] = useState(defaults.time);
-  const [packageSlug, setPackageSlug] = useState('');
+  const [packageSlug, setPackageSlug] = useState(defaults.packageSlug ?? '');
   const [chosenExtras, setChosenExtras] = useState<Record<string, number>>({});
 
   const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
   const [result, setResult] = useState<Result | null>(null);
   const [payPending, setPayPending] = useState(false);
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState(defaults.packageSlug ? 1 : 0);
 
   // A package that no longer covers the group falls away rather than quoting a
   // price the driver cannot honour.

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { DestinationIcon } from '@/components/DestinationIcon';
+import { RateTable } from '@/components/RateTable';
 import type { Dictionary } from '@/lib/i18n/types';
 import {
   TOUR_IDS,
@@ -125,9 +126,10 @@ export function PricesTables({
           {TOUR_IDS.map((id) => {
             const tour = dict.tours[id];
             return (
-              <div
+              <Link
                 key={id}
-                className="flex flex-col gap-2 rounded-2xl border border-line bg-cream p-5"
+                href={bookUrl(tourDestValue(id))}
+                className="flex flex-col gap-2 rounded-2xl border border-line bg-cream p-5 text-ink no-underline hover:border-brand hover:shadow-card"
               >
                 <div className="flex items-baseline justify-between gap-2.5">
                   <div className="text-base font-extrabold">{tour.name}</div>
@@ -136,13 +138,10 @@ export function PricesTables({
                   </div>
                 </div>
                 <p className="m-0 text-sm leading-[1.6] text-ink-soft">{tour.desc}</p>
-                <Link
-                  href={bookUrl(tourDestValue(id))}
-                  className="mt-auto text-[13px] font-extrabold text-brand no-underline hover:text-brand-dark"
-                >
+                <span className="mt-auto text-[13px] font-extrabold text-brand">
                   {dict.prices.tourCta}
-                </Link>
-              </div>
+                </span>
+              </Link>
             );
           })}
         </div>
@@ -157,47 +156,22 @@ export function PricesTables({
               key={table.key}
               className="flex flex-col gap-3.5 rounded-[18px] border border-line bg-surface p-6"
             >
-              <div className="flex flex-wrap items-baseline justify-between gap-2.5">
+              <Link
+                href={bookUrl(table.other)}
+                className="flex flex-wrap items-baseline justify-between gap-2.5 text-ink no-underline hover:text-brand"
+              >
                 <div className="font-display text-[19px]">{table.title}</div>
                 <div className="text-[13px] font-bold text-ink-mute">
                   {dict.common.from} <span className="text-base text-brand">{table.min} €</span>
                 </div>
-              </div>
+              </Link>
 
-              <div className="overflow-hidden rounded-xl border border-line">
-                <table className="w-full border-collapse text-sm">
-                  <thead>
-                    <tr className="bg-sand text-left">
-                      <th className="px-3.5 py-[9px] font-extrabold">{dict.prices.colPax}</th>
-                      <th className="px-3.5 py-[9px] font-extrabold">{dict.prices.colOneWay}</th>
-                      <th className="px-3.5 py-[9px] font-extrabold">{dict.prices.colRoundTrip}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {table.rows.map((row) => (
-                      <tr key={row.tier} className="border-t border-line-strong">
-                        <td className="px-3.5 py-2 font-bold">{row.tier}</td>
-                        <td className="px-3.5 py-2">
-                          <Link
-                            href={bookUrl(table.other, { pax: row.pax, trip: 'ow' })}
-                            className="font-extrabold text-brand no-underline hover:underline"
-                          >
-                            {row.ow} €
-                          </Link>
-                        </td>
-                        <td className="px-3.5 py-2">
-                          <Link
-                            href={bookUrl(table.other, { pax: row.pax, trip: 'rt' })}
-                            className="font-bold text-ink-soft no-underline hover:text-brand hover:underline"
-                          >
-                            {row.rt} €
-                          </Link>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <RateTable
+                dict={dict}
+                rows={table.rows}
+                caption={table.title}
+                hrefFor={(row, trip) => bookUrl(table.other, { pax: row.pax, trip })}
+              />
 
               <Link
                 href={bookUrl(table.other)}
