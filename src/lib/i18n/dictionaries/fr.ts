@@ -1,4 +1,5 @@
 import type { Dictionary } from '../types';
+import { legalDocs } from '../legalDocs';
 
 /**
  * French — the copy the client validated during the design phase.
@@ -46,6 +47,10 @@ export const fr: Dictionary = {
     booking: 'Réservation',
     rights: '© 2026 disneyparistransfers.com — Tous droits réservés',
     seoLine: 'VTC Paris · Transfert aéroport CDG, Orly, Beauvais · Disneyland Paris',
+    colLegal: 'Mentions légales',
+    terms: 'Conditions générales',
+    privacy: 'Confidentialité',
+    cookies: 'Cookies',
   },
   home: {
     badge: 'Spécialiste des transferts Disneyland® Paris',
@@ -155,6 +160,8 @@ export const fr: Dictionary = {
     askQuote: 'Demander un devis',
     otherLead: 'Autre destination ?',
     otherLink: "Demandez sur WhatsApp — nous couvrons toute l'Île-de-France.",
+    descriptionTemplate:
+      'Chauffeur privé entre {from} et {to}. Prix fixe, accueil personnalisé, sièges enfants offerts.',
     descriptions: {
       'cdg-disneyland':
         'Notre trajet le plus demandé. Accueil pancarte à la sortie des arrivées, dépose directe à votre hôtel Disney ou partenaire.',
@@ -177,6 +184,8 @@ export const fr: Dictionary = {
   routeDetail: {
     breadcrumb: 'Trajets',
     h1: 'Transfert {from} ↔ {to} en chauffeur privé',
+    leadTemplate:
+      'Trajet privé porte à porte entre {from} et {to}. Votre chauffeur suit le vol, vous accueille avec une pancarte et confirme un prix fixe avant le départ.',
     lead: {
       'cdg-disneyland':
         'Trajet direct entre Roissy Charles-de-Gaulle et les hôtels Disney en 45 minutes environ. Votre chauffeur suit votre vol, vous accueille avec une pancarte et installe les sièges enfants avant votre arrivée.',
@@ -196,6 +205,9 @@ export const fr: Dictionary = {
         "Aller-retour ou mise à disposition entre Paris et le château de Versailles, avec un chauffeur qui vous attend pendant la visite.",
     },
     ctaBook: 'Réserver ce transfert',
+    livePriceTitle: 'Votre prix, en direct',
+    relatedTitle: 'Autres transferts',
+    imageAlt: 'Transfert en chauffeur privé de {from} vers {to}',
     statDuration: 'Durée du trajet',
     statDistance: 'Distance',
     statHours: 'Tous les vols, tous les terminaux',
@@ -334,6 +346,16 @@ export const fr: Dictionary = {
     ],
     required: 'Ce champ est obligatoire.',
     invalidEmail: 'Adresse email invalide.',
+    stepJourney: 'Trajet',
+    stepParty: 'Passagers',
+    stepContact: 'Contact',
+    next: 'Continuer',
+    back: 'Retour',
+    trustSeats: 'Sièges enfants offerts',
+    trustFixed: 'Prix fixe, sans surprise',
+    trustHours: 'Service 24 h/24',
+    noCard: 'Pas de carte pour le devis',
+    liveTitle: 'Prix estimé',
   },
   about: {
     h1: 'Votre chauffeur, pas une plateforme',
@@ -436,6 +458,13 @@ export const fr: Dictionary = {
     extrasLead: 'Ajoutées au prix de votre transfert.',
     extrasEach: "l'unité",
   },
+  cookieBanner: {
+    message:
+      'Nous utilisons quelques cookies essentiels (langue, session admin et cet avis). Pas de cookies publicitaires.',
+    accept: 'J’ai compris',
+    more: 'Politique des cookies',
+  },
+  legal: legalDocs.fr,
   destinationKinds: {
     airport: 'Aéroports',
     city: 'Villes',
@@ -564,6 +593,21 @@ export const fr: Dictionary = {
       title: 'Contact — Chauffeur privé VTC Paris | Disney Paris Transfers',
       description:
         'Joignez-nous 7 j/7 et 24 h/24 par téléphone, WhatsApp ou email pour votre transfert entre les aéroports parisiens et Disneyland Paris.',
+    },
+    terms: {
+      title: 'Conditions générales | Disney Paris Transfers',
+      description:
+        'Conditions de réservation Disney Paris Transfers : devis, paiement, annulation, tarif de nuit et obligations du passager.',
+    },
+    privacy: {
+      title: 'Politique de confidentialité | Disney Paris Transfers',
+      description:
+        'Comment Disney Paris Transfers collecte, conserve et utilise les données personnelles pour les réservations, e-mails et paiements.',
+    },
+    cookies: {
+      title: 'Politique des cookies | Disney Paris Transfers',
+      description:
+        'Cookies essentiels sur disneyparistransfers.com : langue, session admin et cet avis. Pas de cookies publicitaires.',
     },
     routeDetail: {
       title: 'Transfert {from} ↔ {to} — chauffeur privé dès {price} € | Disney Paris Transfers',

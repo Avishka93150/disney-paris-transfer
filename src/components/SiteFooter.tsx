@@ -59,6 +59,12 @@ export function SiteFooter({ locale }: { locale: Locale }) {
                 {link.label}
               </Link>
             ))}
+            <Link href={path(locale, 'terms')} className="text-line no-underline hover:text-gold">
+              {dict.footer.terms}
+            </Link>
+            <Link href={path(locale, 'privacy')} className="text-line no-underline hover:text-gold">
+              {dict.footer.privacy}
+            </Link>
           </div>
         </div>
 
@@ -87,8 +93,19 @@ export function SiteFooter({ locale }: { locale: Locale }) {
       </div>
 
       <div className="border-t border-ink-light">
-        <div className="mx-auto flex max-w-[1200px] flex-wrap justify-between gap-4 px-6 py-4 text-xs text-ink-faint">
+        <div className="mx-auto flex max-w-[1200px] flex-col gap-3 px-6 py-4 text-xs text-ink-faint sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
           <span>{dict.footer.rights}</span>
+          <nav className="flex flex-wrap gap-x-4 gap-y-1" aria-label={dict.footer.colLegal}>
+            <Link href={path(locale, 'terms')} className="text-ink-faint no-underline hover:text-gold">
+              {dict.footer.terms}
+            </Link>
+            <Link href={path(locale, 'privacy')} className="text-ink-faint no-underline hover:text-gold">
+              {dict.footer.privacy}
+            </Link>
+            <Link href={path(locale, 'cookies')} className="text-ink-faint no-underline hover:text-gold">
+              {dict.footer.cookies}
+            </Link>
+          </nav>
           <span>{dict.footer.seoLine}</span>
         </div>
       </div>

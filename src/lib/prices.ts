@@ -386,7 +386,9 @@ export function destinationKindOf(value: string): DestinationKind {
   return 'tours';
 }
 
-/** Dedicated route pages (SEO). One page = one highlighted connection. */
+/** Dedicated route pages (SEO). One page = one priced connection. */
+export type RouteImage = 'airport' | 'disney' | 'paris' | 'versailles';
+
 export type RoutePage = {
   slug: string;
   from: ZoneId;
@@ -395,18 +397,53 @@ export type RoutePage = {
   distanceKm: number;
   /** Promoted on the home page. */
   featured: boolean;
+  image: RouteImage;
 };
 
+export function transferImageSrc(image: RouteImage): string {
+  return `/transfers/${image}.png`;
+}
+
+export function routeImageFor(from: ZoneId, to: ZoneId): RouteImage {
+  if (from === 'disney' || to === 'disney') return 'disney';
+  if (from === 'versailles' || to === 'versailles') return 'versailles';
+  if (ZONE_KIND[from] === 'airport' || ZONE_KIND[to] === 'airport') return 'airport';
+  return 'paris';
+}
+
 export const ROUTE_PAGES: readonly RoutePage[] = [
-  { slug: 'cdg-disneyland', from: 'cdg', to: 'disney', durationMin: 45, distanceKm: 60, featured: true },
-  { slug: 'orly-disneyland', from: 'orly', to: 'disney', durationMin: 50, distanceKm: 50, featured: true },
-  { slug: 'beauvais-disneyland', from: 'beauvais', to: 'disney', durationMin: 90, distanceKm: 120, featured: true },
-  { slug: 'paris-disneyland', from: 'paris', to: 'disney', durationMin: 45, distanceKm: 45, featured: true },
-  { slug: 'cdg-paris', from: 'cdg', to: 'paris', durationMin: 40, distanceKm: 35, featured: true },
-  { slug: 'orly-paris', from: 'orly', to: 'paris', durationMin: 35, distanceKm: 25, featured: false },
-  { slug: 'paris-beauvais', from: 'paris', to: 'beauvais', durationMin: 75, distanceKm: 85, featured: false },
-  { slug: 'paris-versailles', from: 'paris', to: 'versailles', durationMin: 40, distanceKm: 25, featured: false },
+  { slug: 'cdg-disneyland', from: 'cdg', to: 'disney', durationMin: 45, distanceKm: 60, featured: true, image: 'disney' },
+  { slug: 'orly-disneyland', from: 'orly', to: 'disney', durationMin: 50, distanceKm: 50, featured: true, image: 'disney' },
+  { slug: 'beauvais-disneyland', from: 'beauvais', to: 'disney', durationMin: 90, distanceKm: 120, featured: true, image: 'disney' },
+  { slug: 'paris-disneyland', from: 'paris', to: 'disney', durationMin: 45, distanceKm: 45, featured: true, image: 'disney' },
+  { slug: 'cdg-paris', from: 'cdg', to: 'paris', durationMin: 40, distanceKm: 35, featured: true, image: 'airport' },
+  { slug: 'orly-paris', from: 'orly', to: 'paris', durationMin: 35, distanceKm: 25, featured: false, image: 'airport' },
+  { slug: 'paris-beauvais', from: 'paris', to: 'beauvais', durationMin: 75, distanceKm: 85, featured: false, image: 'airport' },
+  { slug: 'paris-versailles', from: 'paris', to: 'versailles', durationMin: 40, distanceKm: 25, featured: false, image: 'versailles' },
+  { slug: 'cdg-orly', from: 'cdg', to: 'orly', durationMin: 45, distanceKm: 35, featured: false, image: 'airport' },
+  { slug: 'cdg-beauvais', from: 'cdg', to: 'beauvais', durationMin: 75, distanceKm: 85, featured: false, image: 'airport' },
+  { slug: 'cdg-ladefense', from: 'cdg', to: 'ladefense', durationMin: 40, distanceKm: 30, featured: false, image: 'airport' },
+  { slug: 'cdg-versailles', from: 'cdg', to: 'versailles', durationMin: 55, distanceKm: 55, featured: false, image: 'versailles' },
+  { slug: 'cdg-valeurope', from: 'cdg', to: 'valeurope', durationMin: 45, distanceKm: 55, featured: false, image: 'disney' },
+  { slug: 'orly-beauvais', from: 'orly', to: 'beauvais', durationMin: 90, distanceKm: 100, featured: false, image: 'airport' },
+  { slug: 'orly-versailles', from: 'orly', to: 'versailles', durationMin: 40, distanceKm: 30, featured: false, image: 'versailles' },
+  { slug: 'orly-ladefense', from: 'orly', to: 'ladefense', durationMin: 40, distanceKm: 30, featured: false, image: 'airport' },
+  { slug: 'orly-valeurope', from: 'orly', to: 'valeurope', durationMin: 50, distanceKm: 50, featured: false, image: 'disney' },
+  { slug: 'paris-valeurope', from: 'paris', to: 'valeurope', durationMin: 45, distanceKm: 40, featured: false, image: 'paris' },
+  { slug: 'disney-versailles', from: 'disney', to: 'versailles', durationMin: 55, distanceKm: 55, featured: false, image: 'versailles' },
+  { slug: 'disney-valeurope', from: 'disney', to: 'valeurope', durationMin: 15, distanceKm: 8, featured: false, image: 'disney' },
 ];
+
+export function relatedRoutes(slug: string, limit = 3): RoutePage[] {
+  const current = findRoutePage(slug);
+  if (!current) return ROUTE_PAGES.filter((r) => r.featured).slice(0, limit);
+  return ROUTE_PAGES.filter(
+    (route) =>
+      route.slug !== slug && (route.from === current.from || route.to === current.to || route.from === current.to || route.to === current.from),
+  )
+    .sort((a, b) => Number(b.featured) - Number(a.featured))
+    .slice(0, limit);
+}
 
 export function findRoutePage(slug: string): RoutePage | undefined {
   return ROUTE_PAGES.find((r) => r.slug === slug);

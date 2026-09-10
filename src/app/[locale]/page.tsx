@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { PriceCalculator } from '@/components/PriceCalculator';
 import { SiteFooter } from '@/components/SiteFooter';
 import { SiteHeader } from '@/components/SiteHeader';
+import { TransferPhoto } from '@/components/TransferPhoto';
 import {
   Container,
   DarkCta,
@@ -18,7 +19,7 @@ import { isLocale } from '@/lib/i18n/config';
 import { path, routePath } from '@/lib/i18n/routes';
 import { ROUTE_PAGES, activeVehicles } from '@/lib/prices';
 import { getVehicleFleet, nightRule } from '@/lib/settings';
-import { localBusinessJsonLd, pageMetadata } from '@/lib/seo';
+import { localBusinessJsonLd, pageMetadata, websiteJsonLd } from '@/lib/seo';
 import { site } from '@/lib/site';
 
 /** Service icons — decorative, so they stay out of the dictionary. */
@@ -61,6 +62,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
     <>
       <SiteHeader locale={locale} active="home" />
       <JsonLd data={localBusinessJsonLd(locale)} />
+      <JsonLd data={websiteJsonLd(locale)} />
 
       <main id="contenu">
         {/* ── Hero + calculator ──────────────────────────────────────── */}
@@ -110,16 +112,26 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                 <Link
                   key={route.slug}
                   href={routePath(locale, route.slug)}
-                  className="flex flex-col gap-2.5 rounded-[18px] border border-line bg-surface p-6 no-underline hover:border-brand hover:shadow-card"
+                  className="flex flex-col overflow-hidden rounded-[18px] border border-line bg-surface no-underline hover:border-brand hover:shadow-card"
                 >
-                  <div className="font-display text-xl text-ink">
-                    {dict.zones[route.from]} ↔ {dict.zones[route.to]}
+                  <TransferPhoto
+                    image={route.image}
+                    alt={fill(dict.routeDetail.imageAlt, {
+                      from: dict.zones[route.from],
+                      to: dict.zones[route.to],
+                    })}
+                    className="aspect-[16/9]"
+                  />
+                  <div className="flex flex-col gap-2.5 p-6">
+                    <div className="font-display text-xl text-ink">
+                      {dict.zones[route.from]} ↔ {dict.zones[route.to]}
+                    </div>
+                    <div className="flex gap-3.5 text-sm font-bold text-ink-soft">
+                      <span>🕐 {formatDuration(dict, route.durationMin)}</span>
+                      <span>📍 {formatDistance(dict, route.distanceKm)}</span>
+                    </div>
+                    <div className="text-sm font-extrabold text-brand">{home.seeRoute}</div>
                   </div>
-                  <div className="flex gap-3.5 text-sm font-bold text-ink-soft">
-                    <span>🕐 {formatDuration(dict, route.durationMin)}</span>
-                    <span>📍 {formatDistance(dict, route.distanceKm)}</span>
-                  </div>
-                  <div className="text-sm font-extrabold text-brand">{home.seeRoute}</div>
                 </Link>
               ))}
 

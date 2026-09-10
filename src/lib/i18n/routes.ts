@@ -8,17 +8,30 @@ import { type Locale, LOCALES } from './config';
  * proper nouns, and keeping them stable means one single source of truth for
  * the rate grid.
  */
-export const PAGE_KEYS = ['home', 'routes', 'prices', 'booking', 'about', 'faq', 'contact'] as const;
+export const PAGE_KEYS = [
+  'home',
+  'routes',
+  'prices',
+  'booking',
+  'about',
+  'faq',
+  'contact',
+  'terms',
+  'privacy',
+  'cookies',
+] as const;
 
 export type PageKey = (typeof PAGE_KEYS)[number];
 
 export const SEGMENTS: Record<PageKey, Record<Locale, string>> = {
-  home: { fr: '', en: '', es: '', it: '', ru: '', zh: '', ja: '' },
+  home: { fr: '', en: '', es: '', it: '', de: '', pt: '', ru: '', zh: '', ja: '' },
   routes: {
     fr: 'trajets',
     en: 'transfers',
     es: 'traslados',
     it: 'trasferimenti',
+    de: 'transfers',
+    pt: 'transfers',
     ru: 'transfery',
     zh: 'transfers',
     ja: 'transfers',
@@ -28,6 +41,8 @@ export const SEGMENTS: Record<PageKey, Record<Locale, string>> = {
     en: 'prices',
     es: 'precios',
     it: 'prezzi',
+    de: 'preise',
+    pt: 'precos',
     ru: 'tseny',
     zh: 'prices',
     ja: 'prices',
@@ -37,6 +52,8 @@ export const SEGMENTS: Record<PageKey, Record<Locale, string>> = {
     en: 'booking',
     es: 'reserva',
     it: 'prenotazione',
+    de: 'buchung',
+    pt: 'reserva',
     ru: 'bronirovanie',
     zh: 'booking',
     ja: 'booking',
@@ -46,6 +63,8 @@ export const SEGMENTS: Record<PageKey, Record<Locale, string>> = {
     en: 'about',
     es: 'sobre-nosotros',
     it: 'chi-siamo',
+    de: 'ueber-uns',
+    pt: 'sobre',
     ru: 'o-nas',
     zh: 'about',
     ja: 'about',
@@ -55,6 +74,8 @@ export const SEGMENTS: Record<PageKey, Record<Locale, string>> = {
     en: 'faq',
     es: 'preguntas-frecuentes',
     it: 'domande-frequenti',
+    de: 'faq',
+    pt: 'perguntas-frequentes',
     ru: 'voprosy',
     zh: 'faq',
     ja: 'faq',
@@ -64,11 +85,48 @@ export const SEGMENTS: Record<PageKey, Record<Locale, string>> = {
     en: 'contact',
     es: 'contacto',
     it: 'contatti',
+    de: 'kontakt',
+    pt: 'contacto',
     ru: 'kontakty',
     zh: 'contact',
     ja: 'contact',
   },
+  terms: {
+    fr: 'conditions-generales',
+    en: 'terms',
+    es: 'condiciones',
+    it: 'termini',
+    de: 'agb',
+    pt: 'termos',
+    ru: 'usloviya',
+    zh: 'terms',
+    ja: 'terms',
+  },
+  privacy: {
+    fr: 'confidentialite',
+    en: 'privacy',
+    es: 'privacidad',
+    it: 'privacy',
+    de: 'datenschutz',
+    pt: 'privacidade',
+    ru: 'konfidentsialnost',
+    zh: 'privacy',
+    ja: 'privacy',
+  },
+  cookies: {
+    fr: 'cookies',
+    en: 'cookies',
+    es: 'cookies',
+    it: 'cookie',
+    de: 'cookies',
+    pt: 'cookies',
+    ru: 'cookie',
+    zh: 'cookies',
+    ja: 'cookies',
+  },
 };
+
+export const LEGAL_PAGES: PageKey[] = ['terms', 'privacy', 'cookies'];
 
 /** Builds a localised absolute path: `path('en', 'prices')` → `/en/prices`. */
 export function path(locale: Locale, page: PageKey, ...rest: string[]): string {

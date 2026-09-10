@@ -2,7 +2,7 @@
 
 > 🇬🇧 English version: [`INSTALLATION-GUIDE.md`](./INSTALLATION-GUIDE.md)
 
-Site de chauffeur privé VTC, 7 langues, calculateur de prix, formulaire de devis,
+Site de chauffeur privé VTC, 9 langues, calculateur de prix, formulaire de devis,
 espace de gestion et paiement en ligne facultatif.
 
 Ce guide part du principe que vous n'êtes pas développeur. Chaque commande est à

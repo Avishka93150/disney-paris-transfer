@@ -128,25 +128,26 @@ never sees two URLs for the same content.
 
 ---
 
-## i18n — 7 locales
+## i18n — 9 locales
 
-`en` (default) · `fr` · `es` · `it` · `ru` · `zh` · `ja`
+`en` (default) · `fr` · `es` · `it` · `de` · `pt` · `ru` · `zh` · `ja`
 
 - Every public URL is locale-prefixed. `middleware.ts` redirects `/prices` to `/en/prices`
   based on a cookie, then `Accept-Language`, then English.
 - **Page segments are translated** (`SEGMENTS`, the single source of truth). This is what
   earns local search ranking.
 - **Route slugs are not** (`cdg-disneyland`, `orly-disneyland`…). They are proper nouns, and
-  keeping them stable means one key per priced connection instead of seven.
+  keeping them stable means one key per priced connection instead of nine.
 - Dictionaries are TypeScript objects typed against the `Dictionary` interface: adding a key
-  breaks the build in the other six languages until it is translated. That is intentional.
+  breaks the build in the other eight languages until it is translated. That is intentional.
 - **Packages and add-ons are the one exception.** Their names and descriptions are typed by
-  the admin at runtime and shown verbatim in all seven languages — a string that does not
+  the admin at runtime and shown verbatim in all nine languages — a string that does not
   exist at build time cannot be translated. `dict.pricing.*` translates the wording *around*
   them (headings, "Up to {pax} passengers", the night-rate note).
 - `hreflang` + `x-default` are generated for every page by `pageMetadata()` (`src/lib/seo.ts`).
+- Legal pages (terms, privacy, cookies) have translated URLs in all nine languages.
 - ⚠️ The non-French translations were written by an assistant and **have not been reviewed by
-  a native speaker**. Get RU / 中文 / 日本語 checked before launch — including the
+  a native speaker**. Get DE / PT / RU / 中文 / 日本語 checked before launch — including the
   `pricing` block added for packages, add-ons and the night supplement.
 
 ---

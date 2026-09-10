@@ -205,7 +205,7 @@ INSERT OR IGNORE INTO rates (pair, prices) VALUES ('paris-versailles',  '[90,90,
 --  The customer picks one at the top of the booking form instead of a route.
 --
 --  `name` and `description` are shown to visitors exactly as typed, in all
---  7 languages — they do not go through the site's translations.
+--  9 languages — they do not go through the site's translations.
 --
 --  `night_surcharge` : 1 = the night supplement applies on top of this package,
 --                      0 = the price is the price, whatever the hour.

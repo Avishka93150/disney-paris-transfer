@@ -51,7 +51,7 @@ export default async function AdminSettings() {
       <section className="mt-8 rounded-2xl border border-line bg-surface p-6">
         <h2 className="m-0 mb-4 font-display text-xl">Public contact details</h2>
         <p className="m-0 mb-4 text-sm leading-[1.6] text-ink-soft">
-          These come from the <code>.env</code> file and appear on every page, in all 7 languages.
+          These come from the <code>.env</code> file and appear on every page, in all 9 languages.
           Change them there, then restart the site.
         </p>
         <table className="w-full border-collapse text-sm">

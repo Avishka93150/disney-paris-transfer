@@ -78,7 +78,14 @@ export function BookingPage({
       <SiteHeader locale={locale} />
 
       <main id="contenu">
-        <PageHero title={dict.booking.h1} lead={dict.booking.lead} />
+        <PageHero title={dict.booking.h1} lead={dict.booking.lead}>
+          <div className="mb-6 flex flex-wrap gap-x-6 gap-y-2 text-sm font-extrabold text-ink">
+            <span>✓ {dict.booking.trustSeats}</span>
+            <span>✓ {dict.booking.trustFixed}</span>
+            <span>✓ {dict.booking.trustHours}</span>
+            <span>✓ {dict.booking.noCard}</span>
+          </div>
+        </PageHero>
 
         <Container className="grid items-start gap-10 py-12 lg:grid-cols-[1.5fr_1fr]">
           <div className="flex flex-col gap-4">

@@ -34,15 +34,19 @@ export function PriceCalculator({
   night = NIGHT_RULE_OFF,
   vehicles = VEHICLES,
   bookingHref,
+  initialFrom = 'cdg',
+  initialTo = 'disney',
 }: {
   dict: Dictionary;
   rates: Record<string, readonly number[]>;
   night?: NightRule;
   vehicles?: readonly Vehicle[];
   bookingHref: string;
+  initialFrom?: ZoneId;
+  initialTo?: string;
 }) {
-  const [from, setFrom] = useState<ZoneId>('cdg');
-  const [to, setTo] = useState('disney');
+  const [from, setFrom] = useState<ZoneId>(initialFrom);
+  const [to, setTo] = useState(initialTo);
   const [pax, setPax] = useState(2);
   const [trip, setTrip] = useState<TripType>('ow');
   const [vehicleId, setVehicleId] = useState('saloon');

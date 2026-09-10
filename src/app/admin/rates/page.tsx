@@ -35,7 +35,7 @@ export default async function AdminRates() {
       <h1 className="m-0 mb-2 font-display text-[28px]">Rates</h1>
       <p className="m-0 mb-6 max-w-[680px] text-[15px] leading-[1.7] text-ink-soft">
         These prices feed the home page calculator, the prices page and the route pages, in all
-        7 languages. Changes are live on the site immediately.
+        9 languages. Changes are live on the site immediately.
       </p>
 
       <p className="mb-8 rounded-[10px] bg-sand p-4 text-sm leading-[1.6] text-ink-soft">

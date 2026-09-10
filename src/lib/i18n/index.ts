@@ -3,13 +3,15 @@ import { fr } from './dictionaries/fr';
 import { en } from './dictionaries/en';
 import { es } from './dictionaries/es';
 import { it } from './dictionaries/it';
+import { de } from './dictionaries/de';
+import { pt } from './dictionaries/pt';
 import { ru } from './dictionaries/ru';
 import { zh } from './dictionaries/zh';
 import { ja } from './dictionaries/ja';
 import type { Dictionary } from './types';
 import { isTourId, isZoneId, parseTourDest } from '../prices';
 
-const DICTIONARIES: Record<Locale, Dictionary> = { fr, en, es, it, ru, zh, ja };
+const DICTIONARIES: Record<Locale, Dictionary> = { fr, en, es, it, de, pt, ru, zh, ja };
 
 export function getDictionary(locale: Locale): Dictionary {
   return DICTIONARIES[locale] ?? DICTIONARIES[DEFAULT_LOCALE];
@@ -47,6 +49,20 @@ export function destinationLabel(dict: Dictionary, id: string): string {
   const tour = parseTourDest(id) ?? (isTourId(id) ? id : null);
   if (tour) return dict.tours[tour].name;
   return id;
+}
+
+/** Card strapline for a priced connection. */
+export function routeDescription(dict: Dictionary, slug: string, from: string, to: string): string {
+  return dict.routes.descriptions[slug] ?? fill(dict.routes.descriptionTemplate, { from, to });
+}
+
+/** Long lead on a dedicated transfer page. */
+export function routeLead(dict: Dictionary, slug: string, from: string, to: string): string {
+  return (
+    dict.routeDetail.lead[slug] ??
+    dict.routes.descriptions[slug] ??
+    fill(dict.routeDetail.leadTemplate, { from, to })
+  );
 }
 
 export type { Dictionary };

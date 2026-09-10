@@ -122,11 +122,11 @@ Google ne voie jamais deux adresses pour un même contenu.
 
 ---
 
-## i18n — 7 langues
+## i18n — 9 langues
 
-`en` (défaut) · `fr` · `es` · `it` · `ru` · `zh` · `ja`
+`en` (défaut) · `fr` · `es` · `it` · `de` · `pt` · `ru` · `zh` · `ja`
 
-- Chaque URL publique est préfixée par la langue : `/en/prices`, `/fr/tarifs`, `/es/precios`, …
+- Chaque URL publique est préfixée par la langue : `/en/prices`, `/fr/tarifs`, `/es/precios`, `/de/preise`, `/pt/precos`…
   `middleware.ts` redirige une URL sans préfixe d'après le cookie, puis `Accept-Language`,
   puis l'anglais.
 - Les **segments de page sont traduits** (table `SEGMENTS` dans `src/lib/i18n/routes.ts`,
@@ -136,15 +136,16 @@ Google ne voie jamais deux adresses pour un même contenu.
 - Les **slugs de trajet** (`cdg-disneyland`…) sont en revanche identiques dans toutes les
   langues : ce sont des noms propres, et cela garde une seule clé par liaison tarifaire.
 - Les dictionnaires sont des objets TypeScript typés d'après `Dictionary` : ajouter une clé
-  provoque une erreur de compilation dans les 6 autres langues tant qu'elle n'est pas traduite.
+  provoque une erreur de compilation dans les 8 autres langues tant qu'elle n'est pas traduite.
   C'est voulu.
 - **Les forfaits et les options font exception.** Leurs noms et descriptions sont saisis par
-  l'admin à l'exécution et affichés tels quels dans les 7 langues — on ne peut pas traduire
+  l'admin à l'exécution et affichés tels quels dans les 9 langues — on ne peut pas traduire
   une chaîne qui n'existe pas encore à la compilation. `dict.pricing.*` traduit le texte
   *autour* d'eux (titres, « Jusqu'à {pax} passagers », la mention du tarif de nuit).
 - `hreflang` + `x-default` générés automatiquement dans chaque `layout`/`page`.
+- Pages légales (CGV, confidentialité, cookies) avec URL traduites dans les 9 langues.
 - ⚠️ Les traductions non-FR ont été rédigées par l'assistant et **n'ont pas été relues par un
-  locuteur natif**. À faire vérifier avant mise en production, en particulier RU / 中文 / 日本語.
+  locuteur natif**. À faire vérifier avant mise en production, en particulier DE / PT / RU / 中文 / 日本語.
 
 ---
 

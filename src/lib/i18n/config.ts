@@ -1,23 +1,28 @@
 /**
- * The site's 7 languages. English is the default: an un-prefixed URL lands on
+ * The site's 9 languages. English is the default: an un-prefixed URL lands on
  * `/en/...` unless the visitor's cookie or `Accept-Language` says otherwise.
  *
  * Every dictionary is typed against the `Dictionary` interface, so adding a key
- * breaks the build in the other six languages until it is translated. That is
+ * breaks the build in the other languages until it is translated. That is
  * intentional.
  */
-export const LOCALES = ['en', 'fr', 'es', 'it', 'ru', 'zh', 'ja'] as const;
+export const LOCALES = ['en', 'fr', 'es', 'it', 'de', 'pt', 'ru', 'zh', 'ja'] as const;
 
 export type Locale = (typeof LOCALES)[number];
 
 export const DEFAULT_LOCALE: Locale = 'en';
 
 /** Flag + label shown in the header's language picker. */
-export const LOCALE_META: Record<Locale, { flag: string; label: string; name: string; htmlLang: string }> = {
+export const LOCALE_META: Record<
+  Locale,
+  { flag: string; label: string; name: string; htmlLang: string }
+> = {
   en: { flag: '🇬🇧', label: 'EN', name: 'English', htmlLang: 'en-GB' },
   fr: { flag: '🇫🇷', label: 'FR', name: 'Français', htmlLang: 'fr-FR' },
   es: { flag: '🇪🇸', label: 'ES', name: 'Español', htmlLang: 'es-ES' },
   it: { flag: '🇮🇹', label: 'IT', name: 'Italiano', htmlLang: 'it-IT' },
+  de: { flag: '🇩🇪', label: 'DE', name: 'Deutsch', htmlLang: 'de-DE' },
+  pt: { flag: '🇵🇹', label: 'PT', name: 'Português', htmlLang: 'pt-PT' },
   ru: { flag: '🇷🇺', label: 'RU', name: 'Русский', htmlLang: 'ru-RU' },
   zh: { flag: '🇨🇳', label: '中文', name: '简体中文', htmlLang: 'zh-CN' },
   ja: { flag: '🇯🇵', label: '日本語', name: '日本語', htmlLang: 'ja-JP' },

@@ -1,4 +1,5 @@
 import type { Dictionary } from '../types';
+import { legalDocs } from '../legalDocs';
 
 export const ru: Dictionary = {
   common: {
@@ -42,6 +43,10 @@ export const ru: Dictionary = {
     booking: 'Бронирование',
     rights: '© 2026 disneyparistransfers.com — Все права защищены',
     seoLine: 'Водитель в Париже · Трансферы CDG, Orly, Beauvais · Disneyland Paris',
+    colLegal: 'Документы',
+    terms: 'Условия',
+    privacy: 'Конфиденциальность',
+    cookies: 'Cookie',
   },
   home: {
     badge: 'Специалисты по трансферам в Disneyland® Paris',
@@ -157,6 +162,8 @@ export const ru: Dictionary = {
     askQuote: 'Запросить расчёт',
     otherLead: 'Другое направление?',
     otherLink: 'Напишите нам в WhatsApp — мы работаем по всему региону Иль-де-Франс.',
+    descriptionTemplate:
+      'Частный водитель между {from} и {to}. Фиксированная цена, встреча с табличкой, детские кресла включены.',
     descriptions: {
       'cdg-disneyland':
         'Самый популярный маршрут. Встреча с табличкой в зоне прилёта и высадка прямо у вашего отеля Disney или отеля-партнёра.',
@@ -178,6 +185,8 @@ export const ru: Dictionary = {
   routeDetail: {
     breadcrumb: 'Маршруты',
     h1: 'Трансфер {from} ↔ {to} с частным водителем',
+    leadTemplate:
+      'Частный трансфер от двери до двери между {from} и {to}. Водитель отслеживает рейс, встречает с табличкой и подтверждает фиксированную цену до поездки.',
     lead: {
       'cdg-disneyland':
         'Прямая поездка между Руасси Шарль-де-Голль и отелями Disney примерно за 45 минут. Водитель отслеживает рейс, встречает вас с табличкой и устанавливает детские кресла до вашего прилёта.',
@@ -197,6 +206,9 @@ export const ru: Dictionary = {
         'Поездка туда и обратно или почасовая аренда между Парижем и Версальским дворцом: водитель ждёт вас во время экскурсии.',
     },
     ctaBook: 'Забронировать этот трансфер',
+    livePriceTitle: 'Ваша цена в реальном времени',
+    relatedTitle: 'Другие трансферы',
+    imageAlt: 'Трансфер с частным водителем из {from} в {to}',
     statDuration: 'Время в пути',
     statDistance: 'Расстояние',
     statHours: 'Любые рейсы, любые терминалы',
@@ -336,6 +348,16 @@ export const ru: Dictionary = {
     ],
     required: 'Это поле обязательно.',
     invalidEmail: 'Некорректный адрес электронной почты.',
+    stepJourney: 'Маршрут',
+    stepParty: 'Пассажиры',
+    stepContact: 'Контакты',
+    next: 'Далее',
+    back: 'Назад',
+    trustSeats: 'Детские кресла бесплатно',
+    trustFixed: 'Фиксированная цена',
+    trustHours: 'Круглосуточно',
+    noCard: 'Карта не нужна для расчёта',
+    liveTitle: 'Ориентировочная цена',
   },
   about: {
     h1: 'Ваш водитель, а не платформа',
@@ -438,6 +460,13 @@ export const ru: Dictionary = {
     extrasLead: 'Добавляются к стоимости трансфера.',
     extrasEach: 'за штуку',
   },
+  cookieBanner: {
+    message:
+      'Мы используем несколько необходимых cookie (язык, сессия администратора и это уведомление). Без рекламных cookie.',
+    accept: 'Понятно',
+    more: 'Политика cookie',
+  },
+  legal: legalDocs.ru,
   destinationKinds: {
     airport: 'Аэропорты',
     city: 'Города',
@@ -566,6 +595,21 @@ export const ru: Dictionary = {
       title: 'Контакты — частный водитель в Париже | Disney Paris Transfers',
       description:
         'Свяжитесь с нами круглосуточно по телефону, в WhatsApp или по почте, чтобы заказать трансфер между аэропортами Парижа и Disneyland Paris.',
+    },
+    terms: {
+      title: 'Условия оказания услуг | Disney Paris Transfers',
+      description:
+        'Условия бронирования Disney Paris Transfers: расчёт, оплата, отмена, ночная надбавка и обязанности пассажира.',
+    },
+    privacy: {
+      title: 'Политика конфиденциальности | Disney Paris Transfers',
+      description:
+        'Как Disney Paris Transfers собирает, хранит и использует персональные данные для бронирований, писем и оплаты.',
+    },
+    cookies: {
+      title: 'Политика cookie | Disney Paris Transfers',
+      description:
+        'Необходимые cookie на disneyparistransfers.com: язык, сессия администратора и это уведомление. Без рекламных cookie.',
     },
     routeDetail: {
       title: 'Трансфер {from} ↔ {to} — частный водитель от {price} € | Disney Paris Transfers',

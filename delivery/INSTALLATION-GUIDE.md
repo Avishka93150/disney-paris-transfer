@@ -2,7 +2,7 @@
 
 > 🇫🇷 Version française : [`GUIDE-INSTALLATION.md`](./GUIDE-INSTALLATION.md)
 
-Private chauffeur website in 7 languages, with a live price calculator, a quote form, a
+Private chauffeur website in 9 languages, with a live price calculator, a quote form, a
 back office and optional online payment.
 
 This guide assumes you are not a developer. Every command can be copied as-is. Allow about

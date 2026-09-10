@@ -1,4 +1,5 @@
 import type { Dictionary } from '../types';
+import { legalDocs } from '../legalDocs';
 
 export const ja: Dictionary = {
   common: {
@@ -42,6 +43,10 @@ export const ja: Dictionary = {
     booking: 'ご予約',
     rights: '© 2026 disneyparistransfers.com — 無断転載を禁じます',
     seoLine: 'パリの専属ドライバー・CDG、オルリー、ボーヴェ空港送迎・ディズニーランド パリ',
+    colLegal: '法的情報',
+    terms: '利用規約',
+    privacy: 'プライバシー',
+    cookies: 'Cookie',
   },
   home: {
     badge: 'ディズニーランド®・パリ送迎の専門サービス',
@@ -149,6 +154,8 @@ export const ja: Dictionary = {
     askQuote: 'お見積りを依頼する',
     otherLead: '他の目的地をご希望ですか？',
     otherLink: 'WhatsAppでお問い合わせください — イル＝ド＝フランス全域に対応しています。',
+    descriptionTemplate:
+      '{from} と {to} を結ぶ専属ドライバー送迎。定額料金、ネームボードでのお出迎え、チャイルドシート込み。',
     descriptions: {
       'cdg-disneyland':
         '最もご依頼の多いルートです。到着ロビー出口でお出迎えし、ディズニーホテルまたは提携ホテルへ直接お送りします。',
@@ -169,6 +176,8 @@ export const ja: Dictionary = {
   routeDetail: {
     breadcrumb: '送迎ルート',
     h1: '{from} ↔ {to} 専属ドライバーによる送迎',
+    leadTemplate:
+      '{from} と {to} を結ぶドアツードアのプライベート送迎。フライトを追跡し、ネームボードでお出迎えし、出発前に定額を確定します。',
     lead: {
       'cdg-disneyland':
         'ロワシー・シャルル・ド・ゴール空港とディズニーホテルを約45分で直結します。ドライバーがフライトを追跡し、名前ボードでお出迎えし、ご到着前にチャイルドシートを設置します。',
@@ -188,6 +197,9 @@ export const ja: Dictionary = {
         'パリとヴェルサイユ宮殿を結ぶ往復、または時間単位の貸切。ご見学の間、ドライバーがお待ちします。',
     },
     ctaBook: 'この送迎を予約する',
+    livePriceTitle: 'リアルタイム料金',
+    relatedTitle: 'その他の送迎',
+    imageAlt: '{from} から {to} への専属ドライバー送迎',
     statDuration: '所要時間',
     statDistance: '距離',
     statHours: 'すべての便、すべてのターミナル',
@@ -322,6 +334,16 @@ export const ja: Dictionary = {
     included: ['フライト追跡と待機', '名前ボードでのお出迎え', 'チャイルドシート無料', '高速代込み・定額料金'],
     required: 'この項目は必須です。',
     invalidEmail: 'メールアドレスが正しくありません。',
+    stepJourney: '行程',
+    stepParty: '人数',
+    stepContact: 'ご連絡先',
+    next: '次へ',
+    back: '戻る',
+    trustSeats: 'チャイルドシート無料',
+    trustFixed: '定額・追加料金なし',
+    trustHours: '24時間対応',
+    noCard: '見積りにカードは不要',
+    liveTitle: '概算料金',
   },
   about: {
     h1: 'プラットフォームではなく、あなたのドライバー',
@@ -423,6 +445,13 @@ export const ja: Dictionary = {
     extrasLead: '送迎料金に加算されます。',
     extrasEach: '1点につき',
   },
+  cookieBanner: {
+    message:
+      '言語、管理画面のセッション、この告知など、必要最低限のCookieのみを使用します。広告用Cookieはありません。',
+    accept: '了解しました',
+    more: 'Cookieポリシー',
+  },
+  legal: legalDocs.ja,
   destinationKinds: {
     airport: '空港',
     city: '都市',
@@ -551,6 +580,21 @@ export const ja: Dictionary = {
       title: 'お問い合わせ — パリの専属ドライバー | Disney Paris Transfers',
       description:
         'パリの各空港とディズニーランド・パリを結ぶ送迎について、年中無休・24時間、電話・WhatsApp・メールでご連絡いただけます。',
+    },
+    terms: {
+      title: '利用規約 | Disney Paris Transfers',
+      description:
+        'Disney Paris Transfersの予約条件：お見積り、お支払い、キャンセル、夜間割増、お客様の義務。',
+    },
+    privacy: {
+      title: 'プライバシーポリシー | Disney Paris Transfers',
+      description:
+        'Disney Paris Transfersが予約・メール・決済のために個人データを収集・保管・利用する方法。',
+    },
+    cookies: {
+      title: 'Cookieポリシー | Disney Paris Transfers',
+      description:
+        'disneyparistransfers.comの必須Cookie：言語、管理画面のセッション、この告知。広告用Cookieはありません。',
     },
     routeDetail: {
       title: '{from} ↔ {to} 送迎 — 専属ドライバー {price} €から | Disney Paris Transfers',

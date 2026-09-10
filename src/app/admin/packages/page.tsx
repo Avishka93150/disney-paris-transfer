@@ -23,7 +23,7 @@ export default async function AdminPackages() {
 
       <p className="mb-10 rounded-[10px] bg-sand p-4 text-sm leading-[1.6] text-ink-soft">
         Names and descriptions are shown to visitors <strong>exactly as typed</strong>, in all
-        7 languages — they do not go through the site’s translations. Write them in the language
+        9 languages — they do not go through the site’s translations. Write them in the language
         most of your customers read.
         {settings.nightSurchargeEnabled ? (
           <>
