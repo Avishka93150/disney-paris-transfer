@@ -1,0 +1,985 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Disney Paris Transfers — Developer Handoff</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bree+Serif&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#fbf6ed; --sand:#f6e9d8; --surface:#fffdf9; --line:#ebdfc9;
+    --line-strong:#f0e2cc; --stripe:#e7d5b8;
+    --brand:#b4552d; --brand-dark:#8f3f1e;
+    --ink:#3a2e24; --ink-light:#524334; --ink-soft:#6b5641;
+    --ink-mute:#8f7455; --ink-faint:#9b8468; --cream-soft:#c9b79e;
+    --gold:#d9a441; --gold-dark:#c4902f;
+    --whatsapp:#e8f0dc; --whatsapp-dark:#d8e5c5;
+    --success-border:#b7cc96; --success-text:#4a6327;
+    --display:"Bree Serif", Georgia, "Times New Roman", serif;
+    --sans:"Nunito", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  }
+
+  @page { size: A4; margin: 16mm 15mm 20mm 15mm; }
+  @page :first { margin: 0; }
+
+  *{ box-sizing:border-box; }
+  html{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  body{
+    margin:0; font-family:var(--sans); color:var(--ink);
+    font-size:9.6pt; line-height:1.62; background:#fff;
+  }
+
+  h1,h2,h3,h4{ font-family:var(--display); font-weight:400; margin:0; text-wrap:pretty; }
+
+  /* ── Cover ─────────────────────────────────────────────── */
+  .cover{
+    page-break-after:always; height:297mm; width:210mm;
+    background:linear-gradient(170deg,var(--cream) 0%,var(--sand) 100%);
+    padding:34mm 22mm 20mm; display:flex; flex-direction:column;
+    position:relative; overflow:hidden;
+  }
+  .cover::after{
+    content:""; position:absolute; right:-40mm; bottom:-40mm;
+    width:120mm; height:120mm; border-radius:50%;
+    background:rgba(180,85,45,.06);
+  }
+  .cover-brand{ font-family:var(--display); font-size:23pt; letter-spacing:-.2pt; }
+  .cover-brand span{ color:var(--brand); }
+  .cover-kicker{
+    font-size:8pt; font-weight:800; letter-spacing:2.4pt; text-transform:uppercase;
+    color:var(--brand); margin-top:2mm;
+  }
+  .cover h1{ font-size:39pt; line-height:1.08; margin-top:38mm; max-width:150mm; }
+  .cover-lead{
+    font-size:12.5pt; line-height:1.6; color:var(--ink-soft);
+    margin-top:9mm; max-width:132mm;
+  }
+  .cover-rule{ width:34mm; height:3px; background:var(--brand); margin:11mm 0 0; border-radius:2px; }
+  .cover-meta{
+    margin-top:auto; display:flex; gap:9mm; flex-wrap:nowrap;
+    font-size:8pt; color:var(--ink-mute); position:relative; z-index:1;
+  }
+  .cover-meta>div{ flex:1 1 0; min-width:0; }
+  .cover-meta b{ display:block; color:var(--ink); font-size:8.8pt; font-weight:800; margin-top:1mm; line-height:1.35; }
+
+  /* ── Structure ─────────────────────────────────────────── */
+  section{ page-break-before:always; }
+  section.flow{ page-break-before:auto; }
+
+  h2{
+    font-size:19pt; color:var(--ink); margin:0 0 1mm;
+    padding-bottom:2.5mm; border-bottom:2px solid var(--brand);
+  }
+  .sec-no{
+    font-family:var(--sans); font-size:8pt; font-weight:800; letter-spacing:2pt;
+    text-transform:uppercase; color:var(--brand); display:block; margin-bottom:1.5mm;
+  }
+  h3{ font-size:12.6pt; margin:7mm 0 2mm; color:var(--ink); }
+  h4{
+    font-family:var(--sans); font-size:9.4pt; font-weight:800; margin:4.5mm 0 1.5mm;
+    color:var(--ink); letter-spacing:.1pt;
+  }
+  p{ margin:0 0 2.6mm; }
+  .lead{ font-size:10.6pt; color:var(--ink-soft); margin-bottom:5mm; }
+  ul,ol{ margin:0 0 3mm; padding-left:5mm; }
+  li{ margin-bottom:1.4mm; }
+  code,.mono{
+    font-family:"SF Mono",Menlo,Consolas,monospace; font-size:8.3pt;
+    background:var(--sand); padding:.4mm 1.2mm; border-radius:2px; color:var(--brand-dark);
+    white-space:nowrap;
+  }
+  td code{ display:inline-block; }
+  strong{ font-weight:800; }
+
+  /* ── Tables ────────────────────────────────────────────── */
+  table{ width:100%; border-collapse:collapse; margin:2.5mm 0 4mm; font-size:8.7pt; }
+  th{
+    text-align:left; background:var(--sand); font-weight:800; color:var(--ink);
+    padding:2mm 2.5mm; border-bottom:1px solid var(--line);
+  }
+  td{ padding:2mm 2.5mm; border-bottom:1px solid var(--line-strong); vertical-align:top; }
+  tr{ page-break-inside:avoid; }
+  td.num{ text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
+
+  /* ── Colour swatches ───────────────────────────────────── */
+  .sw{
+    width:15mm; height:7.5mm; border-radius:3px; border:1px solid rgba(58,46,36,.16);
+    display:inline-block; vertical-align:middle;
+  }
+  .hex{ font-family:"SF Mono",Menlo,Consolas,monospace; font-size:8.3pt; text-transform:uppercase; }
+
+  /* ── Callouts ──────────────────────────────────────────── */
+  .box{
+    background:var(--surface); border:1px solid var(--line); border-radius:10px;
+    padding:3.5mm 4mm; margin:3mm 0 4mm; page-break-inside:avoid;
+  }
+  .box.warn{ background:#fdf3ec; border-color:#e8c3a9; }
+  .box.warn .box-t{ color:var(--brand-dark); }
+  .box.ok{ background:var(--whatsapp); border-color:var(--success-border); }
+  .box.ok .box-t{ color:var(--success-text); }
+  .box.dark{ background:var(--ink); border-color:var(--ink); color:var(--cream-soft); }
+  .box.dark .box-t{ color:var(--gold); }
+  .box.dark code{ background:rgba(255,255,255,.1); color:var(--gold); }
+  .box-t{
+    font-weight:800; font-size:9.2pt; margin-bottom:1.5mm; display:block; color:var(--ink);
+  }
+  .box p:last-child{ margin-bottom:0; }
+
+  .formula{
+    background:var(--ink); color:var(--cream-soft); border-radius:10px;
+    padding:4mm 5mm; font-family:"SF Mono",Menlo,Consolas,monospace;
+    font-size:8.6pt; line-height:1.75; white-space:pre; margin:3mm 0 4mm;
+    page-break-inside:avoid;
+  }
+  .formula b{ color:var(--gold); font-weight:400; }
+
+  .grid2{ display:flex; gap:5mm; page-break-inside:avoid; }
+  .grid2>*{ flex:1; }
+
+  .pill{
+    display:inline-block; background:var(--sand); color:var(--brand-dark);
+    border-radius:20px; padding:.6mm 2.4mm; font-size:7.6pt; font-weight:800;
+    letter-spacing:.2pt; white-space:nowrap;
+  }
+  .pill.g{ background:var(--whatsapp); color:var(--success-text); }
+  .pill.d{ background:var(--ink); color:var(--gold); }
+
+  .toc-item{
+    display:flex; align-items:baseline; gap:2mm; padding:1.9mm 0;
+    border-bottom:1px solid var(--line-strong); font-size:9.6pt;
+  }
+  .toc-n{ font-weight:800; color:var(--brand); width:7mm; flex:none; }
+  .toc-t{ font-weight:700; }
+  .toc-d{ color:var(--ink-mute); font-size:8.4pt; margin-left:auto; text-align:right; max-width:78mm; }
+
+  .type-sample{ font-family:var(--display); color:var(--ink); line-height:1.15; }
+  .footnote{ font-size:8.2pt; color:var(--ink-mute); }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════ COVER ══════════════════ -->
+<div class="cover">
+  <div class="cover-brand">Disney Paris <span>Transfers</span></div>
+  <div class="cover-kicker">Developer Handoff</div>
+
+  <h1>Design system,<br>functionality<br>&amp; build directives</h1>
+
+  <div class="cover-rule"></div>
+
+  <p class="cover-lead">
+    Everything needed to build, extend or take over the private-chauffeur booking site at
+    disneyparistransfers.com — the exact palette, the pricing rules, the page inventory and
+    the constraints that must not be broken.
+  </p>
+
+  <div class="cover-meta">
+    <div>Product<b>disneyparistransfers.com</b></div>
+    <div>Stack<b>Next.js 15 · React 19 · TypeScript</b></div>
+    <div>Languages<b>7 · English default</b></div>
+    <div>Document<b>v1.0</b></div>
+  </div>
+</div>
+
+<!-- ══════════════════ CONTENTS ══════════════════ -->
+<section class="flow">
+  <span class="sec-no">Contents</span>
+  <h2>What is in this document</h2>
+
+  <p class="lead">
+    Sections 3 and 4 are the visual contract. Section 6 is the one to read twice — it is
+    where money is decided, and it is the easiest part to get subtly wrong.
+  </p>
+
+  <div class="toc-item"><span class="toc-n">1</span><span class="toc-t">The product</span><span class="toc-d">What the site does and who uses it</span></div>
+  <div class="toc-item"><span class="toc-n">2</span><span class="toc-t">Stack &amp; hosting</span><span class="toc-d">Technology choices, and one hard hosting constraint</span></div>
+  <div class="toc-item"><span class="toc-n">3</span><span class="toc-t">Colour system</span><span class="toc-d">Every token, with swatch, hex and intended use</span></div>
+  <div class="toc-item"><span class="toc-n">4</span><span class="toc-t">Typography, shape &amp; layout</span><span class="toc-d">Fonts, radii, shadows, grid, responsive rules</span></div>
+  <div class="toc-item"><span class="toc-n">5</span><span class="toc-t">Component directives</span><span class="toc-d">Buttons, cards, form fields, placeholders</span></div>
+  <div class="toc-item"><span class="toc-n">6</span><span class="toc-t">Pricing engine</span><span class="toc-d">Rate grid, night supplement, packages, add-ons</span></div>
+  <div class="toc-item"><span class="toc-n">7</span><span class="toc-t">Pages &amp; routing</span><span class="toc-d">Page inventory and the translated-URL scheme</span></div>
+  <div class="toc-item"><span class="toc-n">8</span><span class="toc-t">Booking &amp; payment flow</span><span class="toc-d">Customer journey end to end</span></div>
+  <div class="toc-item"><span class="toc-n">9</span><span class="toc-t">Admin back office</span><span class="toc-d">The four screens and what each controls</span></div>
+  <div class="toc-item"><span class="toc-n">10</span><span class="toc-t">Data model</span><span class="toc-d">Five tables, and the migration rule</span></div>
+  <div class="toc-item"><span class="toc-n">11</span><span class="toc-t">Rules that must not be broken</span><span class="toc-d">Security, i18n, SEO, accessibility</span></div>
+  <div class="toc-item"><span class="toc-n">12</span><span class="toc-t">Environment &amp; commands</span><span class="toc-d">Variables, scripts, deployment</span></div>
+  <div class="toc-item"><span class="toc-n">13</span><span class="toc-t">Known gaps</span><span class="toc-d">What is deliberately unfinished</span></div>
+
+  <div class="box warn">
+    <span class="box-t">On the source of truth</span>
+    <p>
+      The original visual prototypes live in <code>project/*.dc.html</code> and remain the
+      authority for anything visual. Any divergence in colour, spacing or typography from
+      those files is a bug, not a judgement call. This document restates them so you do not
+      have to reverse-engineer the prototypes — but where the two disagree, the prototypes win.
+    </p>
+  </div>
+</section>
+
+<!-- ══════════════════ 1. PRODUCT ══════════════════ -->
+<section>
+  <span class="sec-no">Section 1</span>
+  <h2>The product</h2>
+
+  <p class="lead">
+    A private-chauffeur (VTC) booking site for transfers between the Paris airports,
+    central Paris and Disneyland Paris. One driver, one business — not a marketplace.
+  </p>
+
+  <h3>What the site does</h3>
+  <ol>
+    <li><strong>Quotes instantly.</strong> A visitor picks a route, passenger count and vehicle and sees a real price immediately — not a "contact us for a quote" form.</li>
+    <li><strong>Captures the request.</strong> The booking form stores the request, emails the driver and acknowledges the customer in their own language.</li>
+    <li><strong>Optionally takes payment.</strong> Stripe Checkout, switchable on and off from the admin, full amount or a deposit.</li>
+    <li><strong>Sells in seven languages.</strong> Each language has its own translated URLs, which is what earns local search ranking.</li>
+  </ol>
+
+  <h3>Who uses it</h3>
+  <table>
+    <tr><th style="width:28%">Audience</th><th>What they need from it</th></tr>
+    <tr><td><strong>Travelling families</strong><br><span class="footnote">The primary visitor</span></td><td>A fixed price they can trust before booking, child seats, flight tracking, and reassurance that a stranger will actually be at arrivals. Most arrive on mobile, often abroad, often in a hurry.</td></tr>
+    <tr><td><strong>The driver</strong><br><span class="footnote">The admin user</span></td><td>To see requests fast, reply in one tap via WhatsApp, and change prices without calling a developer. Not a technical user — the back office must stay blunt and obvious.</td></tr>
+  </table>
+
+  <h3>The commercial shape</h3>
+  <p>
+    Three revenue levers, all controlled by the driver at runtime with no deploy: the
+    <strong>rate grid</strong> (per route, per passenger tier), <strong>packages</strong>
+    (fixed-price bundles that bypass the grid) and <strong>paid add-ons</strong> (charged on
+    top). A <strong>night supplement</strong> applies a percentage across the first two.
+    Section 6 covers exactly how they compose.
+  </p>
+
+  <div class="box ok">
+    <span class="box-t">Design intent worth preserving</span>
+    <p>
+      The palette is warm and hand-made rather than corporate blue — cream, terracotta, gold.
+      That is deliberate: the competition is faceless airport-transfer aggregators, and the
+      whole positioning is "a real person will meet you". Keep it warm. Do not sanitise it
+      into a generic SaaS look.
+    </p>
+  </div>
+</section>
+
+<!-- ══════════════════ 2. STACK ══════════════════ -->
+<section>
+  <span class="sec-no">Section 2</span>
+  <h2>Stack &amp; hosting</h2>
+
+  <table>
+    <tr><th style="width:24%">Layer</th><th>Choice</th></tr>
+    <tr><td>Framework</td><td>Next.js 15 — App Router, React 19, TypeScript in strict mode</td></tr>
+    <tr><td>Styling</td><td>Tailwind CSS v4, CSS-based config in <code>src/app/globals.css</code></td></tr>
+    <tr><td>Database</td><td>SQLite via <code>better-sqlite3</code>, single file at <code>data/app.db</code></td></tr>
+    <tr><td>Email</td><td>Plain SMTP via <code>nodemailer</code> — the host's own mailbox, no third party</td></tr>
+    <tr><td>Payment</td><td>Stripe Checkout, switchable on/off from the admin</td></tr>
+    <tr><td>Admin auth</td><td>HMAC-signed session cookie + <code>scrypt</code> password. No auth library</td></tr>
+    <tr><td>Validation</td><td><code>zod</code> on every API input, without exception</td></tr>
+  </table>
+
+  <div class="box warn">
+    <span class="box-t">Hosting: this is not a serverless app</span>
+    <p>
+      Target a <strong>classic Node server</strong> — OVH, Gandi, a VPS. SQLite and SMTP both
+      assume a persistent filesystem and a long-lived process. Deploying to Vercel, Netlify or
+      Cloudflare Pages would silently discard every booking on each restart: the app would
+      appear to work and would quietly lose the business. If the project ever needs to move to
+      a serverless platform, the database has to move to a hosted engine first.
+    </p>
+  </div>
+
+  <h3>Deliberate absences</h3>
+  <p>
+    There is no auth library, no ORM, no state-management library, no component library and no
+    analytics. Each was considered and rejected: the site has one admin user, five tables and
+    fewer than twenty pages. Please do not add one without a concrete problem it solves — the
+    dependency surface is a feature here, and the client maintains this for years, not months.
+  </p>
+
+  <h3>Rendering strategy</h3>
+  <ul>
+    <li>Server Components by default. <code>"use client"</code> only where interaction demands it: the price calculator, language selector, phone popover, booking form and admin screens.</li>
+    <li>Public pages are statically rendered with <code>revalidate = 3600</code>.</li>
+    <li>Admin writes call <code>revalidatePath('/', 'layout')</code>, so a price change is live immediately. The hourly expiry is a safety net for a missed invalidation, not the main mechanism.</li>
+  </ul>
+</section>
+
+<!-- ══════════════════ 3. COLOUR ══════════════════ -->
+<section>
+  <span class="sec-no">Section 3</span>
+  <h2>Colour system</h2>
+
+  <p class="lead">
+    Twenty tokens, taken verbatim from the prototypes. They are defined once in
+    <code>src/app/globals.css</code> under <code>@theme</code> and consumed as Tailwind
+    utilities. <strong>Do not introduce a colour that is not on this page.</strong>
+  </p>
+
+  <h3>Surfaces</h3>
+  <table>
+    <tr><th style="width:20mm">Swatch</th><th style="width:24mm">Hex</th><th style="width:44mm">Utility</th><th>Use</th></tr>
+    <tr><td><span class="sw" style="background:#fbf6ed"></span></td><td class="hex">#FBF6ED</td><td><code>bg-cream</code></td><td>Page background — the default ground everywhere</td></tr>
+    <tr><td><span class="sw" style="background:#f6e9d8"></span></td><td class="hex">#F6E9D8</td><td><code>bg-sand</code></td><td>Section background, to separate bands of content</td></tr>
+    <tr><td><span class="sw" style="background:#fffdf9"></span></td><td class="hex">#FFFDF9</td><td><code>bg-surface</code></td><td>Cards and the header — sits above cream</td></tr>
+    <tr><td><span class="sw" style="background:#ebdfc9"></span></td><td class="hex">#EBDFC9</td><td><code>border-line</code></td><td>Standard border on cards, fields, dividers</td></tr>
+    <tr><td><span class="sw" style="background:#f0e2cc"></span></td><td class="hex">#F0E2CC</td><td><code>border-line-strong</code></td><td>Table row separators — lighter than it sounds</td></tr>
+    <tr><td><span class="sw" style="background:#e7d5b8"></span></td><td class="hex">#E7D5B8</td><td><code>bg-stripe</code></td><td>The second tone in photo-placeholder hatching</td></tr>
+  </table>
+
+  <h3>Brand</h3>
+  <table>
+    <tr><th style="width:20mm">Swatch</th><th style="width:24mm">Hex</th><th style="width:44mm">Utility</th><th>Use</th></tr>
+    <tr><td><span class="sw" style="background:#b4552d"></span></td><td class="hex">#B4552D</td><td><code>text-brand</code> / <code>bg-brand</code></td><td>Terracotta. Primary accent, primary CTA, prices, focus ring</td></tr>
+    <tr><td><span class="sw" style="background:#8f3f1e"></span></td><td class="hex">#8F3F1E</td><td><code>bg-brand-dark</code></td><td>Hover state of every terracotta button</td></tr>
+    <tr><td><span class="sw" style="background:#d9a441"></span></td><td class="hex">#D9A441</td><td><code>bg-gold</code></td><td>CTA on a brown ground only — never on cream</td></tr>
+    <tr><td><span class="sw" style="background:#c4902f"></span></td><td class="hex">#C4902F</td><td><code>bg-gold-dark</code></td><td>Hover state of gold</td></tr>
+  </table>
+
+  <h3>Text</h3>
+  <table>
+    <tr><th style="width:20mm">Swatch</th><th style="width:24mm">Hex</th><th style="width:44mm">Utility</th><th>Use</th></tr>
+    <tr><td><span class="sw" style="background:#3a2e24"></span></td><td class="hex">#3A2E24</td><td><code>text-ink</code> / <code>bg-ink</code></td><td>Headings and body. Also the footer and dark CTA ground</td></tr>
+    <tr><td><span class="sw" style="background:#524334"></span></td><td class="hex">#524334</td><td><code>bg-ink-light</code></td><td>Hover on a brown ground</td></tr>
+    <tr><td><span class="sw" style="background:#6b5641"></span></td><td class="hex">#6B5641</td><td><code>text-ink-soft</code></td><td>Running text, lead paragraphs</td></tr>
+    <tr><td><span class="sw" style="background:#8f7455"></span></td><td class="hex">#8F7455</td><td><code>text-ink-mute</code></td><td>Tertiary text, metadata, small print</td></tr>
+    <tr><td><span class="sw" style="background:#9b8468"></span></td><td class="hex">#9B8468</td><td><code>text-ink-faint</code></td><td>Captions and disclaimers only</td></tr>
+    <tr><td><span class="sw" style="background:#c9b79e"></span></td><td class="hex">#C9B79E</td><td><code>text-cream-soft</code></td><td>Body text on a brown ground</td></tr>
+  </table>
+
+  <h3>WhatsApp &amp; success</h3>
+  <table>
+    <tr><th style="width:20mm">Swatch</th><th style="width:24mm">Hex</th><th style="width:44mm">Utility</th><th>Use</th></tr>
+    <tr><td><span class="sw" style="background:#e8f0dc"></span></td><td class="hex">#E8F0DC</td><td><code>bg-whatsapp</code></td><td>WhatsApp CTA on light ground; success banners</td></tr>
+    <tr><td><span class="sw" style="background:#d8e5c5"></span></td><td class="hex">#D8E5C5</td><td><code>bg-whatsapp-dark</code></td><td>Its hover state</td></tr>
+    <tr><td><span class="sw" style="background:#b7cc96"></span></td><td class="hex">#B7CC96</td><td><code>border-success-border</code></td><td>Border of a success banner</td></tr>
+    <tr><td><span class="sw" style="background:#4a6327"></span></td><td class="hex">#4A6327</td><td><code>text-success-text</code></td><td>Text inside a success banner</td></tr>
+  </table>
+
+  <div class="box">
+    <span class="box-t">Two rules about colour</span>
+    <p>
+      <strong>Gold is for brown grounds only.</strong> Gold on cream fails contrast and looks
+      cheap; terracotta is the accent on light, gold is the accent on dark.
+    </p>
+    <p style="margin-bottom:0">
+      <strong>Prices are always terracotta.</strong> Across the calculator, rate tables, route
+      cards and booking estimate, the number the customer cares about is
+      <code>text-brand</code>. Do not restyle prices per context.
+    </p>
+  </div>
+</section>
+
+<!-- ══════════════════ 4. TYPE / SHAPE ══════════════════ -->
+<section>
+  <span class="sec-no">Section 4</span>
+  <h2>Typography, shape &amp; layout</h2>
+
+  <h3>Two typefaces, no exceptions</h3>
+  <table>
+    <tr><th style="width:30%">Role</th><th style="width:26%">Family</th><th>Rules</th></tr>
+    <tr>
+      <td><strong>Headings</strong><br><span class="footnote">font-display</span></td>
+      <td>Bree Serif, 400</td>
+      <td>Every <code>h1</code>–<code>h3</code>, prices in the calculator, and the wordmark. One weight only — Bree Serif ships a single weight, so never fake a bold.</td>
+    </tr>
+    <tr>
+      <td><strong>Everything else</strong><br><span class="footnote">font-sans</span></td>
+      <td>Nunito<br>400 / 600 / 700 / 800</td>
+      <td>Body, labels, buttons, tables, navigation. 800 for buttons and emphasis, 700 for labels, 400 for running text.</td>
+    </tr>
+  </table>
+
+  <div class="box warn">
+    <span class="box-t">Load fonts through next/font only</span>
+    <p>
+      Both are loaded with <code>next/font/google</code> in <code>src/lib/fonts.ts</code>.      <strong>Never add a <code>&lt;link&gt;</code> to Google Fonts</strong> — it reintroduces
+      the layout shift and the third-party request that <code>next/font</code> exists to remove.
+      Nunito is subset to <code>latin</code>, <code>latin-ext</code> and <code>cyrillic</code>;
+      Chinese and Japanese deliberately fall back to system fonts, because shipping full CJK
+      subsets would cost several megabytes.
+    </p>
+  </div>
+
+  <h3>Scale in practice</h3>
+  <div style="margin:3mm 0 5mm">
+    <div class="type-sample" style="font-size:31pt">Transfers to Disneyland</div>
+    <div class="footnote" style="margin-bottom:3.5mm">Page h1 — <code>text-[34px]</code> mobile, <code>sm:text-[46px]</code> desktop</div>
+    <div class="type-sample" style="font-size:21pt">Most requested routes</div>
+    <div class="footnote" style="margin-bottom:3.5mm">Section h2 — <code>text-[32px]</code></div>
+    <div class="type-sample" style="font-size:14pt">CDG Airport ↔ Disneyland Paris</div>
+    <div class="footnote" style="margin-bottom:3.5mm">Card title — <code>text-xl</code> / <code>text-[19px]</code></div>
+    <div style="font-size:11pt;color:var(--ink-soft);max-width:120mm">Fixed fare agreed before you travel, flight tracking included, and a driver waiting with a sign in arrivals.</div>
+    <div class="footnote">Lead paragraph — <code>text-[18px] leading-[1.7] text-ink-soft</code></div>
+  </div>
+
+  <h3>Shape</h3>
+  <table>
+    <tr><th style="width:30%">Element</th><th style="width:36%">Radius</th><th>Note</th></tr>
+    <tr><td>Cards</td><td><code>rounded-[18px]</code> → <code>rounded-3xl</code></td><td>18px for small cards, 24px for hero and feature panels</td></tr>
+    <tr><td>Buttons</td><td><code>rounded-full</code></td><td>Always fully round. Never a rounded rectangle</td></tr>
+    <tr><td>Form fields</td><td><code>rounded-[10px]</code></td><td>Defined once in the <code>.field</code> class</td></tr>
+    <tr><td>Pills / badges</td><td><code>rounded-full</code></td><td>Status chips, tier labels, filters</td></tr>
+  </table>
+
+  <h3>Elevation</h3>
+  <table>
+    <tr><th style="width:28%">Token</th><th style="width:44%">Value</th><th>Use</th></tr>
+    <tr><td><code>shadow-card</code></td><td class="hex">0 12px 24px -14px rgb(58 46 36 / .3)</td><td>Card hover</td></tr>
+    <tr><td><code>shadow-lifted</code></td><td class="hex">0 24px 48px -20px rgb(58 46 36 / .35)</td><td>The hero price calculator</td></tr>
+    <tr><td><code>shadow-popover</code></td><td class="hex">0 16px 32px -12px rgb(58 46 36 / .35)</td><td>Phone menu, dropdowns</td></tr>
+  </table>
+  <p class="footnote">
+    All three are brown-tinted rather than neutral black. That is what keeps the warmth —
+    a grey shadow on cream reads as dirt.
+  </p>
+
+  <h3>Layout grid</h3>
+  <ul>
+    <li>Content width <code>max-w-[1200px] mx-auto px-6</code> throughout.</li>
+    <li>Section rhythm <code>py-[72px]</code> desktop, <code>py-14</code> mobile.</li>
+    <li>The prototypes were drawn at <strong>1280 px only</strong>. All responsive behaviour was added during implementation and is not covered by them — you have latitude there, and you own the bugs.</li>
+    <li>Three-column grids collapse to one below <code>md</code>. The header switches to a burger menu below <code>lg</code>.</li>
+  </ul>
+</section>
+
+<!-- ══════════════════ 5. COMPONENTS ══════════════════ -->
+<section>
+  <span class="sec-no">Section 5</span>
+  <h2>Component directives</h2>
+
+  <h3>Buttons</h3>
+  <table>
+    <tr><th style="width:22%">Variant</th><th style="width:30%">Appearance</th><th>When</th></tr>
+    <tr><td><strong>Primary</strong></td><td><code>bg-brand</code>, <code>text-surface</code>, hover <code>bg-brand-dark</code></td><td>The single most important action on the page. One per view</td></tr>
+    <tr><td><strong>Outline</strong></td><td><code>border-2 border-brand</code>, <code>bg-surface</code>, <code>text-brand</code>, hover <code>bg-sand</code></td><td>The secondary action beside a primary</td></tr>
+    <tr><td><strong>Gold</strong></td><td><code>bg-gold</code>, <code>text-ink</code>, hover <code>bg-gold-dark</code></td><td>Primary action inside a dark brown band</td></tr>
+    <tr><td><strong>Gold outline</strong></td><td><code>border-2 border-gold</code>, transparent, <code>text-gold</code></td><td>Secondary action inside a dark brown band</td></tr>
+    <tr><td><strong>WhatsApp</strong></td><td><code>bg-whatsapp</code>, <code>text-ink</code>, hover <code>bg-whatsapp-dark</code></td><td>Anything that opens WhatsApp. Always carries the 💬 glyph</td></tr>
+  </table>
+  <p>
+    Padding runs <code>px-6 py-3</code> to <code>px-7 py-3.5</code> depending on prominence;
+    labels are <code>font-extrabold</code> at 15–17px. Disabled state is
+    <code>disabled:opacity-60</code> and nothing else — no colour change.
+  </p>
+
+  <h3>Cards</h3>
+  <p>
+    <code>bg-surface</code> on a <code>border-line</code> border, radius 18–24px, padding
+    <code>p-6</code>. Interactive cards get <code>hover:border-brand hover:shadow-card</code>
+    and nothing more — no lift transform, no scale. The one exception is the hero calculator,
+    which carries <code>shadow-lifted</code> permanently because it must read as the focal
+    object of the page.
+  </p>
+
+  <h3>Form fields</h3>
+  <p>
+    Every input, select and textarea uses the shared <code>.field</code> class rather than
+    per-component utilities: 1px <code>--color-line</code> border, 10px radius, cream ground,
+    12px padding, 15px text. Focus is a 2px terracotta outline inset by 1px. Labels use
+    <code>.field-label</code> — a flex column, 700 weight, 14px.
+  </p>
+
+  <div class="box warn">
+    <span class="box-t">Admin forms must use controlled inputs</span>
+    <p>
+      React 19 resets uncontrolled fields after a server action completes. In the admin that
+      means the driver saves a price, the action succeeds, and the old value reappears in the
+      box — which reads exactly like a failed save. Every admin form field is therefore bound
+      to <code>useState</code>. Keep it that way.
+    </p>
+  </div>
+
+  <h3>Photo placeholders</h3>
+  <p>
+    Real photography does not exist yet. Every image slot renders a
+    <code>.photo-placeholder</code> — 45° hatching between <code>--color-line-strong</code>
+    and <code>--color-stripe</code> — carrying a text description of the intended shot.
+    They are meant to be visibly unfinished, so nobody ships them by accident. Replacing them
+    is a mechanical job; the descriptions tell you what to source.
+  </p>
+
+  <h3>Status colour, used consistently</h3>
+  <table>
+    <tr><th style="width:26%">State</th><th style="width:36%">Treatment</th><th>Where</th></tr>
+    <tr><td><span class="pill">New / active</span></td><td><code>bg-sand text-brand</code></td><td>Booking status, active filter</td></tr>
+    <tr><td><span class="pill g">Confirmed / success</span></td><td><code>bg-whatsapp text-success-text</code></td><td>Confirmed booking, success banner</td></tr>
+    <tr><td><span class="pill" style="background:#fbf6ed;color:#6b5641">Quoted / neutral</span></td><td><code>bg-cream text-ink-soft</code></td><td>Intermediate states</td></tr>
+    <tr><td><span class="pill" style="background:#ebdfc9;color:#8f7455">Cancelled / inert</span></td><td><code>bg-line text-ink-mute</code></td><td>Cancelled booking</td></tr>
+  </table>
+</section>
+
+<!-- ══════════════════ 6. PRICING ══════════════════ -->
+<section>
+  <span class="sec-no">Section 6</span>
+  <h2>Pricing engine</h2>
+
+  <p class="lead">
+    Three layers, all editable by the driver at runtime with no deploy. Read this section
+    before changing anything that touches a number.
+  </p>
+
+  <div class="formula">  <b>base</b>      rate grid × vehicle multiplier × trip
+            (or a package's flat price, which replaces all of it)
+<b>+ night</b>     base × night %, if pickup time falls inside night hours
+<b>+ extras</b>    the paid add-ons chosen — never night-surcharged
+<b>= quoted_price_cents</b></div>
+
+  <h3>Layer 1 — the rate grid</h3>
+  <ul>
+    <li>20 connections between 8 zones: CDG, Orly, Beauvais, Disneyland, Paris, Versailles, La Défense, Val d'Europe.</li>
+    <li>Each holds <strong>six one-way prices in whole euros</strong>, one per passenger tier: <span class="mono">1–3, 4, 5, 6, 7, 8</span>.</li>
+    <li>The grid is <strong>symmetric</strong> — <code>cdg-disney</code> also serves Disney → CDG. One row per connection, never two.</li>
+    <li>Round trip is simply ×2.</li>
+    <li>A connection <strong>missing</strong> from the grid means "on request, reply within 2 h". The site must never invent a price for it.</li>
+  </ul>
+
+  <h4>Vehicle multipliers</h4>
+  <table>
+    <tr><th>Vehicle</th><th class="num">Max pax</th><th class="num">Bags</th><th class="num">Multiplier</th></tr>
+    <tr><td>Saloon <span class="footnote">id <code>saloon</code></span></td><td class="num">4</td><td class="num">3</td><td class="num">×1</td></tr>
+    <tr><td>SUV</td><td class="num">4</td><td class="num">4</td><td class="num">×1.1</td></tr>
+    <tr><td>Van</td><td class="num">8</td><td class="num">8</td><td class="num">×1</td></tr>
+    <tr><td>Premium Mercedes</td><td class="num">3</td><td class="num">3</td><td class="num">×1.5</td></tr>
+  </table>
+  <p class="footnote">
+    The id <code>saloon</code> was renamed from <code>berline</code> when the codebase moved
+    to English. A guarded migration rewrites old rows, and both the admin and the email
+    templates fall back to the raw id rather than crashing on a vehicle they do not recognise.
+  </p>
+
+  <h3>Layer 2 — the night supplement</h3>
+  <p>
+    One global window plus one percentage, both set in the admin. It applies to fares, routes
+    and any package flagged for it — <strong>never to add-ons</strong>.
+  </p>
+  <table>
+    <tr><th style="width:32%">Behaviour</th><th>Rule</th></tr>
+    <tr><td>Wrapping past midnight</td><td>A window whose end is at or before its start wraps — <span class="mono">22:00 → 05:30</span> covers both the evening and the early morning. This is the normal case, not an edge case.</td></tr>
+    <tr><td>Boundaries</td><td>Start is <strong>inclusive</strong>, end is <strong>exclusive</strong>. A 22:00–05:30 window surcharges a 05:29 pickup and not a 05:30 one.</td></tr>
+    <tr><td>No time supplied</td><td>The supplement never applies. There is nothing to judge it by, so those go out to be quoted by hand.</td></tr>
+    <tr><td>Round trips</td><td>Applied per leg <em>before</em> doubling, so both legs carry it — based on the outbound pickup time, since the form collects only one.</td></tr>
+  </table>
+
+  <h4>Worked examples — an 88 € fare at +35 %, window 22:00–05:30</h4>
+  <table>
+    <tr><th style="width:36%">Pickup</th><th class="num" style="width:22%">Price</th><th>Why</th></tr>
+    <tr><td>14:00</td><td class="num">88.00 €</td><td>Outside the window</td></tr>
+    <tr><td>21:59</td><td class="num">88.00 €</td><td>One minute before it opens</td></tr>
+    <tr><td>22:00</td><td class="num">119.00 €</td><td>Start is inclusive</td></tr>
+    <tr><td>03:00</td><td class="num">119.00 €</td><td>The window wraps past midnight</td></tr>
+    <tr><td>05:29</td><td class="num">119.00 €</td><td>Last minute inside</td></tr>
+    <tr><td>05:30</td><td class="num">88.00 €</td><td>End is exclusive</td></tr>
+    <tr><td>23:30, round trip</td><td class="num">238.00 €</td><td>119 × 2 — surcharge on both legs</td></tr>
+  </table>
+
+  <h3>Layer 3 — packages and add-ons</h3>
+  <table>
+    <tr><th style="width:22%"></th><th style="width:39%">Package</th><th>Paid add-on</th></tr>
+    <tr><td><strong>Replaces or adds?</strong></td><td>Replaces the fare entirely — ignores the grid, the vehicle multiplier and the round-trip doubling</td><td>Charged on top of whatever the fare came to</td></tr>
+    <tr><td><strong>Night-surcharged?</strong></td><td>Optional, per package</td><td><strong>Never.</strong> A child seat costs the same at 3 am as at 3 pm</td></tr>
+    <tr><td><strong>Quantity</strong></td><td>One per booking</td><td>Flat fee, or per-unit up to a cap</td></tr>
+    <tr><td><strong>Example</strong></td><td>"CDG ⇄ Disneyland round trip, up to 6 passengers — 150 €"</td><td>"Child seat — 12 € each, max 3"</td></tr>
+  </table>
+
+  <div class="box warn">
+    <span class="box-t">Package and add-on names are not translated</span>
+    <p>
+      They are typed by the driver at runtime and shown <strong>verbatim in all seven
+      languages</strong> — you cannot translate a string that does not exist at build time.
+      Only the wording <em>around</em> them (headings, "Up to {pax} passengers", the night-rate
+      note) goes through <code>dict.pricing.*</code>. If the client later wants translated
+      package names, that needs a per-language name field; it is not a bug to be patched.
+    </p>
+  </div>
+
+  <h3>Two invariants</h3>
+  <div class="box">
+    <span class="box-t">1. The server always recalculates</span>
+    <p style="margin-bottom:2.5mm">
+      The amount the browser sends is never used, for storage or for charging.
+      <code>serverQuote()</code> in <code>src/lib/booking.ts</code> decides the price from the
+      database, every time. The booking form <strong>deliberately mirrors</strong> that logic
+      client-side so the visitor sees the figure that will actually be stored — if you change
+      one, change the other, or the on-screen estimate and the confirmation email will disagree.
+    </p>
+    <span class="box-t">2. A booking freezes its own breakdown</span>
+    <p style="margin-bottom:0">
+      Each booking stores <code>base_price_cents</code>, <code>night_surcharge_cents</code>,
+      <code>extras_price_cents</code>, <code>package_name</code> and <code>extras_json</code>
+      — labels and unit prices <em>copied</em>, not referenced. Editing a package or add-on
+      later must never rewrite what an existing customer was quoted.
+    </p>
+  </div>
+
+  <p class="footnote">
+    <code>quoteBreakdown()</code> and <code>applyNight()</code> in <code>src/lib/prices.ts</code>,
+    and <code>priceExtras()</code> in <code>src/lib/catalog.ts</code>, are pure and client-safe
+    by design — they must never import the database or a <code>server-only</code> module.
+  </p>
+</section>
+
+<!-- ══════════════════ 7. PAGES / ROUTING ══════════════════ -->
+<section>
+  <span class="sec-no">Section 7</span>
+  <h2>Pages &amp; routing</h2>
+
+  <h3>Seven languages, English default</h3>
+  <p>
+    <span class="pill d">EN default</span> <span class="pill">FR</span>
+    <span class="pill">ES</span> <span class="pill">IT</span>
+    <span class="pill">RU</span> <span class="pill">ZH</span>
+    <span class="pill">JA</span>
+  </p>
+  <p>
+    Every public URL is language-prefixed. <code>middleware.ts</code> redirects an unprefixed
+    URL using the visitor's cookie, then <code>Accept-Language</code>, then English — with a
+    <strong>307</strong>, not a 301, because the choice depends on the visitor's headers and
+    must not be cached as permanent.
+  </p>
+
+  <h3>URL segments are translated — this is the SEO engine</h3>
+  <table style="font-size:8.2pt">
+    <tr><th>Page</th><th>EN</th><th>FR</th><th>ES</th><th>IT</th><th>RU</th><th>ZH / JA</th></tr>
+    <tr><td><strong>Home</strong></td><td colspan="6" style="color:var(--ink-mute)">no segment — <code>/en</code>, <code>/fr</code>, …</td></tr>
+    <tr><td><strong>Routes</strong></td><td>transfers</td><td>trajets</td><td>traslados</td><td>trasferimenti</td><td>transfery</td><td>transfers</td></tr>
+    <tr><td><strong>Prices</strong></td><td>prices</td><td>tarifs</td><td>precios</td><td>prezzi</td><td>tseny</td><td>prices</td></tr>
+    <tr><td><strong>Booking</strong></td><td>booking</td><td>reservation</td><td>reserva</td><td>prenotazione</td><td>bronirovanie</td><td>booking</td></tr>
+    <tr><td><strong>About</strong></td><td>about</td><td>a-propos</td><td>sobre-nosotros</td><td>chi-siamo</td><td>o-nas</td><td>about</td></tr>
+    <tr><td><strong>FAQ</strong></td><td>faq</td><td>faq</td><td>preguntas-frecuentes</td><td>domande-frequenti</td><td>voprosy</td><td>faq</td></tr>
+    <tr><td><strong>Contact</strong></td><td>contact</td><td>contact</td><td>contacto</td><td>contatti</td><td>kontakty</td><td>contact</td></tr>
+  </table>
+  <p class="footnote">
+    <code>SEGMENTS</code> in <code>src/lib/i18n/routes.ts</code> is the single source of truth.
+    Any language/segment combination that does not exist returns <strong>404 deliberately</strong>,
+    so Google never sees two URLs for the same content.
+  </p>
+
+  <h3>Only two page files</h3>
+  <p>
+    <code>src/app/[locale]/page.tsx</code> renders the home page. Everything else goes through
+    <code>src/app/[locale]/[...segments]/page.tsx</code>, which maps the URL segment back to a
+    page key. This indirection exists because translated segments cannot be expressed as a
+    folder structure — <code>/en/prices</code>, <code>/fr/tarifs</code> and
+    <code>/es/precios</code> are one page.
+  </p>
+
+  <h4>To add a page</h4>
+  <ol>
+    <li>Add its key to <code>PAGE_KEYS</code> and its 7 segments to <code>SEGMENTS</code>.</li>
+    <li>Add its copy to the <code>Dictionary</code> type, then to all 7 dictionaries — the build stays broken until every language has it, which is intentional.</li>
+    <li>Create the server component under <code>src/components/pages/</code>.</li>
+    <li>Wire it into the <code>switch</code> and into <code>generateStaticParams</code>.</li>
+  </ol>
+
+  <h3>Route pages — one per priced connection</h3>
+  <p>
+    Eight dedicated SEO landing pages, each with its own duration, distance, rate table,
+    FAQ and JSON-LD. Route <em>slugs</em> are <strong>not</strong> translated: they are proper
+    nouns, and keeping them stable means one key per priced connection instead of seven.
+  </p>
+  <table>
+    <tr><th style="width:36%">Slug</th><th class="num" style="width:20%">Duration</th><th class="num" style="width:20%">Distance</th><th>Home page</th></tr>
+    <tr><td><code>cdg-disneyland</code></td><td class="num">45 min</td><td class="num">60 km</td><td>Featured</td></tr>
+    <tr><td><code>orly-disneyland</code></td><td class="num">50 min</td><td class="num">50 km</td><td>Featured</td></tr>
+    <tr><td><code>beauvais-disneyland</code></td><td class="num">90 min</td><td class="num">120 km</td><td>Featured</td></tr>
+    <tr><td><code>paris-disneyland</code></td><td class="num">45 min</td><td class="num">45 km</td><td>Featured</td></tr>
+    <tr><td><code>cdg-paris</code></td><td class="num">40 min</td><td class="num">35 km</td><td>Featured</td></tr>
+    <tr><td><code>orly-paris</code></td><td class="num">35 min</td><td class="num">25 km</td><td>—</td></tr>
+    <tr><td><code>paris-beauvais</code></td><td class="num">75 min</td><td class="num">85 km</td><td>—</td></tr>
+    <tr><td><code>paris-versailles</code></td><td class="num">40 min</td><td class="num">25 km</td><td>—</td></tr>
+  </table>
+</section>
+
+<!-- ══════════════════ 8. BOOKING FLOW ══════════════════ -->
+<section>
+  <span class="sec-no">Section 8</span>
+  <h2>Booking &amp; payment flow</h2>
+
+  <h3>The customer journey</h3>
+  <ol>
+    <li><strong>Calculator, home page hero.</strong> Route, passengers, trip type, vehicle — and pickup time, but only when the night supplement is switched on. Live price per vehicle; those too small for the group grey themselves out. Two exits: WhatsApp with a pre-filled message, or through to the booking form with the simulation carried in the query string.</li>
+    <li><strong>Booking form.</strong> Optional package selector at the top, then trip details, then optional paid add-ons, then contact details. A live breakdown panel shows fare, night supplement, each add-on and the total.</li>
+    <li><strong>Submission.</strong> <code>POST /api/booking</code> validates with zod, recalculates the price server-side, stores the booking with its frozen breakdown, and fires two emails.</li>
+    <li><strong>Payment, if enabled.</strong> A pay button appears on the confirmation panel. <code>POST /api/checkout</code> opens a Stripe Checkout session using <em>only</em> the reference — the amount comes from the database.</li>
+    <li><strong>Confirmation.</strong> The Stripe webhook marks the booking paid and sends a receipt.</li>
+  </ol>
+
+  <h3>Emails</h3>
+  <table>
+    <tr><th style="width:28%">Email</th><th style="width:18%">Language</th><th>Contents</th></tr>
+    <tr><td>Driver notification</td><td>Always English</td><td>Full trip detail, the price breakdown, and contact details. Reply-To is the customer, so a plain reply reaches them</td></tr>
+    <tr><td>Customer acknowledgement</td><td>Their own</td><td>Reference, trip summary, breakdown line by line</td></tr>
+    <tr><td>Payment receipt</td><td>Their own</td><td>Reference and amount. A copy goes to the driver</td></tr>
+  </table>
+
+  <div class="box warn">
+    <span class="box-t">Four things that must not change</span>
+    <p style="margin-bottom:2mm"><strong>The webhook is the authority on payment</strong>, not the browser redirect. A customer who closes the tab after paying must still end up marked paid.</p>
+    <p style="margin-bottom:2mm"><strong>Email failure must never fail a booking.</strong> Sending is fire-and-forget behind <code>Promise.allSettled</code>: the request is already stored and visible in the admin even if SMTP is down.</p>
+    <p style="margin-bottom:2mm"><strong>The honeypot answers 200.</strong> The <code>website</code> field is accepted by the schema and silently discarded, so a bot learns nothing from the response.</p>
+    <p style="margin-bottom:0"><strong>Rate limiting is in-process</strong> and keyed on <code>x-forwarded-for</code> — 5 booking requests per IP per 10 minutes. It resets on restart, which is fine for spam but is <em>not</em> a security boundary. Behind several Node processes, move it to a shared store.</p>
+  </div>
+
+  <h3>Without SMTP configured</h3>
+  <p>
+    Mail falls back to console logging. The site stays fully usable in development and
+    bookings are still persisted — do not "fix" this by throwing.
+  </p>
+</section>
+
+<!-- ══════════════════ 9. ADMIN ══════════════════ -->
+<section>
+  <span class="sec-no">Section 9</span>
+  <h2>Admin back office</h2>
+
+  <p class="lead">
+    At <code>/admin</code>, English only and never translated. Excluded from the middleware
+    matcher, and <code>robots: noindex</code>. Session is a 12-hour HMAC-signed cookie scoped
+    to <code>/admin</code>; the password is <code>scrypt</code>-hashed in an env var.
+  </p>
+
+  <table>
+    <tr><th style="width:26%">Screen</th><th>Controls</th></tr>
+    <tr>
+      <td><strong>Bookings</strong><br><code>/admin</code></td>
+      <td>Every request, newest first, filterable by status. On a booking: change status, correct the price, write internal notes, reply via WhatsApp / phone / email. Also shows <strong>how the price was calculated</strong> — fare or package, night supplement, each add-on, total.</td>
+    </tr>
+    <tr>
+      <td><strong>Rates</strong><br><code>/admin/rates</code></td>
+      <td>The grid, as six space-separated prices per connection. Clearing a line removes the connection ("on request"); a form at the bottom adds one. A banner states the current night rule, because <strong>daytime prices go in here</strong> and the supplement is added on top.</td>
+    </tr>
+    <tr>
+      <td><strong>Packages &amp; add-ons</strong><br><code>/admin/packages</code></td>
+      <td>Full CRUD on both. Packages take a name, description, price, passenger cap and a night-supplement flag. Add-ons take a label, price, per-unit flag and quantity cap. Either can be deactivated rather than deleted.</td>
+    </tr>
+    <tr>
+      <td><strong>Settings</strong><br><code>/admin/settings</code></td>
+      <td>Night hours and percentage, with a live plain-language preview and a worked example. The Stripe switch and full/deposit mode. A read-only summary of the contact details, which live in <code>.env</code>.</td>
+    </tr>
+  </table>
+
+  <h3>Admin UX rules</h3>
+  <ul>
+    <li><strong>Every change is live immediately</strong>, in all 7 languages. Actions call <code>revalidatePath</code>; there is no publish step and there should not be one.</li>
+    <li><strong>Explain in plain words, not jargon.</strong> The settings screen says "Pickups from 22:00 in the evening through to 05:30 the next morning are charged +35 %. An €80 transfer becomes 108 €." The driver is not a developer and should never have to reason about a wrapping time window.</li>
+    <li><strong>Every action returns a visible result</strong> — "Rate grid saved.", "Package created." Silence reads as failure.</li>
+    <li><strong>Destructive actions confirm.</strong> Deleting a package or add-on asks first.</li>
+  </ul>
+
+  <div class="box">
+    <span class="box-t">Never expose a secret value</span>
+    <p style="margin-bottom:0">
+      The settings screen reports whether SMTP and Stripe are configured, never the values.
+      Any future admin surface must follow the same rule: report status, not secrets.
+    </p>
+  </div>
+</section>
+
+<!-- ══════════════════ 10. DATA ══════════════════ -->
+<section>
+  <span class="sec-no">Section 10</span>
+  <h2>Data model</h2>
+
+  <p class="lead">
+    Five tables in one SQLite file. The full annotated schema ships with the project at
+    <code>delivery/schema.sql</code>.
+  </p>
+
+  <table>
+    <tr><th style="width:24%">Table</th><th>Holds</th></tr>
+    <tr><td><code>bookings</code></td><td>Every quote request and booking, with its frozen price breakdown, payment status and internal notes</td></tr>
+    <tr><td><code>settings</code></td><td>Key/value: the Stripe switch and mode, the night window and percentage</td></tr>
+    <tr><td><code>rates</code></td><td>The grid — one row per connection, prices as a JSON array of six whole euros</td></tr>
+    <tr><td><code>packages</code></td><td>Driver-created fixed-price offers</td></tr>
+    <tr><td><code>extras</code></td><td>Driver-created paid add-ons</td></tr>
+  </table>
+
+  <h3>Conventions</h3>
+  <ul>
+    <li><strong>Money is in cents</strong>, as integers, everywhere except the rate grid, which is in whole euros. Never floats.</li>
+    <li><strong>Timestamps are ISO 8601 UTC</strong> strings.</li>
+    <li><strong>Slugs are generated</strong> from names and de-duplicated with a numeric suffix — two packages may legitimately share a name.</li>
+    <li><code>prices.ts</code> seeds the grid on first boot only. Read the live grid with <code>getRates()</code>, never the <code>RATES</code> constant.</li>
+  </ul>
+
+  <div class="box warn">
+    <span class="box-t">Migrations: SQLite has no ADD COLUMN IF NOT EXISTS</span>
+    <p>
+      New columns must be added through the guarded helper in <code>src/lib/db.ts</code>, which
+      checks <code>PRAGMA table_info</code> first. An existing <code>data/app.db</code> in
+      production has to survive every upgrade — and it holds the entire business. Any
+      deployment change that does not preserve that file loses every customer record.
+    </p>
+  </div>
+
+  <div class="box ok">
+    <span class="box-t">Backups</span>
+    <p style="margin-bottom:0">
+      The whole business is one file. It should be copied off the server on a schedule. This
+      is the single highest-value operational task on the project and it is worth confirming
+      it is actually running.
+    </p>
+  </div>
+</section>
+
+<!-- ══════════════════ 11. RULES ══════════════════ -->
+<section>
+  <span class="sec-no">Section 11</span>
+  <h2>Rules that must not be broken</h2>
+
+  <h3>Security</h3>
+  <ul>
+    <li>Prices shown to a visitor are <strong>always recalculated server-side</strong> before anything is stored or charged.</li>
+    <li>Stripe amounts come from <code>quoted_price_cents</code> in the database. The browser sends only a reference.</li>
+    <li><code>zod</code> validates every API input. No exceptions, including fields you believe are internal.</li>
+    <li>No secret is ever committed, logged or returned by an endpoint.</li>
+    <li><code>ADMIN_PASSWORD_HASH</code> uses <code>:</code> as its separator, not <code>$</code> — dotenv expands <code>$name</code> and would silently truncate the hash.</li>
+  </ul>
+
+  <h3>Internationalisation</h3>
+  <ul>
+    <li>Every visible string goes through the dictionary. Two exceptions only: the admin, and driver-typed package and add-on names.</li>
+    <li>Adding a key to <code>Dictionary</code> breaks the build until all seven languages have it. That is the feature — do not weaken the type to unblock yourself.</li>
+    <li>Phone, WhatsApp and email come from env vars, never hard-coded.</li>
+    <li>Keep the disclaimer in all languages: <em>"Independent service, not affiliated with The Walt Disney Company."</em></li>
+  </ul>
+
+  <h3>SEO</h3>
+  <ul>
+    <li>Every public page sets <code>title</code>, <code>description</code>, <code>canonical</code> and <code>alternates</code>.</li>
+    <li><code>hreflang</code> plus <code>x-default</code> are generated for every page.</li>
+    <li>The home page and route pages emit JSON-LD: <code>LocalBusiness</code>, <code>Service</code>, <code>FAQPage</code>.</li>
+  </ul>
+
+  <h3>Accessibility</h3>
+  <ul>
+    <li>A visible focus ring — 2px terracotta, 2px offset — on every interactive element. Never remove it.</li>
+    <li>A skip-to-content link opens every page.</li>
+    <li>Live price regions carry <code>aria-live="polite"</code>; toggle buttons carry <code>aria-pressed</code>.</li>
+    <li><code>prefers-reduced-motion</code> is honoured globally.</li>
+    <li>Wide tables scroll inside their own container; the page body never scrolls sideways.</li>
+  </ul>
+
+  <h3>Performance</h3>
+  <ul>
+    <li>Server Components by default; <code>"use client"</code> only where interaction demands it.</li>
+    <li>Public pages static with <code>revalidate = 3600</code>; admin writes revalidate immediately.</li>
+    <li>Only the booking page reads the query string, so the others stay statically rendered.</li>
+  </ul>
+</section>
+
+<!-- ══════════════════ 12. ENV ══════════════════ -->
+<section>
+  <span class="sec-no">Section 12</span>
+  <h2>Environment &amp; commands</h2>
+
+  <h3>Environment variables</h3>
+  <table>
+    <tr><th style="width:38%">Variable</th><th>Purpose</th></tr>
+    <tr><td><code>APP_URL</code></td><td>Public origin, used for canonicals and Stripe return URLs</td></tr>
+    <tr><td><code>SESSION_SECRET</code></td><td>Signs the admin session cookie. 32 characters minimum — required</td></tr>
+    <tr><td><code>ADMIN_EMAIL</code></td><td>The single admin login</td></tr>
+    <tr><td><code>ADMIN_PASSWORD_HASH</code></td><td>From <code>npm run admin:hash</code>. Paste unquoted</td></tr>
+    <tr><td><code>SMTP_HOST</code> <code>SMTP_PORT</code><br><code>SMTP_USER</code> <code>SMTP_PASS</code> <code>SMTP_SECURE</code></td><td>Mailbox. Leave <code>SMTP_HOST</code> empty to log to console instead</td></tr>
+    <tr><td><code>MAIL_FROM</code> <code>MAIL_TO</code></td><td>Sender identity, and where requests are delivered</td></tr>
+    <tr><td><code>STRIPE_SECRET_KEY</code><br><code>STRIPE_WEBHOOK_SECRET</code></td><td>Optional. Without them the admin's payment switch stays greyed out</td></tr>
+    <tr><td><code>NEXT_PUBLIC_PHONE</code><br><code>NEXT_PUBLIC_PHONE_DISPLAY</code><br><code>NEXT_PUBLIC_WHATSAPP</code><br><code>NEXT_PUBLIC_EMAIL</code></td><td>Public contact details, shown on every page</td></tr>
+    <tr><td><code>DATABASE_PATH</code></td><td>Optional. Defaults to <code>./data/app.db</code></td></tr>
+  </table>
+
+  <h3>Commands</h3>
+  <table>
+    <tr><th style="width:38%">Command</th><th>Does</th></tr>
+    <tr><td><code>npm run dev</code></td><td>Development server on :3000</td></tr>
+    <tr><td><code>npm run build</code></td><td>Production build</td></tr>
+    <tr><td><code>npm start</code></td><td>Production server</td></tr>
+    <tr><td><code>npm run lint</code></td><td>ESLint</td></tr>
+    <tr><td><code>npm run typecheck</code></td><td><code>tsc --noEmit</code></td></tr>
+    <tr><td><code>npm run admin:hash -- 'password'</code></td><td>Generates <code>ADMIN_PASSWORD_HASH</code></td></tr>
+  </table>
+
+  <h3>Before shipping any change</h3>
+  <p>
+    <code>npm run typecheck</code>, <code>npm run lint</code> and <code>npm run build</code>
+    must all pass. There is no automated test suite — that is the honest state of the project,
+    and it means the three commands above plus a manual pass through the booking flow are the
+    whole safety net.
+  </p>
+
+  <h3>Project documentation</h3>
+  <table>
+    <tr><th style="width:38%">File</th><th>Audience</th></tr>
+    <tr><td><code>CLAUDE.md</code></td><td>Developers and coding agents — authoritative</td></tr>
+    <tr><td><code>CLAUDE.fr.md</code></td><td>French translation of the above, for the client</td></tr>
+    <tr><td><code>delivery/INSTALLATION-GUIDE.md</code></td><td>The client — install, deploy, operate</td></tr>
+    <tr><td><code>delivery/GUIDE-INSTALLATION.md</code></td><td>French version of the same</td></tr>
+    <tr><td><code>delivery/schema.sql</code></td><td>Annotated database schema, with useful queries</td></tr>
+    <tr><td><code>project/*.dc.html</code></td><td>The original visual prototypes — authoritative for design</td></tr>
+  </table>
+</section>
+
+<!-- ══════════════════ 13. GAPS ══════════════════ -->
+<section>
+  <span class="sec-no">Section 13</span>
+  <h2>Known gaps</h2>
+
+  <p class="lead">
+    Stated plainly so they are decisions rather than surprises. None of these is a defect to
+    be quietly patched — each is a choice waiting on the client.
+  </p>
+
+  <table>
+    <tr><th style="width:32%">Gap</th><th>Detail</th></tr>
+    <tr>
+      <td><strong>Photography</strong></td>
+      <td>Every image is a hatched placeholder carrying a description of the intended shot. Vehicle exteriors, an arrivals meet-and-greet, and a driver portrait are needed. Mechanical to replace once supplied.</td>
+    </tr>
+    <tr>
+      <td><strong>Customer reviews</strong></td>
+      <td>The three review cards on the home page are reserved placeholders, not real testimonials. They must be replaced with genuine ones — or removed — before launch. Shipping invented reviews would be both dishonest and, in the EU, unlawful.</td>
+    </tr>
+    <tr>
+      <td><strong>Non-CDG fares</strong></td>
+      <td>Only the CDG connections use rates observed on the market. Every other connection was estimated on the same model and <strong>must be confirmed by the client</strong> before going live.</td>
+    </tr>
+    <tr>
+      <td><strong>Translation review</strong></td>
+      <td>The non-French translations were written by an assistant and have not been checked by a native speaker. Russian, Chinese and Japanese in particular should be reviewed before launch — including the newer pricing copy.</td>
+    </tr>
+    <tr>
+      <td><strong>No test suite</strong></td>
+      <td>There are no automated tests. The pricing engine is the obvious place to start: the night-window boundaries and the composition of packages with add-ons are pure functions and cheap to cover.</td>
+    </tr>
+    <tr>
+      <td><strong>Rate limiting is per-process</strong></td>
+      <td>Fine for one Node process. Behind several, or behind a CDN that changes the client IP, it needs to move to the database or a shared store.</td>
+    </tr>
+    <tr>
+      <td><strong>Package names are single-language</strong></td>
+      <td>By design, explained in section 6. If the client wants them translated, it needs a per-language name field on the packages and extras tables plus an admin UI for it.</td>
+    </tr>
+    <tr>
+      <td><strong>Legal pages</strong></td>
+      <td>French law requires <em>mentions légales</em>, CGV and a privacy notice for a VTC operator collecting personal data. None exist yet. This is a launch blocker, and the content has to come from the client or their accountant.</td>
+    </tr>
+  </table>
+
+  <div class="box dark">
+    <span class="box-t">If you read only one thing</span>
+    <p style="margin-bottom:2mm">
+      <strong>Prices are recalculated server-side, always.</strong> The browser is never
+      trusted with an amount.
+    </p>
+    <p style="margin-bottom:2mm">
+      <strong><code>data/app.db</code> is the entire business.</strong> Preserve it through
+      every deployment, and back it up.
+    </p>
+    <p style="margin-bottom:0">
+      <strong>The prototypes in <code>project/</code> win on anything visual.</strong>
+    </p>
+  </div>
+</section>
+
+</body>
+</html>

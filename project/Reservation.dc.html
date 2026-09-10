@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Bree+Serif&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>body{margin:0;background:#FBF6ED;font-family:'Nunito',sans-serif;color:#3A2E24}a{color:#B4552D}a:hover{color:#8F3F1E}input,select,textarea{font-family:'Nunito',sans-serif}</style>
+</helmet>
+<dc-import name="SiteHeader" active="" hint-size="100%,76px"></dc-import>
+
+<section style="background:#F6E9D8;padding:48px 24px">
+  <div style="max-width:1200px;margin:0 auto">
+    <h1 style="font-family:'Bree Serif',serif;font-size:38px;margin:0 0 10px">Réservez votre transfert</h1>
+    <p style="font-size:16px;color:#6B5641;margin:0;max-width:620px;line-height:1.7">Remplissez le formulaire : nous répondons avec un prix fixe garanti en quelques minutes. Ou plus rapide encore : WhatsApp ou téléphone.</p>
+  </div>
+</section>
+
+<section style="max-width:1200px;margin:0 auto;padding:48px 24px;display:grid;grid-template-columns:1.5fr 1fr;gap:40px;align-items:start">
+  <form style="background:#FFFDF9;border:1px solid #EBDFC9;border-radius:20px;padding:32px;display:flex;flex-direction:column;gap:20px" onSubmit="{{ submit }}">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <label style="display:flex;flex-direction:column;gap:6px;font-weight:700;font-size:14px">Départ
+        <select style="border:1px solid #EBDFC9;border-radius:10px;padding:12px;font-size:15px;background:#FBF6ED">
+          <option>Aéroport CDG</option><option>Aéroport Orly</option><option>Aéroport Beauvais</option><option>Disneyland Paris / hôtel Disney</option><option>Paris (adresse)</option><option>Autre</option>
+        </select>
+      </label>
+      <label style="display:flex;flex-direction:column;gap:6px;font-weight:700;font-size:14px">Arrivée
+        <select style="border:1px solid #EBDFC9;border-radius:10px;padding:12px;font-size:15px;background:#FBF6ED">
+          <option>Disneyland Paris / hôtel Disney</option><option>Aéroport CDG</option><option>Aéroport Orly</option><option>Aéroport Beauvais</option><option>Paris (adresse)</option><option>Château de Versailles</option><option>Excursion / journée (préciser en message)</option><option>Autre</option>
+        </select>
+      </label>
+      <label style="display:flex;flex-direction:column;gap:6px;font-weight:700;font-size:14px">Date
+        <input type="date" style="border:1px solid #EBDFC9;border-radius:10px;padding:12px;font-size:15px;background:#FBF6ED">
+      </label>
+      <label style="display:flex;flex-direction:column;gap:6px;font-weight:700;font-size:14px">Heure (vol ou prise en charge)
+        <input type="time" style="border:1px solid #EBDFC9;border-radius:10px;padding:12px;font-size:15px;background:#FBF6ED">
+      </label>
+      <label style="display:flex;flex-direction:column;gap:6px;font-weight:700;font-size:14px">Passagers
+        <select style="border:1px solid #EBDFC9;border-radius:10px;padding:12px;font-size:15px;background:#FBF6ED">
+          <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option>
+        </select>
+      </label>
+      <label style="display:flex;flex-direction:column;gap:6px;font-weight:700;font-size:14px">Bagages
+        <select style="border:1px solid #EBDFC9;border-radius:10px;padding:12px;font-size:15px;background:#FBF6ED">
+          <option>0–2</option><option>3–4</option><option>5–6</option><option>7 et plus</option>
+        </select>
+      </label>
+      <label style="display:flex;flex-direction:column;gap:6px;font-weight:700;font-size:14px">Véhicule souhaité
+        <select style="border:1px solid #EBDFC9;border-radius:10px;padding:12px;font-size:15px;background:#FBF6ED">
+          <option>Berline (1–4)</option><option>Van (5–8)</option><option>Premium Mercedes</option><option>Conseillez-moi</option>
+        </select>
+      </label>
+      <label style="display:flex;flex-direction:column;gap:6px;font-weight:700;font-size:14px">Sièges enfants
+        <select style="border:1px solid #EBDFC9;border-radius:10px;padding:12px;font-size:15px;background:#FBF6ED">
+          <option>Aucun</option><option>Siège bébé (0–12 mois)</option><option>Siège enfant (1–4 ans)</option><option>Rehausseur (4–10 ans)</option><option>Plusieurs (préciser en message)</option>
+        </select>
+      </label>
+      <label style="display:flex;flex-direction:column;gap:6px;font-weight:700;font-size:14px">Nº de vol (si aéroport)
+        <input type="text" placeholder="ex : AF 1234" style="border:1px solid #EBDFC9;border-radius:10px;padding:12px;font-size:15px;background:#FBF6ED">
+      </label>
+      <label style="display:flex;flex-direction:column;gap:6px;font-weight:700;font-size:14px">Nom complet
+        <input type="text" placeholder="Votre nom" style="border:1px solid #EBDFC9;border-radius:10px;padding:12px;font-size:15px;background:#FBF6ED">
+      </label>
+      <label style="display:flex;flex-direction:column;gap:6px;font-weight:700;font-size:14px">Email
+        <input type="email" placeholder="vous@email.com" style="border:1px solid #EBDFC9;border-radius:10px;padding:12px;font-size:15px;background:#FBF6ED">
+      </label>
+      <label style="display:flex;flex-direction:column;gap:6px;font-weight:700;font-size:14px">Téléphone / WhatsApp
+        <input type="tel" placeholder="+33 …" style="border:1px solid #EBDFC9;border-radius:10px;padding:12px;font-size:15px;background:#FBF6ED">
+      </label>
+    </div>
+    <label style="display:flex;flex-direction:column;gap:6px;font-weight:700;font-size:14px">Message (adresse précise, retour, demandes particulières…)
+      <textarea rows="3" style="border:1px solid #EBDFC9;border-radius:10px;padding:12px;font-size:15px;background:#FBF6ED;resize:vertical"></textarea>
+    </label>
+    <button type="submit" style="background:#B4552D;color:#FFFDF9;font-weight:800;font-size:17px;padding:15px;border:none;border-radius:999px;cursor:pointer;font-family:'Nunito',sans-serif" style-hover="background:#8F3F1E">Envoyer ma demande de devis</button>
+    <sc-if value="{{ sent }}" hint-placeholder-val="{{ false }}">
+      <div style="background:#E8F0DC;border:1px solid #B7CC96;border-radius:12px;padding:14px 18px;font-weight:700;color:#4A632;font-size:15px">✓ Demande envoyée ! Nous revenons vers vous très vite avec votre prix fixe.</div>
+    </sc-if>
+    <p style="margin:0;font-size:13px;color:#9B8468">Devis gratuit, sans engagement — <strong style="color:#B4552D">réponse sous 2 h</strong>. Annulation gratuite jusqu'à 24 h avant le transfert.</p>
+  </form>
+
+  <div style="display:flex;flex-direction:column;gap:16px;position:sticky;top:96px">
+    <a href="https://wa.me/33781662122" style="text-decoration:none;background:#3A2E24;color:#FFFDF9;border-radius:18px;padding:24px;display:flex;flex-direction:column;gap:6px" style-hover="background:#524334">
+      <span style="font-weight:800;font-size:18px">💬 WhatsApp</span>
+      <span style="font-size:14px;color:#C9B79E">Le plus rapide — envoyez votre trajet, recevez le prix en direct.</span>
+    </a>
+    <a href="tel:+33781662122" style="text-decoration:none;background:#FFFDF9;border:1px solid #EBDFC9;color:#3A2E24;border-radius:18px;padding:24px;display:flex;flex-direction:column;gap:6px" style-hover="border-color:#B4552D">
+      <span style="font-weight:800;font-size:18px">📞 07 81 66 21 22</span>
+      <span style="font-size:14px;color:#6B5641">7 j/7, 24 h/24 — français & english spoken.</span>
+    </a>
+    <div style="background:#F6E9D8;border-radius:18px;padding:24px">
+      <div style="font-weight:800;font-size:15px;margin-bottom:10px">Toujours inclus</div>
+      <div style="display:flex;flex-direction:column;gap:7px;font-size:14px;color:#6B5641">
+        <span>✓ Suivi du vol & attente</span><span>✓ Accueil pancarte</span><span>✓ Sièges enfants offerts</span><span>✓ Péages inclus, prix fixe</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<dc-import name="SiteFooter" hint-size="100%,420px"></dc-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { sent: false };
+  renderVals() {
+    return {
+      sent: this.state.sent,
+      submit: (e) => { e.preventDefault(); this.setState({sent: true}); },
+    };
+  }
+}
+</script>
+</body>
+</html>

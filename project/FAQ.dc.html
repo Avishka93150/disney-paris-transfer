@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Bree+Serif&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>body{margin:0;background:#FBF6ED;font-family:'Nunito',sans-serif;color:#3A2E24}a{color:#B4552D}a:hover{color:#8F3F1E}</style>
+</helmet>
+<dc-import name="SiteHeader" active="faq" hint-size="100%,76px"></dc-import>
+
+<section style="background:#F6E9D8;padding:56px 24px">
+  <div style="max-width:900px;margin:0 auto">
+    <h1 style="font-family:'Bree Serif',serif;font-size:40px;margin:0 0 12px">Questions fréquentes</h1>
+    <p style="font-size:17px;color:#6B5641;margin:0;line-height:1.7">Tout ce qu'il faut savoir avant de réserver votre transfert aéroport ↔ Disneyland Paris.</p>
+  </div>
+</section>
+
+<section style="max-width:900px;margin:0 auto;padding:56px 24px;display:flex;flex-direction:column;gap:12px">
+  <sc-for list="{{ faq }}" as="q" hint-placeholder-count="10">
+    <details style="background:#FFFDF9;border:1px solid #EBDFC9;border-radius:14px;padding:18px 22px">
+      <summary style="font-weight:800;font-size:17px;cursor:pointer">{{ q.q }}</summary>
+      <p style="margin:12px 0 0;color:#6B5641;font-size:15px;line-height:1.75">{{ q.a }}</p>
+    </details>
+  </sc-for>
+  <div style="text-align:center;margin-top:24px">
+    <p style="color:#6B5641;font-size:16px;margin:0 0 16px">Une autre question ?</p>
+    <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap">
+      <a href="https://wa.me/33781662122" style="text-decoration:none;background:#B4552D;color:#FFFDF9;font-weight:800;font-size:16px;padding:13px 26px;border-radius:999px" style-hover="background:#8F3F1E">Demander sur WhatsApp</a>
+      <a href="tel:+33781662122" style="text-decoration:none;background:#FFFDF9;border:2px solid #B4552D;color:#B4552D;font-weight:800;font-size:16px;padding:11px 22px;border-radius:999px" style-hover="background:#F6E9D8">📞 07 81 66 21 22</a>
+    </div>
+  </div>
+</section>
+
+<dc-import name="SiteFooter" hint-size="100%,420px"></dc-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    return { faq: [
+      {q:'Comment est calculé le prix de mon transfert ?', a:'Le prix est fixe et confirmé avant la réservation. Il dépend du nombre de passagers, du nombre de bagages et du véhicule choisi (berline, van ou premium). Péages, attente et sièges enfants sont toujours inclus.'},
+      {q:'Que se passe-t-il si mon vol est retardé ?', a:'Nous suivons votre numéro de vol en temps réel. Votre chauffeur adapte l\u2019heure de prise en charge automatiquement, sans frais supplémentaires, même la nuit.'},
+      {q:'Où retrouve-t-on le chauffeur à l\u2019aéroport ?', a:'À la sortie des arrivées de votre terminal, avec une pancarte à votre nom. Vous recevez son numéro de téléphone par SMS ou WhatsApp avant votre atterrissage.'},
+      {q:'Les sièges enfants sont-ils fournis ?', a:'Oui, gratuitement. Indiquez l\u2019âge de vos enfants à la réservation : siège bébé, cosy ou rehausseur seront installés avant la prise en charge.'},
+      {q:'Combien de personnes et de bagages pouvez-vous transporter ?', a:'Jusqu\u2019à 4 passagers et 3 bagages en berline, jusqu\u2019à 8 passagers et 8 bagages en van. Poussettes et équipements bienvenus — signalez-les au devis.'},
+      {q:'Comment payer ?', a:'Carte bancaire à bord, espèces, ou lien de paiement à l\u2019avance. Aucun acompte n\u2019est demandé pour la plupart des trajets.'},
+      {q:'Puis-je annuler ou modifier ma réservation ?', a:'Oui, gratuitement jusqu\u2019à 24 h avant le transfert. Contactez-nous simplement par WhatsApp ou téléphone.'},
+      {q:'Le chauffeur parle-t-il anglais ?', a:'Oui — français et anglais. Nous accueillons régulièrement des familles venues du monde entier pour Disneyland Paris.'},
+      {q:'Desservez-vous tous les hôtels Disney et partenaires ?', a:'Oui : hôtels Disney (Disneyland Hotel, Newport Bay, Sequoia, Cheyenne, Santa Fe, Davy Crockett Ranch), hôtels partenaires de Val d\u2019Europe, Magny-le-Hongre, Bailly-Romainvilliers et Serris.'},
+      {q:'Faites-vous d\u2019autres trajets que Disney ?', a:'Oui : transferts CDG/Orly/Beauvais ↔ Paris, gares parisiennes, excursions Versailles, et mise à disposition à l\u2019heure. Demandez un devis.'},
+      {q:'Le service fonctionne-t-il la nuit et les jours fériés ?', a:'Oui, 7 j/7 et 24 h/24, y compris pour les vols très matinaux ou tardifs. Réservez à l\u2019avance pour garantir la disponibilité.'},
+    ]};
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Bree+Serif&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>body{margin:0;background:#FBF6ED;font-family:'Nunito',sans-serif;color:#3A2E24}a{color:#B4552D}a:hover{color:#8F3F1E}</style>
+</helmet>
+<dc-import name="SiteHeader" active="trajets" hint-size="100%,76px"></dc-import>
+
+<section style="background:#F6E9D8;padding:56px 24px">
+  <div style="max-width:1200px;margin:0 auto">
+    <h1 style="font-family:'Bree Serif',serif;font-size:40px;margin:0 0 12px">Tous nos trajets</h1>
+    <p style="font-size:17px;color:#6B5641;margin:0;max-width:640px;line-height:1.7">Transferts privés entre les aéroports parisiens, Paris et Disneyland Paris. Prix fixe confirmé au devis, selon nombre de passagers, bagages et véhicule choisi.</p>
+  </div>
+</section>
+
+<section style="max-width:1200px;margin:0 auto;padding:56px 24px;display:flex;flex-direction:column;gap:20px">
+  <sc-for list="{{ routes }}" as="r" hint-placeholder-count="7">
+    <div style="background:#FFFDF9;border:1px solid #EBDFC9;border-radius:18px;padding:28px;display:grid;grid-template-columns:1.4fr 1fr auto;gap:24px;align-items:center">
+      <div>
+        <h2 style="font-family:'Bree Serif',serif;font-size:22px;margin:0 0 8px">{{ r.title }}</h2>
+        <p style="margin:0;color:#6B5641;font-size:15px;line-height:1.6">{{ r.desc }}</p>
+      </div>
+      <div style="display:flex;gap:20px;font-size:14px;font-weight:700;color:#6B5641">
+        <span>🕐 {{ r.time }}</span><span>📍 {{ r.dist }}</span>
+      </div>
+      <div style="display:flex;gap:10px">
+        <a href="{{ r.href }}" style="text-decoration:none;background:#B4552D;color:#FFFDF9;font-weight:800;font-size:14px;padding:11px 20px;border-radius:999px;white-space:nowrap" style-hover="background:#8F3F1E">{{ r.cta }}</a>
+      </div>
+    </div>
+  </sc-for>
+  <p style="color:#6B5641;font-size:15px;text-align:center;margin:16px 0 0">Autre destination ? <a href="https://wa.me/33781662122" style="font-weight:800">Demandez sur WhatsApp</a> — nous couvrons toute l'Île-de-France.</p>
+</section>
+
+<dc-import name="SiteFooter" hint-size="100%,420px"></dc-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    return { routes: [
+      {title:'Aéroport Roissy CDG ↔ Disneyland Paris', time:'≈ 45 min', dist:'≈ 60 km', desc:'Notre trajet le plus demandé. Accueil pancarte à la sortie des arrivées, dépose directe à votre hôtel Disney ou partenaire.', href:'TransfertCDGDisney.dc.html', cta:'Voir ce trajet'},
+      {title:'Aéroport Orly ↔ Disneyland Paris', time:'≈ 50 min', dist:'≈ 50 km', desc:'Prise en charge à Orly 1-2-3-4, trajet direct par l\u2019A86/A4 jusqu\u2019à Marne-la-Vallée.', href:'Reservation.dc.html', cta:'Demander un devis'},
+      {title:'Aéroport Beauvais ↔ Disneyland Paris', time:'≈ 1 h 30', dist:'≈ 120 km', desc:'Évitez les 2 navettes et le RER : trajet direct porte à porte depuis Beauvais-Tillé.', href:'Reservation.dc.html', cta:'Demander un devis'},
+      {title:'Paris ↔ Disneyland Paris', time:'≈ 45 min', dist:'≈ 45 km', desc:'De votre hôtel ou adresse à Paris jusqu\u2019aux parcs ou hôtels Disney, à l\u2019heure qui vous arrange.', href:'Reservation.dc.html', cta:'Demander un devis'},
+      {title:'Aéroport CDG / Orly ↔ Paris', time:'≈ 40 min', dist:'≈ 25–35 km', desc:'Transfert privé entre les aéroports et votre adresse à Paris, sans attente ni surprise.', href:'Reservation.dc.html', cta:'Demander un devis'},
+      {title:'Paris ↔ Aéroport Beauvais', time:'≈ 1 h 15', dist:'≈ 85 km', desc:'Départ de votre adresse à Paris, dépose devant le terminal de Beauvais-Tillé.', href:'Reservation.dc.html', cta:'Demander un devis'},
+      {title:'Excursion Versailles & Paris', time:'À la journée', dist:'Sur mesure', desc:'Château de Versailles, tour de Paris, mise à disposition à l\u2019heure ou à la journée avec chauffeur.', href:'Reservation.dc.html', cta:'Demander un devis'},
+    ]};
+  }
+}
+</script>
+</body>
+</html>

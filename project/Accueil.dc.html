@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Bree+Serif&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+<style>body{margin:0;background:#FBF6ED;font-family:'Nunito',sans-serif;color:#3A2E24}a{color:#B4552D}a:hover{color:#8F3F1E}</style>
+</helmet>
+<dc-import name="SiteHeader" active="accueil" show-flags="{{ showFlags }}" hint-size="100%,76px"></dc-import>
+
+<section style="background:linear-gradient(180deg,#FBF6ED 0%,#F6E9D8 100%)">
+  <div style="max-width:1200px;margin:0 auto;padding:72px 24px 64px;display:grid;grid-template-columns:1.1fr 1fr;gap:56px;align-items:center">
+    <div>
+      <div style="display:inline-block;background:#FFFDF9;border:1px solid #EBDFC9;border-radius:999px;padding:7px 16px;font-size:13px;font-weight:800;color:#B4552D;margin-bottom:20px">Spécialiste des transferts Disneyland® Paris</div>
+      <h1 style="font-family:'Bree Serif',serif;font-size:46px;line-height:1.15;margin:0 0 18px;text-wrap:pretty">Votre chauffeur privé entre les aéroports de Paris et Disneyland Paris</h1>
+      <p style="font-size:18px;line-height:1.7;color:#6B5641;margin:0 0 28px;max-width:520px;text-wrap:pretty">Transferts CDG, Orly, Beauvais et Paris en berline ou van premium. Suivi de votre vol, accueil avec pancarte, sièges enfants offerts — commencez vos vacances dès l'aéroport.</p>
+      <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:28px">
+        <a href="Reservation.dc.html" style="text-decoration:none;background:#B4552D;color:#FFFDF9;font-weight:800;font-size:17px;padding:15px 30px;border-radius:999px" style-hover="background:#8F3F1E">Réserver mon transfert</a>
+        <a href="https://wa.me/33781662122" style="text-decoration:none;background:#FFFDF9;border:2px solid #B4552D;color:#B4552D;font-weight:800;font-size:17px;padding:13px 26px;border-radius:999px" style-hover="background:#F6E9D8">Devis WhatsApp immédiat</a>
+      </div>
+      <div style="display:flex;gap:24px;flex-wrap:wrap;font-size:14px;font-weight:700;color:#6B5641">
+        <span>✓ Annulation gratuite</span><span>✓ Suivi des vols</span><span>✓ Paiement CB à bord</span><span>✓ 7 j/7 · 24 h/24</span>
+      </div>
+    </div>
+    <div style="background:#FFFDF9;border:1px solid #EBDFC9;border-radius:24px;box-shadow:0 24px 48px -20px rgba(58,46,36,.35);padding:28px;display:flex;flex-direction:column;gap:16px">
+      <div style="font-family:'Bree Serif',serif;font-size:22px">Votre prix en direct</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <label style="display:flex;flex-direction:column;gap:5px;font-weight:700;font-size:13px">Départ
+          <select value="{{ from }}" onChange="{{ setFrom }}" style="border:1px solid #EBDFC9;border-radius:10px;padding:11px;font-size:14px;background:#FBF6ED;font-family:'Nunito',sans-serif">
+            <option value="cdg">Aéroport CDG</option><option value="orly">Aéroport Orly</option><option value="beauvais">Aéroport Beauvais</option><option value="paris">Paris</option><option value="disney">Disneyland Paris</option><option value="versailles">Château de Versailles</option><option value="ladefense">La Défense</option><option value="valeurope">Val d'Europe</option>
+          </select>
+        </label>
+        <label style="display:flex;flex-direction:column;gap:5px;font-weight:700;font-size:13px">Arrivée
+          <select value="{{ to }}" onChange="{{ setTo }}" style="border:1px solid #EBDFC9;border-radius:10px;padding:11px;font-size:14px;background:#FBF6ED;font-family:'Nunito',sans-serif">
+            <option value="disney">Disneyland Paris</option><option value="cdg">Aéroport CDG</option><option value="orly">Aéroport Orly</option><option value="beauvais">Aéroport Beauvais</option><option value="paris">Paris</option><option value="versailles">Château de Versailles</option><option value="ladefense">La Défense</option><option value="valeurope">Val d'Europe</option>
+          </select>
+        </label>
+        <label style="display:flex;flex-direction:column;gap:5px;font-weight:700;font-size:13px">Passagers
+          <select value="{{ pax }}" onChange="{{ setPax }}" style="border:1px solid #EBDFC9;border-radius:10px;padding:11px;font-size:14px;background:#FBF6ED;font-family:'Nunito',sans-serif">
+            <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option>
+          </select>
+        </label>
+        <label style="display:flex;flex-direction:column;gap:5px;font-weight:700;font-size:13px">Trajet
+          <select value="{{ trip }}" onChange="{{ setTrip }}" style="border:1px solid #EBDFC9;border-radius:10px;padding:11px;font-size:14px;background:#FBF6ED;font-family:'Nunito',sans-serif">
+            <option value="ow">Aller simple</option><option value="rt">Aller-retour</option>
+          </select>
+        </label>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:5px">
+        <span style="font-weight:700;font-size:13px">Véhicule</span>
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">
+          <sc-for list="{{ vehicleOpts }}" as="v" hint-placeholder-count="4">
+            <button onClick="{{ v.pick }}" disabled="{{ v.disabled }}" style="border:2px solid {{ v.border }};background:{{ v.bg }};border-radius:12px;padding:9px 12px;cursor:{{ v.cursor }};text-align:left;font-family:'Nunito',sans-serif;opacity:{{ v.opacity }}">
+              <div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline">
+                <span style="font-weight:800;font-size:13px;color:#3A2E24">{{ v.label }}</span>
+                <span style="font-weight:800;font-size:13px;color:#B4552D;white-space:nowrap">{{ v.price }}</span>
+              </div>
+              <div style="font-size:11px;color:#8F7455;font-weight:700">{{ v.desc }}</div>
+            </button>
+          </sc-for>
+        </div>
+      </div>
+      <div style="background:#F6E9D8;border-radius:14px;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px">
+        <div>
+          <div style="font-size:13px;font-weight:700;color:#6B5641">{{ vehicleLabel }}</div>
+          <div style="font-family:'Bree Serif',serif;font-size:30px;color:#B4552D">{{ priceLabel }}</div>
+        </div>
+        <div style="font-size:12px;color:#8F7455;max-width:150px;text-align:right;line-height:1.5">Prix fixe — péages, bagages et sièges enfants inclus</div>
+      </div>
+      <div style="display:flex;gap:10px">
+        <a href="{{ waLink }}" style="text-decoration:none;flex:1;text-align:center;background:#B4552D;color:#FFFDF9;font-weight:800;font-size:15px;padding:13px;border-radius:999px" style-hover="background:#8F3F1E">Confirmer sur WhatsApp</a>
+        <a href="Reservation.dc.html" style="text-decoration:none;flex:1;text-align:center;background:#FFFDF9;border:2px solid #B4552D;color:#B4552D;font-weight:800;font-size:15px;padding:11px;border-radius:999px" style-hover="background:#F6E9D8">Réserver</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section style="max-width:1200px;margin:0 auto;padding:72px 24px">
+  <h2 style="font-family:'Bree Serif',serif;font-size:32px;margin:0 0 8px">Nos trajets les plus demandés</h2>
+  <p style="color:#6B5641;font-size:16px;margin:0 0 32px">Prix fixe confirmé à la réservation, selon passagers, bagages et véhicule.</p>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px">
+    <sc-for list="{{ routes }}" as="r" hint-placeholder-count="6">
+      <a href="{{ r.href }}" style="text-decoration:none;background:#FFFDF9;border:1px solid #EBDFC9;border-radius:18px;padding:24px;display:flex;flex-direction:column;gap:10px" style-hover="border-color:#B4552D;box-shadow:0 12px 24px -14px rgba(58,46,36,.3)">
+        <div style="font-family:'Bree Serif',serif;font-size:20px;color:#3A2E24">{{ r.title }}</div>
+        <div style="display:flex;gap:14px;font-size:14px;color:#6B5641;font-weight:700"><span>🕐 {{ r.time }}</span><span>📍 {{ r.dist }}</span></div>
+        <div style="font-size:14px;color:#B4552D;font-weight:800">Voir ce trajet →</div>
+      </a>
+    </sc-for>
+  </div>
+</section>
+
+<section style="background:#FFFDF9;border-top:1px solid #EBDFC9;border-bottom:1px solid #EBDFC9">
+  <div style="max-width:1200px;margin:0 auto;padding:72px 24px">
+    <h2 style="font-family:'Bree Serif',serif;font-size:32px;margin:0 0 32px;text-align:center">Réserver, c'est simple</h2>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:32px">
+      <div style="text-align:center;display:flex;flex-direction:column;gap:10px;align-items:center">
+        <div style="width:56px;height:56px;border-radius:50%;background:#F6E9D8;color:#B4552D;font-family:'Bree Serif',serif;font-size:24px;display:flex;align-items:center;justify-content:center">1</div>
+        <div style="font-weight:800;font-size:18px">Demandez votre devis</div>
+        <p style="margin:0;color:#6B5641;font-size:15px;line-height:1.6">Par formulaire, WhatsApp ou téléphone. Réponse en quelques minutes avec un prix fixe garanti.</p>
+      </div>
+      <div style="text-align:center;display:flex;flex-direction:column;gap:10px;align-items:center">
+        <div style="width:56px;height:56px;border-radius:50%;background:#F6E9D8;color:#B4552D;font-family:'Bree Serif',serif;font-size:24px;display:flex;align-items:center;justify-content:center">2</div>
+        <div style="font-weight:800;font-size:18px">On vous attend</div>
+        <p style="margin:0;color:#6B5641;font-size:15px;line-height:1.6">Votre chauffeur suit votre vol et vous accueille avec une pancarte à votre nom, même en cas de retard.</p>
+      </div>
+      <div style="text-align:center;display:flex;flex-direction:column;gap:10px;align-items:center">
+        <div style="width:56px;height:56px;border-radius:50%;background:#F6E9D8;color:#B4552D;font-family:'Bree Serif',serif;font-size:24px;display:flex;align-items:center;justify-content:center">3</div>
+        <div style="font-weight:800;font-size:18px">Profitez du voyage</div>
+        <p style="margin:0;color:#6B5641;font-size:15px;line-height:1.6">Eau fraîche, chargeurs, sièges enfants installés. Paiement en espèces ou CB à bord.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section style="max-width:1200px;margin:0 auto;padding:72px 24px;display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center">
+  <div style="border-radius:24px;overflow:hidden;aspect-ratio:4/3;background:repeating-linear-gradient(45deg,#F0E2CC,#F0E2CC 14px,#E7D5B8 14px,#E7D5B8 28px);display:flex;align-items:center;justify-content:center">
+    <span style="font-family:monospace;font-size:14px;color:#8F7455;background:#FFFDF9;padding:8px 14px;border-radius:8px">photo : intérieur du véhicule / sièges enfants</span>
+  </div>
+  <div>
+    <h2 style="font-family:'Bree Serif',serif;font-size:32px;margin:0 0 24px">Pensé pour les familles</h2>
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <sc-for list="{{ services }}" as="s" hint-placeholder-count="6">
+        <div style="display:flex;gap:14px;align-items:flex-start">
+          <div style="width:34px;height:34px;border-radius:10px;background:#F6E9D8;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">{{ s.icon }}</div>
+          <div><span style="font-weight:800">{{ s.title }}</span> <span style="color:#6B5641">— {{ s.text }}</span></div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+</section>
+
+<section style="background:#F6E9D8">
+  <div style="max-width:1200px;margin:0 auto;padding:72px 24px">
+    <h2 style="font-family:'Bree Serif',serif;font-size:32px;margin:0 0 8px">Une flotte adaptée à votre groupe</h2>
+    <p style="color:#6B5641;font-size:16px;margin:0 0 32px">Le tarif dépend du véhicule, du nombre de passagers et des bagages — indiquez tout au devis.</p>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px">
+      <sc-for list="{{ fleet }}" as="v" hint-placeholder-count="3">
+        <div style="background:#FFFDF9;border-radius:18px;padding:24px;display:flex;flex-direction:column;gap:12px">
+          <div style="border-radius:12px;aspect-ratio:16/9;background:repeating-linear-gradient(45deg,#F0E2CC,#F0E2CC 12px,#E7D5B8 12px,#E7D5B8 24px);display:flex;align-items:center;justify-content:center">
+            <span style="font-family:monospace;font-size:12px;color:#8F7455">{{ v.photo }}</span>
+          </div>
+          <div style="font-family:'Bree Serif',serif;font-size:20px">{{ v.name }}</div>
+          <div style="display:flex;gap:14px;font-size:14px;font-weight:700;color:#6B5641"><span>👤 {{ v.pax }}</span><span>🧳 {{ v.bags }}</span></div>
+          <p style="margin:0;color:#6B5641;font-size:14px;line-height:1.6">{{ v.desc }}</p>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+</section>
+
+<section style="max-width:1200px;margin:0 auto;padding:72px 24px">
+  <h2 style="font-family:'Bree Serif',serif;font-size:32px;margin:0 0 8px;text-align:center">Ils ont voyagé avec nous</h2>
+  <p style="color:#6B5641;font-size:15px;margin:0 0 32px;text-align:center;font-family:monospace">— vos avis Google / TripAdvisor viendront ici —</p>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px">
+    <sc-for list="{{ reviews }}" as="rv" hint-placeholder-count="3">
+      <div style="background:#FFFDF9;border:1px solid #EBDFC9;border-radius:18px;padding:24px;display:flex;flex-direction:column;gap:12px">
+        <div style="color:#D9A441;font-size:16px;letter-spacing:2px">★★★★★</div>
+        <p style="margin:0;color:#6B5641;font-size:15px;line-height:1.6;font-style:italic">{{ rv.text }}</p>
+        <div style="font-weight:800;font-size:14px">{{ rv.name }}</div>
+      </div>
+    </sc-for>
+  </div>
+</section>
+
+<section style="background:#3A2E24">
+  <div style="max-width:900px;margin:0 auto;padding:64px 24px;text-align:center">
+    <h2 style="font-family:'Bree Serif',serif;font-size:34px;color:#FFFDF9;margin:0 0 14px">Prêt pour la magie ? Réservez votre transfert.</h2>
+    <p style="color:#C9B79E;font-size:17px;margin:0 0 28px">Devis gratuit et sans engagement, réponse en quelques minutes.</p>
+    <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap">
+      <a href="Reservation.dc.html" style="text-decoration:none;background:#D9A441;color:#3A2E24;font-weight:800;font-size:17px;padding:15px 30px;border-radius:999px" style-hover="background:#C4902F">Réserver en ligne</a>
+      <a href="tel:+33781662122" style="text-decoration:none;border:2px solid #D9A441;color:#D9A441;font-weight:800;font-size:17px;padding:13px 26px;border-radius:999px" style-hover="background:#524334">📞 07 81 66 21 22</a>
+    </div>
+  </div>
+</section>
+
+<dc-import name="SiteFooter" hint-size="100%,420px"></dc-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;langFlags&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;En-tête&quot;}}">
+class Component extends DCLogic {
+  state = { from: 'cdg', to: 'disney', pax: '2', trip: 'ow', vehicle: 'berline', P: null };
+  componentDidMount() { import('./prices.js').then(P => this.setState({P})); }
+  renderVals() {
+    const {from, to, pax, trip, vehicle, P} = this.state;
+    const paxN = parseInt(pax, 10);
+    let vehicleLabel = '—', priceLabel = 'Sur devis', names = {}, vehicleOpts = [], vehName = '';
+    if (P) {
+      names = P.ZONES;
+      const rate = from === to ? null : P.findRate(from, to);
+      const ow = rate ? rate[P.tierIndex(paxN)] : null;
+      // Sélection auto d'un véhicule compatible avec le nombre de passagers
+      let sel = P.VEHICLES.find(v => v.id === vehicle);
+      if (!sel || sel.maxPax < paxN) sel = P.VEHICLES.find(v => v.maxPax >= paxN);
+      vehName = sel ? sel.label : '';
+      vehicleOpts = P.VEHICLES.map(v => {
+        const fits = v.maxPax >= paxN;
+        const p = ow != null && fits ? Math.round(ow * v.mult) * (trip === 'rt' ? 2 : 1) : null;
+        const active = sel && v.id === sel.id;
+        return {
+          label: v.label.split(' — ')[0], desc: v.desc,
+          price: !fits ? '—' : (p != null ? p + ' €' : 'Devis'),
+          pick: () => fits && this.setState({vehicle: v.id}),
+          disabled: !fits, cursor: fits ? 'pointer' : 'not-allowed', opacity: fits ? '1' : '.45',
+          border: active ? '#B4552D' : '#EBDFC9', bg: active ? '#F6E9D8' : '#FFFDF9',
+        };
+      });
+      if (from === to) { vehicleLabel = 'Choisissez deux lieux différents'; }
+      else if (ow != null && sel) {
+        const price = Math.round(ow * sel.mult) * (trip === 'rt' ? 2 : 1);
+        vehicleLabel = sel.label + (trip === 'rt' ? ' · aller-retour' : '');
+        priceLabel = price + ' €';
+      } else { vehicleLabel = 'Trajet sur mesure — réponse sous 2 h'; }
+    }
+    const waMsg = encodeURIComponent(`Bonjour, je souhaite réserver : ${names[from] || from} → ${names[to] || to}, ${pax} passager(s), ${vehName}, ${trip === 'rt' ? 'aller-retour' : 'aller simple'}.`);
+    return {
+      from, to, pax, trip, vehicleOpts, vehicleLabel, priceLabel,
+      waLink: 'https://wa.me/33781662122?text=' + waMsg,
+      setFrom: e => this.setState({from: e.target.value}),
+      setTo: e => this.setState({to: e.target.value}),
+      setPax: e => this.setState({pax: e.target.value}),
+      setTrip: e => this.setState({trip: e.target.value}),
+      showFlags: this.props.langFlags ?? true,
+      routes: [
+        {title:'Aéroport CDG ↔ Disneyland Paris', time:'≈ 45 min', dist:'≈ 60 km', href:'TransfertCDGDisney.dc.html'},
+        {title:'Aéroport Orly ↔ Disneyland Paris', time:'≈ 50 min', dist:'≈ 50 km', href:'Trajets.dc.html'},
+        {title:'Aéroport Beauvais ↔ Disneyland Paris', time:'≈ 1 h 30', dist:'≈ 120 km', href:'Trajets.dc.html'},
+        {title:'Paris ↔ Disneyland Paris', time:'≈ 45 min', dist:'≈ 45 km', href:'Trajets.dc.html'},
+        {title:'CDG / Orly ↔ Paris', time:'≈ 40 min', dist:'≈ 25–35 km', href:'Trajets.dc.html'},
+        {title:'Excursions : Versailles, Mont Saint-Michel…', time:'À la journée', dist:'Devis sous 2 h', href:'Tarifs.dc.html'},
+      ],
+      services: [
+        {icon:'✈️', title:'Suivi des vols', text:"votre chauffeur adapte l'heure de prise en charge en cas de retard, sans frais."},
+        {icon:'🪧', title:'Accueil pancarte', text:"à la sortie des arrivées, avec votre nom, aide aux bagages incluse."},
+        {icon:'👶', title:'Sièges enfants offerts', text:'cosy, rehausseur ou siège bébé, installés avant votre arrivée.'},
+        {icon:'💳', title:'Paiement flexible', text:'CB à bord, espèces ou lien de paiement — au choix.'},
+        {icon:'🗓️', title:'Annulation gratuite', text:"jusqu'à 24 h avant le transfert, sans justification."},
+        {icon:'💧', title:'Confort à bord', text:'eau fraîche, chargeurs, wifi, chauffeur francophone et anglophone.'},
+      ],
+      fleet: [
+        {name:'Berline', pax:'1–4 passagers', bags:'3 bagages', desc:'Idéale pour un couple ou une petite famille. Confort et discrétion.', photo:'photo : berline'},
+        {name:'Van', pax:'5–8 passagers', bags:'8 bagages', desc:'Parfait pour les familles nombreuses et les groupes avec poussettes.', photo:'photo : van'},
+        {name:'Premium — Mercedes Classe E / S', pax:'1–3 passagers', bags:'3 bagages', desc:'Pour un trajet haut de gamme : cuir, silence, service attentionné.', photo:'photo : Mercedes'},
+      ],
+      reviews: [
+        {name:'— Avis Google nº1', text:'Emplacement réservé : collez ici un avis client réel (Google ou TripAdvisor).'},
+        {name:'— Avis Google nº2', text:'Emplacement réservé : collez ici un avis client réel (Google ou TripAdvisor).'},
+        {name:'— Avis TripAdvisor nº1', text:'Emplacement réservé : collez ici un avis client réel (Google ou TripAdvisor).'},
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

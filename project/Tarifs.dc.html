@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Bree+Serif&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>body{margin:0;background:#FBF6ED;font-family:'Nunito',sans-serif;color:#3A2E24}a{color:#B4552D}a:hover{color:#8F3F1E}</style>
+</helmet>
+<dc-import name="SiteHeader" active="tarifs" hint-size="100%,76px"></dc-import>
+
+<section style="background:#F6E9D8;padding:56px 24px">
+  <div style="max-width:1200px;margin:0 auto">
+    <h1 style="font-family:'Bree Serif',serif;font-size:40px;margin:0 0 12px">Tarifs — prix fixes et transparents</h1>
+    <p style="font-size:17px;color:#6B5641;margin:0;max-width:660px;line-height:1.7">Choisissez votre point de départ : tous les prix s'affichent par nombre de passagers, aller simple ou aller-retour. Péages, bagages, attente et sièges enfants toujours inclus.</p>
+  </div>
+</section>
+
+<section style="max-width:1200px;margin:0 auto;padding:48px 24px">
+  <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:28px">
+    <span style="font-weight:800;font-size:15px">Départ :</span>
+    <sc-for list="{{ zoneBtns }}" as="z" hint-placeholder-count="8">
+      <button onClick="{{ z.pick }}" style="border:1px solid {{ z.border }};background:{{ z.bg }};color:{{ z.color }};font-weight:800;font-size:14px;padding:9px 18px;border-radius:999px;cursor:pointer;font-family:'Nunito',sans-serif" style-hover="border-color:#B4552D">{{ z.label }}</button>
+    </sc-for>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:20px">
+    <sc-for list="{{ tables }}" as="t" hint-placeholder-count="4">
+      <div style="background:#FFFDF9;border:1px solid #EBDFC9;border-radius:18px;padding:24px;display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">
+          <div style="font-family:'Bree Serif',serif;font-size:19px">{{ t.title }}</div>
+          <div style="font-size:13px;font-weight:700;color:#8F7455">dès <span style="color:#B4552D;font-size:16px">{{ t.min }} €</span></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;font-size:14px;border:1px solid #EBDFC9;border-radius:12px;overflow:hidden">
+          <div style="background:#F6E9D8;font-weight:800;padding:9px 14px">Passagers</div>
+          <div style="background:#F6E9D8;font-weight:800;padding:9px 14px">Aller simple</div>
+          <div style="background:#F6E9D8;font-weight:800;padding:9px 14px">Aller-retour</div>
+          <sc-for list="{{ t.rows }}" as="row" hint-placeholder-count="6">
+            <div style="padding:8px 14px;border-top:1px solid #F0E2CC;font-weight:700">{{ row.tier }}</div>
+            <div style="padding:8px 14px;border-top:1px solid #F0E2CC;color:#B4552D;font-weight:800">{{ row.ow }} €</div>
+            <div style="padding:8px 14px;border-top:1px solid #F0E2CC;color:#6B5641;font-weight:700">{{ row.rt }} €</div>
+          </sc-for>
+        </div>
+        <a href="{{ t.wa }}" style="text-decoration:none;text-align:center;background:#B4552D;color:#FFFDF9;font-weight:800;font-size:14px;padding:11px;border-radius:999px" style-hover="background:#8F3F1E">Réserver ce trajet</a>
+      </div>
+    </sc-for>
+  </div>
+</section>
+
+<section style="background:#FFFDF9;border-top:1px solid #EBDFC9;border-bottom:1px solid #EBDFC9">
+  <div style="max-width:1200px;margin:0 auto;padding:56px 24px">
+    <h2 style="font-family:'Bree Serif',serif;font-size:30px;margin:0 0 8px">Excursions & journées avec chauffeur</h2>
+    <p style="color:#6B5641;font-size:16px;margin:0 0 28px;max-width:640px">Versailles, Mont Saint-Michel, châteaux de la Loire… Chaque excursion est sur devis personnalisé selon votre groupe et votre programme — <strong>réponse garantie sous 2 h</strong>.</p>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
+      <sc-for list="{{ tours }}" as="tr" hint-placeholder-count="9">
+        <div style="background:#FBF6ED;border:1px solid #EBDFC9;border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;justify-content:space-between;gap:10px;align-items:baseline">
+            <div style="font-weight:800;font-size:16px">{{ tr.name }}</div>
+            <div style="font-size:12px;font-weight:800;color:#B4552D;background:#F6E9D8;padding:3px 10px;border-radius:999px;white-space:nowrap">{{ tr.dur }}</div>
+          </div>
+          <p style="margin:0;color:#6B5641;font-size:14px;line-height:1.6">{{ tr.desc }}</p>
+          <a href="{{ tr.wa }}" style="font-weight:800;font-size:13px;text-decoration:none;margin-top:auto">Demander un devis →</a>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+</section>
+
+<section style="max-width:900px;margin:0 auto;padding:56px 24px">
+  <div style="background:#3A2E24;border-radius:24px;padding:44px 32px;text-align:center">
+    <div style="display:inline-block;background:#D9A441;color:#3A2E24;font-weight:800;font-size:13px;padding:6px 16px;border-radius:999px;margin-bottom:14px">⏱ Réponse sous 2 h — 7 j/7</div>
+    <h2 style="font-family:'Bree Serif',serif;font-size:28px;color:#FFFDF9;margin:0 0 12px">Besoin d'un devis personnalisé ?</h2>
+    <p style="color:#C9B79E;font-size:16px;margin:0 0 24px;line-height:1.7">Groupe de plus de 8 personnes, trajet hors grille, excursion sur mesure, mise à disposition à la journée : décrivez votre besoin, nous répondons en moins de 2 heures.</p>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+      <a href="https://wa.me/33781662122?text=Bonjour%2C%20je%20souhaite%20un%20devis%20personnalis%C3%A9" style="text-decoration:none;background:#D9A441;color:#3A2E24;font-weight:800;font-size:16px;padding:14px 28px;border-radius:999px" style-hover="background:#C4902F">Devis WhatsApp</a>
+      <a href="Reservation.dc.html" style="text-decoration:none;border:2px solid #D9A441;color:#D9A441;font-weight:800;font-size:16px;padding:12px 24px;border-radius:999px" style-hover="background:#524334">Formulaire de devis</a>
+      <a href="tel:+33781662122" style="text-decoration:none;border:2px solid #D9A441;color:#D9A441;font-weight:800;font-size:16px;padding:12px 24px;border-radius:999px" style-hover="background:#524334">📞 07 81 66 21 22</a>
+    </div>
+  </div>
+</section>
+
+<dc-import name="SiteFooter" hint-size="100%,420px"></dc-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { zone: 'cdg', P: null };
+  componentDidMount() { import('./prices.js').then(P => this.setState({P})); }
+  renderVals() {
+    const {zone, P} = this.state;
+    if (!P) return { zoneBtns: [], tables: [], tours: [] };
+    const wa = msg => 'https://wa.me/33781662122?text=' + encodeURIComponent(msg);
+    const zoneBtns = Object.entries(P.ZONES).map(([k, label]) => ({
+      label, pick: () => this.setState({zone: k}),
+      bg: k === zone ? '#B4552D' : '#FFFDF9', color: k === zone ? '#FFFDF9' : '#3A2E24',
+      border: k === zone ? '#B4552D' : '#EBDFC9',
+    }));
+    const tables = [];
+    for (const [key, rate] of Object.entries(P.RATES)) {
+      const [a, b] = key.split('-');
+      let other = null;
+      if (a === zone) other = b; else if (b === zone) other = a;
+      if (!other) continue;
+      // Fusionne les paliers identiques consécutifs
+      const rows = [];
+      let start = 0;
+      for (let i = 1; i <= rate.length; i++) {
+        if (i === rate.length || rate[i] !== rate[start]) {
+          const tierStart = start === 0 ? '1' : String(start + 3);
+          const tierEnd = i === 1 ? '3' : String(i + 2);
+          const tier = (start === 0 && i === 1) ? '1 – 3' : (tierStart === tierEnd ? tierStart : tierStart + ' – ' + tierEnd);
+          rows.push({tier, ow: rate[start], rt: rate[start] * 2});
+          start = i;
+        }
+      }
+      tables.push({
+        title: P.ZONES[zone] + ' ↔ ' + P.ZONES[other],
+        min: Math.min(...rate), rows,
+        wa: wa(`Bonjour, je souhaite réserver : ${P.ZONES[zone]} → ${P.ZONES[other]}.`),
+      });
+    }
+    const tours = P.TOURS.map(t => ({...t, wa: wa(`Bonjour, je souhaite un devis pour l'excursion : ${t.name}.`)}));
+    return { zoneBtns, tables, tours };
+  }
+}
+</script>
+</body>
+</html>

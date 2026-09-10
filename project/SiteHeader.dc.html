@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<header style="position:sticky;top:0;z-index:50;background:#FFFDF9;border-bottom:1px solid #EBDFC9;font-family:'Nunito',sans-serif">
+  <div style="max-width:1200px;margin:0 auto;padding:10px 24px;display:flex;align-items:center;gap:20px;min-height:56px;flex-wrap:wrap">
+    <a href="Accueil.dc.html" style="text-decoration:none;display:flex;flex-direction:column;line-height:1.1;white-space:nowrap">
+      <span style="font-family:'Bree Serif',serif;font-size:21px;color:#3A2E24">Disney Paris <span style="color:#B4552D">Transfers</span></span>
+      <span style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#9B8468;font-weight:700">Chauffeur privé VTC · Paris</span>
+    </a>
+    <nav style="display:flex;gap:20px;margin-left:auto;align-items:center;flex-wrap:wrap">
+      <sc-for list="{{ items }}" as="it" hint-placeholder-count="6">
+        <a href="{{ it.href }}" style="text-decoration:none;font-size:15px;color:{{ it.color }};font-weight:{{ it.weight }};white-space:nowrap" style-hover="color:#B4552D">{{ it.label }}</a>
+      </sc-for>
+    </nav>
+    <div style="display:flex;align-items:center;gap:12px">
+      <select aria-label="Langue" style="border:1px solid #EBDFC9;background:#FBF6ED;color:#3A2E24;border-radius:8px;padding:6px 8px;font-family:'Nunito',sans-serif;font-size:13px;font-weight:700">
+        <sc-for list="{{ langs }}" as="lg" hint-placeholder-count="7">
+          <option>{{ lg }}</option>
+        </sc-for>
+      </select>
+      <div style="position:relative">
+        <button onClick="{{ togglePhone }}" style="border:none;background:none;cursor:pointer;font-family:'Nunito',sans-serif;font-weight:800;font-size:15px;color:#3A2E24;white-space:nowrap;padding:0" style-hover="color:#B4552D">07 81 66 21 22</button>
+        <sc-if value="{{ phoneOpen }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;top:calc(100% + 10px);right:0;background:#FFFDF9;border:1px solid #EBDFC9;border-radius:14px;box-shadow:0 16px 32px -12px rgba(58,46,36,.35);padding:10px;display:flex;flex-direction:column;gap:8px;min-width:210px;z-index:100">
+            <a href="tel:+33781662122" style="text-decoration:none;display:flex;align-items:center;gap:10px;background:#B4552D;color:#FFFDF9;font-weight:800;font-size:14px;padding:11px 16px;border-radius:10px" style-hover="background:#8F3F1E">📞 Appeler maintenant</a>
+            <a href="https://wa.me/33781662122" style="text-decoration:none;display:flex;align-items:center;gap:10px;background:#E8F0DC;color:#3A2E24;font-weight:800;font-size:14px;padding:11px 16px;border-radius:10px" style-hover="background:#D8E5C5">💬 Écrire sur WhatsApp</a>
+          </div>
+        </sc-if>
+      </div>
+      <a href="Reservation.dc.html" style="text-decoration:none;background:#B4552D;color:#FFFDF9;font-weight:800;font-size:15px;padding:10px 20px;border-radius:999px;white-space:nowrap" style-hover="background:#8F3F1E">Réserver</a>
+    </div>
+  </div>
+</header>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:76},&quot;active&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;accueil&quot;,&quot;trajets&quot;,&quot;tarifs&quot;,&quot;apropos&quot;,&quot;faq&quot;,&quot;contact&quot;],&quot;default&quot;:&quot;accueil&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  state = { phoneOpen: false };
+  renderVals() {
+    const active = this.props.active ?? '';
+    const items = [
+      {label:'Accueil', href:'Accueil.dc.html', key:'accueil'},
+      {label:'Trajets', href:'Trajets.dc.html', key:'trajets'},
+      {label:'Tarifs', href:'Tarifs.dc.html', key:'tarifs'},
+      {label:'À propos', href:'APropos.dc.html', key:'apropos'},
+      {label:'FAQ', href:'FAQ.dc.html', key:'faq'},
+      {label:'Contact', href:'Contact.dc.html', key:'contact'},
+    ].map(i => ({...i, color: i.key===active ? '#B4552D' : '#3A2E24', weight: i.key===active ? '800' : '600'}));
+    const showFlags = this.props.showFlags ?? true;
+    const langs = [['🇫🇷','FR'],['🇬🇧','EN'],['🇪🇸','ES'],['🇮🇹','IT'],['🇷🇺','RU'],['🇨🇳','中文'],['🇯🇵','日本語']]
+      .map(([f,l]) => showFlags ? f+' '+l : l);
+    return {items, langs, phoneOpen: this.state.phoneOpen, togglePhone: () => this.setState(s => ({phoneOpen: !s.phoneOpen}))};
+  }
+}
+</script>
+</body>
+</html>

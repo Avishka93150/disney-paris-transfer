@@ -1,0 +1,21 @@
+node_modules/
+.next/
+out/
+build/
+next-env.d.ts
+*.tsbuildinfo
+
+# SQLite database (the folder is created on first run)
+data/
+
+# Secrets — never commit these
+.env
+.env.local
+.env*.local
+
+# Plaintext admin password, handed over out of band and deleted after first login
+CREDENTIALS.txt
+IDENTIFIANTS.txt
+
+.DS_Store
+npm-debug.log*

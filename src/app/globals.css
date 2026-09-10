@@ -1,0 +1,120 @@
+@import 'tailwindcss';
+
+/*
+  Design tokens taken verbatim from the Claude Design mockups (project/*.dc.html).
+  Do not introduce a new colour without updating CLAUDE.md.
+*/
+@theme {
+  --color-cream: #fbf6ed; /* page background */
+  --color-sand: #f6e9d8; /* section background */
+  --color-surface: #fffdf9; /* cards, header */
+  --color-line: #ebdfc9; /* borders */
+  --color-line-strong: #f0e2cc; /* table separators */
+  --color-stripe: #e7d5b8; /* hatching in photo placeholders */
+
+  --color-brand: #b4552d; /* terracotta — primary accent */
+  --color-brand-dark: #8f3f1e; /* hover */
+
+  --color-ink: #3a2e24; /* body text, footer */
+  --color-ink-light: #524334; /* hover on brown */
+  --color-ink-soft: #6b5641; /* running text */
+  --color-ink-mute: #8f7455; /* tertiary text */
+  --color-ink-faint: #9b8468; /* captions */
+  --color-cream-soft: #c9b79e; /* text on brown */
+
+  --color-gold: #d9a441; /* CTA on brown */
+  --color-gold-dark: #c4902f;
+
+  --color-whatsapp: #e8f0dc;
+  --color-whatsapp-dark: #d8e5c5;
+  --color-success-border: #b7cc96;
+  --color-success-text: #4a6327;
+
+  --font-sans: var(--font-nunito), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-bree-serif), Georgia, serif;
+
+  --shadow-card: 0 12px 24px -14px rgb(58 46 36 / 0.3);
+  --shadow-lifted: 0 24px 48px -20px rgb(58 46 36 / 0.35);
+  --shadow-popover: 0 16px 32px -12px rgb(58 46 36 / 0.35);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-cream);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: pretty;
+  }
+
+  /* Visible focus ring matching the palette, for keyboard accessibility. */
+  :focus-visible {
+    outline: 2px solid var(--color-brand);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  ::selection {
+    background: var(--color-sand);
+    color: var(--color-ink);
+  }
+}
+
+@layer components {
+  /* Photo placeholders from the mockups: 45° hatching until real images arrive. */
+  .photo-placeholder {
+    background: repeating-linear-gradient(
+      45deg,
+      var(--color-line-strong),
+      var(--color-line-strong) 14px,
+      var(--color-stripe) 14px,
+      var(--color-stripe) 28px
+    );
+  }
+
+  .field {
+    border: 1px solid var(--color-line);
+    border-radius: 10px;
+    background: var(--color-cream);
+    padding: 0.75rem;
+    font-size: 0.9375rem;
+    font-family: var(--font-sans);
+    color: var(--color-ink);
+    width: 100%;
+  }
+
+  .field:focus {
+    outline: 2px solid var(--color-brand);
+    outline-offset: -1px;
+  }
+
+  .field-label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    font-weight: 700;
+    font-size: 0.875rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

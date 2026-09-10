@@ -1,0 +1,255 @@
+'use client';
+
+import Link from 'next/link';
+import { useMemo, useState } from 'react';
+import type { Dictionary } from '@/lib/i18n/types';
+import {
+  MAX_PAX,
+  NIGHT_RULE_OFF,
+  VEHICLES,
+  ZONE_IDS,
+  fittingVehicle,
+  quote,
+  quoteBreakdown,
+  type NightRule,
+  type TripType,
+  type ZoneId,
+} from '@/lib/prices';
+import { fill } from '@/lib/i18n';
+import { whatsappLink } from '@/lib/site';
+
+/**
+ * "Your price, live" — the calculator in the home page hero.
+ *
+ * The rate grid and the night rule both come from the server (the admin can
+ * change either). The price shown here is indicative and **recalculated
+ * server-side** before anything is stored or charged.
+ */
+export function PriceCalculator({
+  dict,
+  rates,
+  night = NIGHT_RULE_OFF,
+  bookingHref,
+}: {
+  dict: Dictionary;
+  rates: Record<string, readonly number[]>;
+  night?: NightRule;
+  bookingHref: string;
+}) {
+  const [from, setFrom] = useState<ZoneId>('cdg');
+  const [to, setTo] = useState<ZoneId>('disney');
+  const [pax, setPax] = useState(2);
+  const [trip, setTrip] = useState<TripType>('ow');
+  const [vehicleId, setVehicleId] = useState('saloon');
+  const [time, setTime] = useState('');
+
+  const calc = dict.home.calc;
+
+  // The chosen vehicle switches automatically when it becomes too small.
+  const selected = fittingVehicle(pax, vehicleId);
+
+  const options = useMemo(
+    () =>
+      VEHICLES.map((vehicle) => {
+        const fits = vehicle.maxPax >= pax;
+        const price = fits
+          ? quote({ from, to, pax, vehicleId: vehicle.id, trip, rates, time, night })
+          : null;
+        return {
+          id: vehicle.id,
+          label: dict.vehicles[vehicle.id].short,
+          desc: `${dict.vehicles[vehicle.id].pax} · ${dict.vehicles[vehicle.id].bags}`,
+          fits,
+          price,
+          active: selected?.id === vehicle.id,
+        };
+      }),
+    [from, to, pax, trip, rates, time, night, dict, selected],
+  );
+
+  const breakdown = selected
+    ? quoteBreakdown({ from, to, pax, vehicleId: selected.id, trip, rates, time, night })
+    : null;
+  const samePlace = from === to;
+
+  let summaryLabel: string;
+  let priceLabel: string;
+
+  if (samePlace) {
+    summaryLabel = calc.samePlace;
+    priceLabel = dict.common.quoteOnly;
+  } else if (breakdown && selected) {
+    summaryLabel = dict.vehicles[selected.id].label + (trip === 'rt' ? calc.roundTripSuffix : '');
+    priceLabel = `${breakdown.totalEuros} €`;
+  } else {
+    summaryLabel = calc.custom;
+    priceLabel = dict.common.quoteOnly;
+  }
+
+  const waMessage = fill(calc.whatsappMessage, {
+    from: dict.zones[from],
+    to: dict.zones[to],
+    pax,
+    vehicle: selected ? dict.vehicles[selected.id].label : '',
+    trip: trip === 'rt' ? calc.roundTrip : calc.oneWay,
+  });
+
+  // Pre-fills the booking form with the current simulation.
+  const bookingUrl = `${bookingHref}?from=${from}&to=${to}&pax=${pax}&trip=${trip}&vehicle=${
+    selected?.id ?? ''
+  }${time ? `&time=${encodeURIComponent(time)}` : ''}`;
+
+  const selectClass =
+    'rounded-[10px] border border-line bg-cream p-[11px] font-sans text-sm text-ink';
+  const labelClass = 'flex flex-col gap-[5px] text-[13px] font-bold';
+
+  return (
+    <div className="flex flex-col gap-4 rounded-3xl border border-line bg-surface p-7 shadow-lifted">
+      <div className="font-display text-[22px]">{calc.title}</div>
+
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <label className={labelClass}>
+          {calc.fromLabel}
+          <select
+            className={selectClass}
+            value={from}
+            onChange={(event) => setFrom(event.target.value as ZoneId)}
+          >
+            {ZONE_IDS.map((zone) => (
+              <option key={zone} value={zone}>
+                {dict.zones[zone]}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className={labelClass}>
+          {calc.toLabel}
+          <select
+            className={selectClass}
+            value={to}
+            onChange={(event) => setTo(event.target.value as ZoneId)}
+          >
+            {ZONE_IDS.map((zone) => (
+              <option key={zone} value={zone}>
+                {dict.zones[zone]}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className={labelClass}>
+          {calc.paxLabel}
+          <select
+            className={selectClass}
+            value={pax}
+            onChange={(event) => setPax(Number(event.target.value))}
+          >
+            {Array.from({ length: MAX_PAX }, (_, index) => index + 1).map((n) => (
+              <option key={n} value={n}>
+                {n}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className={labelClass}>
+          {calc.tripLabel}
+          <select
+            className={selectClass}
+            value={trip}
+            onChange={(event) => setTrip(event.target.value as TripType)}
+          >
+            <option value="ow">{calc.oneWay}</option>
+            <option value="rt">{calc.roundTrip}</option>
+          </select>
+        </label>
+
+        {/* Only worth asking for the time when it can change the price. */}
+        {night.enabled ? (
+          <label className={`${labelClass} sm:col-span-2`}>
+            {dict.pricing.timeLabel}
+            <input
+              type="time"
+              className={selectClass}
+              value={time}
+              onChange={(event) => setTime(event.target.value)}
+            />
+          </label>
+        ) : null}
+      </div>
+
+      <div className="flex flex-col gap-[5px]">
+        <span className="text-[13px] font-bold">{calc.vehicleLabel}</span>
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+          {options.map((option) => (
+            <button
+              key={option.id}
+              type="button"
+              disabled={!option.fits}
+              aria-pressed={option.active}
+              onClick={() => setVehicleId(option.id)}
+              className={`rounded-xl border-2 px-3 py-[9px] text-left font-sans ${
+                option.active ? 'border-brand bg-sand' : 'border-line bg-surface'
+              } ${option.fits ? 'cursor-pointer' : 'cursor-not-allowed opacity-45'}`}
+            >
+              <div className="flex items-baseline justify-between gap-2">
+                <span className="text-[13px] font-extrabold text-ink">{option.label}</span>
+                <span className="whitespace-nowrap text-[13px] font-extrabold text-brand">
+                  {!option.fits ? '—' : option.price != null ? `${option.price} €` : dict.common.quoteOnly}
+                </span>
+              </div>
+              <div className="text-[11px] font-bold text-ink-mute">{option.desc}</div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div
+        aria-live="polite"
+        className="flex items-center justify-between gap-3 rounded-[14px] bg-sand px-5 py-4"
+      >
+        <div>
+          <div className="text-[13px] font-bold text-ink-soft">{summaryLabel}</div>
+          <div className="font-display text-[30px] text-brand">{priceLabel}</div>
+          {breakdown?.night ? (
+            <div className="text-[12px] font-bold text-ink-mute">
+              {fill(dict.pricing.nightLine, { percent: breakdown.nightPercent })} ·{' '}
+              {breakdown.nightEuros} €
+            </div>
+          ) : null}
+        </div>
+        <div className="max-w-[150px] text-right text-xs leading-[1.5] text-ink-mute">
+          {calc.priceNote}
+        </div>
+      </div>
+
+      {night.enabled && !breakdown?.night ? (
+        <p className="m-0 text-[12px] font-bold text-ink-mute">
+          {fill(dict.pricing.nightNote, {
+            percent: night.percent,
+            start: night.start,
+            end: night.end,
+          })}
+        </p>
+      ) : null}
+
+      <div className="flex flex-col gap-2.5 sm:flex-row">
+        <a
+          href={whatsappLink(waMessage)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex-1 rounded-full bg-brand py-[13px] text-center text-[15px] font-extrabold text-surface no-underline hover:bg-brand-dark"
+        >
+          {calc.confirmWhatsapp}
+        </a>
+        <Link
+          href={bookingUrl}
+          className="flex-1 rounded-full border-2 border-brand bg-surface py-[11px] text-center text-[15px] font-extrabold text-brand no-underline hover:bg-sand"
+        >
+          {calc.book}
+        </Link>
+      </div>
+    </div>
+  );
+}
