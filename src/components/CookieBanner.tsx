@@ -25,7 +25,9 @@ export function CookieBanner({ locale, dict }: { locale: Locale; dict: Dictionar
       document.body.style.paddingBottom = '';
       return;
     }
-    document.body.style.paddingBottom = '7.5rem';
+    document.body.style.paddingBottom = window.matchMedia('(max-width: 640px)').matches
+      ? '12rem'
+      : '7.5rem';
     return () => {
       document.body.style.paddingBottom = '';
     };

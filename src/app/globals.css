@@ -115,6 +115,16 @@
     min-width: 0;
     width: 100%;
   }
+
+  /* Easy Go-style hover mega-menu: panel is a child of the trigger wrapper. */
+  .mega-panel {
+    display: none;
+  }
+
+  .mega-item:hover > .mega-panel,
+  .mega-item:focus-within > .mega-panel {
+    display: block;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

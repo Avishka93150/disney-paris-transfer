@@ -29,14 +29,12 @@ function Chevron() {
 function MegaMenu({
   menu,
   active,
-  align = 'center',
 }: {
   menu: ResolvedMegaMenu;
   active: boolean;
-  align?: 'center' | 'end';
 }) {
   return (
-    <div className="group relative">
+    <div className="mega-item group relative">
       <Link
         href={menu.href}
         className={`inline-flex items-center gap-1 whitespace-nowrap text-[15px] no-underline hover:text-brand ${
@@ -46,16 +44,7 @@ function MegaMenu({
         {menu.label}
         <Chevron />
       </Link>
-      {/*
-        CSS hover, like easygoshuttle.com: the panel is a child of `group`,
-        so moving from the trigger into the card keeps :hover. `pt-3` is the
-        bridge across the gap under the link.
-      */}
-      <div
-        className={`absolute top-full z-[80] hidden pt-3 group-hover:block group-focus-within:block ${
-          align === 'end' ? 'right-0' : 'left-1/2 -translate-x-1/2'
-        }`}
-      >
+      <div className="mega-panel absolute top-full left-1/2 z-[80] -translate-x-1/2 pt-3">
         <div className="w-[min(42rem,calc(100vw-1.5rem))] rounded-2xl border border-line bg-surface p-6 shadow-popover">
           <div className="columns-1 gap-x-10 sm:columns-2">
             {menu.groups.map((group) => (
@@ -91,7 +80,7 @@ function MegaMenu({
 
 function MoreMenu({ label, items }: { label: string; items: NavItem[] }) {
   return (
-    <div className="group relative">
+    <div className="mega-item group relative">
       <button
         type="button"
         className="inline-flex cursor-pointer items-center gap-1 border-0 bg-transparent p-0 font-sans text-[15px] font-semibold whitespace-nowrap text-ink hover:text-brand"
@@ -99,7 +88,7 @@ function MoreMenu({ label, items }: { label: string; items: NavItem[] }) {
         {label}
         <Chevron />
       </button>
-      <div className="absolute top-full right-0 z-[80] hidden pt-3 group-hover:block group-focus-within:block">
+      <div className="mega-panel absolute top-full right-0 z-[80] pt-3">
         <div className="min-w-[220px] rounded-2xl border border-line bg-surface py-2 shadow-popover">
           {items.map((item) => (
             <Link
@@ -163,12 +152,15 @@ export function SiteHeaderBar({
 
   return (
     <div className="relative">
-      <div className="relative mx-auto flex min-h-14 max-w-[1200px] items-center gap-4 px-6 py-2.5 lg:gap-5">
-        <Link href={homeHref} className="flex min-w-0 flex-col leading-[1.1] no-underline">
-          <span className="font-display text-[21px] text-ink">
+      <div className="relative mx-auto flex min-h-14 max-w-[1200px] items-center gap-3 px-4 py-2.5 sm:gap-4 sm:px-6 lg:gap-5">
+        <Link
+          href={homeHref}
+          className="flex min-w-0 max-w-[46%] flex-col overflow-hidden leading-[1.1] no-underline min-[1100px]:max-w-none"
+        >
+          <span className="font-display text-[18px] text-ink sm:text-[21px]">
             {brand} <span className="text-brand">{brandAccent}</span>
           </span>
-          <span className="text-[11px] font-bold tracking-[1.5px] text-ink-faint uppercase">
+          <span className="hidden text-[11px] font-bold tracking-[1.5px] text-ink-faint uppercase sm:block">
             {tagline}
           </span>
         </Link>
@@ -184,13 +176,8 @@ export function SiteHeaderBar({
             {homeLabel}
           </Link>
 
-          {menus.map((menu, index) => (
-            <MegaMenu
-              key={menu.id}
-              menu={menu}
-              active={routesActive}
-              align={index === menus.length - 1 ? 'end' : 'center'}
-            />
+          {menus.map((menu) => (
+            <MegaMenu key={menu.id} menu={menu} active={routesActive} />
           ))}
 
           {pricesItem ? (
@@ -208,8 +195,13 @@ export function SiteHeaderBar({
           <MoreMenu label={moreLabel} items={moreItems} />
         </nav>
 
-        <div className="ml-auto flex items-center gap-3 min-[1100px]:ml-0">
-          <LanguageSelect locale={locale} label={langLabel} showFlags={showFlags} />
+        <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-3 min-[1100px]:ml-0">
+          <div className="sm:hidden">
+            <LanguageSelect locale={locale} label={langLabel} showFlags={false} />
+          </div>
+          <div className="hidden sm:block">
+            <LanguageSelect locale={locale} label={langLabel} showFlags={showFlags} />
+          </div>
 
           <div className="hidden xl:block">
             <PhoneMenu callLabel={callLabel} whatsappLabel={whatsappLabel} />
@@ -217,7 +209,7 @@ export function SiteHeaderBar({
 
           <Link
             href={bookHref}
-            className="rounded-full bg-brand px-5 py-2.5 text-[15px] font-extrabold whitespace-nowrap text-surface no-underline hover:bg-brand-dark"
+            className="rounded-full bg-brand px-3.5 py-2 text-[13px] font-extrabold whitespace-nowrap text-surface no-underline hover:bg-brand-dark sm:px-5 sm:py-2.5 sm:text-[15px]"
           >
             {bookLabel}
           </Link>
