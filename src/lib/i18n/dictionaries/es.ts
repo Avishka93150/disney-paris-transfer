@@ -1,4 +1,5 @@
 import type { Dictionary } from '../types';
+import { legalDocs } from '../legalDocs';
 
 export const es: Dictionary = {
   common: {
@@ -42,6 +43,10 @@ export const es: Dictionary = {
     booking: 'Reserva',
     rights: '© 2026 disneyparistransfers.com — Todos los derechos reservados',
     seoLine: 'Chófer París · Traslados aeropuerto CDG, Orly, Beauvais · Disneyland Paris',
+    colLegal: 'Legal',
+    terms: 'Condiciones',
+    privacy: 'Privacidad',
+    cookies: 'Cookies',
   },
   home: {
     badge: 'Especialistas en traslados a Disneyland® Paris',
@@ -156,6 +161,8 @@ export const es: Dictionary = {
     askQuote: 'Pedir presupuesto',
     otherLead: '¿Otro destino?',
     otherLink: 'Pregúntenos por WhatsApp: cubrimos toda la región de Isla de Francia.',
+    descriptionTemplate:
+      'Chófer privado entre {from} y {to}. Tarifa fija, recepción con cartel y sillas infantiles incluidas.',
     descriptions: {
       'cdg-disneyland':
         'Nuestro traslado más solicitado. Recepción con cartel a la salida de llegadas y entrega directa en su hotel Disney o asociado.',
@@ -177,6 +184,8 @@ export const es: Dictionary = {
   routeDetail: {
     breadcrumb: 'Traslados',
     h1: 'Traslado {from} ↔ {to} con chófer privado',
+    leadTemplate:
+      'Traslado privado puerta a puerta entre {from} y {to}. El conductor sigue el vuelo, le espera con un cartel y confirma un precio fijo antes de salir.',
     lead: {
       'cdg-disneyland':
         'Trayecto directo entre Roissy Charles-de-Gaulle y los hoteles Disney en unos 45 minutos. Su chófer sigue su vuelo, le recibe con un cartel e instala las sillas infantiles antes de su llegada.',
@@ -196,6 +205,9 @@ export const es: Dictionary = {
         'Ida y vuelta o disposición por horas entre París y el Palacio de Versalles, con un chófer que le espera durante la visita.',
     },
     ctaBook: 'Reservar este traslado',
+    livePriceTitle: 'Su precio, en directo',
+    relatedTitle: 'Otros traslados',
+    imageAlt: 'Traslado con chófer privado de {from} a {to}',
     statDuration: 'Duración del trayecto',
     statDistance: 'Distancia',
     statHours: 'Todos los vuelos, todas las terminales',
@@ -335,6 +347,16 @@ export const es: Dictionary = {
     ],
     required: 'Este campo es obligatorio.',
     invalidEmail: 'Dirección de correo no válida.',
+    stepJourney: 'Trayecto',
+    stepParty: 'Pasajeros',
+    stepContact: 'Contacto',
+    next: 'Continuar',
+    back: 'Atrás',
+    trustSeats: 'Sillas infantiles gratis',
+    trustFixed: 'Precio fijo, sin sorpresas',
+    trustHours: 'Servicio 24 h',
+    noCard: 'Sin tarjeta para el presupuesto',
+    liveTitle: 'Tarifa estimada',
   },
   about: {
     h1: 'Su chófer, no una plataforma',
@@ -436,6 +458,19 @@ export const es: Dictionary = {
     extrasTitle: 'Extras opcionales',
     extrasLead: 'Se añaden al precio de su traslado.',
     extrasEach: 'por unidad',
+  },
+  cookieBanner: {
+    message:
+      'Usamos unos pocos cookies esenciales (idioma, sesión de administración y este aviso). Sin cookies publicitarios.',
+    accept: 'Entendido',
+    more: 'Política de cookies',
+  },
+  legal: legalDocs.es,
+  destinationKinds: {
+    airport: 'Aeropuertos',
+    city: 'Ciudades',
+    castle: 'Castillos y parques',
+    tours: 'Excursiones',
   },
   zones: {
     cdg: 'Aeropuerto CDG',
@@ -559,6 +594,21 @@ export const es: Dictionary = {
       title: 'Contacto — Chófer privado en París | Disney Paris Transfers',
       description:
         'Contáctenos 7 días a la semana y 24 horas al día por teléfono, WhatsApp o correo para su traslado entre los aeropuertos de París y Disneyland Paris.',
+    },
+    terms: {
+      title: 'Condiciones generales | Disney Paris Transfers',
+      description:
+        'Condiciones de reserva de Disney Paris Transfers: presupuestos, pago, cancelación, suplemento nocturno y obligaciones del pasajero.',
+    },
+    privacy: {
+      title: 'Política de privacidad | Disney Paris Transfers',
+      description:
+        'Cómo Disney Paris Transfers recoge, almacena y usa los datos personales de reservas, correos y pagos.',
+    },
+    cookies: {
+      title: 'Política de cookies | Disney Paris Transfers',
+      description:
+        'Cookies esenciales en disneyparistransfers.com: idioma, sesión de administración y este aviso. Sin cookies publicitarios.',
     },
     routeDetail: {
       title: 'Traslado {from} ↔ {to} — chófer privado desde {price} € | Disney Paris Transfers',

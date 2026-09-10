@@ -1,4 +1,5 @@
 import type { Dictionary } from '../types';
+import { legalDocs } from '../legalDocs';
 
 export const zh: Dictionary = {
   common: {
@@ -42,6 +43,10 @@ export const zh: Dictionary = {
     booking: '预订',
     rights: '© 2026 disneyparistransfers.com — 保留所有权利',
     seoLine: '巴黎专车 · 戴高乐、奥利、博韦机场接送 · 巴黎迪士尼乐园',
+    colLegal: '法律信息',
+    terms: '服务条款',
+    privacy: '隐私政策',
+    cookies: 'Cookie',
   },
   home: {
     badge: '巴黎迪士尼乐园® 接送专家',
@@ -149,6 +154,7 @@ export const zh: Dictionary = {
     askQuote: '索取报价',
     otherLead: '想去别的地方？',
     otherLink: '用 WhatsApp 问我们——我们的服务覆盖整个法兰西岛大区。',
+    descriptionTemplate: '往返 {from} 与 {to} 的私人司机接送。固定价格、举牌迎接、儿童座椅免费。',
     descriptions: {
       'cdg-disneyland':
         '我们最热门的线路。在到达大厅举牌迎接，直接送达您的迪士尼酒店或合作酒店。',
@@ -164,6 +170,8 @@ export const zh: Dictionary = {
   routeDetail: {
     breadcrumb: '线路',
     h1: '{from} ↔ {to} 私人司机接送',
+    leadTemplate:
+      '{from} 与 {to} 之间的门到门私人接送。司机跟踪航班、举牌迎接，出发前确认固定价格。',
     lead: {
       'cdg-disneyland':
         '鲁瓦西戴高乐机场与迪士尼各酒店之间直达，约 45 分钟。司机追踪您的航班、举牌迎接，并在您抵达前装好儿童座椅。',
@@ -182,6 +190,9 @@ export const zh: Dictionary = {
         '巴黎与凡尔赛宫之间往返或按小时包车，参观期间司机全程等候。',
     },
     ctaBook: '预订该接送',
+    livePriceTitle: '实时价格',
+    relatedTitle: '其他线路',
+    imageAlt: '从 {from} 到 {to} 的私人司机接送',
     statDuration: '行程时长',
     statDistance: '距离',
     statHours: '所有航班，所有航站楼',
@@ -307,6 +318,16 @@ export const zh: Dictionary = {
     included: ['航班追踪与等候', '举牌接机', '免费儿童座椅', '含过路费，价格固定'],
     required: '此项为必填。',
     invalidEmail: '电子邮箱地址无效。',
+    stepJourney: '行程',
+    stepParty: '乘客',
+    stepContact: '联系方式',
+    next: '继续',
+    back: '返回',
+    trustSeats: '儿童座椅免费',
+    trustFixed: '固定价格，无隐藏费用',
+    trustHours: '全天候服务',
+    noCard: '询价无需银行卡',
+    liveTitle: '预估费用',
   },
   about: {
     h1: '您的司机，而不是一个平台',
@@ -407,6 +428,18 @@ export const zh: Dictionary = {
     extrasTitle: '可选附加服务',
     extrasLead: '将计入您的接送费用。',
     extrasEach: '每件',
+  },
+  cookieBanner: {
+    message: '我们仅使用必要 Cookie（语言、后台会话和本提示）。没有广告 Cookie。',
+    accept: '我知道了',
+    more: 'Cookie 政策',
+  },
+  legal: legalDocs.zh,
+  destinationKinds: {
+    airport: '机场',
+    city: '城市',
+    castle: '城堡与乐园',
+    tours: '游览',
   },
   zones: {
     cdg: '戴高乐机场（CDG）',
@@ -530,6 +563,18 @@ export const zh: Dictionary = {
       title: '联系我们 — 巴黎私人司机 | Disney Paris Transfers',
       description:
         '每周 7 天、24 小时可通过电话、WhatsApp 或电子邮件联系我们，预订巴黎各机场与巴黎迪士尼乐园之间的接送。',
+    },
+    terms: {
+      title: '服务条款 | Disney Paris Transfers',
+      description: 'Disney Paris Transfers 预订条款：报价、付款、取消、夜间加价与乘客义务。',
+    },
+    privacy: {
+      title: '隐私政策 | Disney Paris Transfers',
+      description: 'Disney Paris Transfers 如何为预订、邮件与付款收集、保存和使用个人数据。',
+    },
+    cookies: {
+      title: 'Cookie 政策 | Disney Paris Transfers',
+      description: 'disneyparistransfers.com 使用的必要 Cookie：语言、后台会话与本提示。没有广告 Cookie。',
     },
     routeDetail: {
       title: '{from} ↔ {to} 接送 — 私人司机 {price} € 起 | Disney Paris Transfers',

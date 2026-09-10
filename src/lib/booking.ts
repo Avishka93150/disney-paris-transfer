@@ -10,8 +10,8 @@ import {
 } from './db';
 import { priceExtras, type ExtraSelection } from './catalog';
 import { LOCALES } from './i18n/config';
-import { VEHICLE_IDS, ZONE_IDS, applyNight, quoteBreakdown } from './prices';
-import { getSettings, nightRule } from './settings';
+import { VEHICLE_IDS, ZONE_IDS, applyNight, isArrivalId, quoteBreakdown } from './prices';
+import { getSettings, getVehicleFleet, nightRule } from './settings';
 
 /** Number of options in the dropdowns, so received indexes can be validated. */
 const BAG_OPTIONS = 4;
@@ -20,7 +20,7 @@ const SEAT_OPTIONS = 5;
 export const bookingSchema = z.object({
   locale: z.enum(LOCALES),
   from: z.enum(ZONE_IDS),
-  to: z.enum(ZONE_IDS),
+  to: z.string().refine(isArrivalId, { message: 'invalid_destination' }),
   trip: z.enum(['ow', 'rt']),
   date: z
     .string()
@@ -122,6 +122,7 @@ export function serverQuote(input: BookingInput): ServerQuote | null {
       rates: getRates(),
       time,
       night: rule,
+      vehicles: getVehicleFleet(),
     });
     if (!breakdown) return null;
 

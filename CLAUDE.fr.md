@@ -122,11 +122,11 @@ Google ne voie jamais deux adresses pour un même contenu.
 
 ---
 
-## i18n — 7 langues
+## i18n — 9 langues
 
-`en` (défaut) · `fr` · `es` · `it` · `ru` · `zh` · `ja`
+`en` (défaut) · `fr` · `es` · `it` · `de` · `pt` · `ru` · `zh` · `ja`
 
-- Chaque URL publique est préfixée par la langue : `/en/prices`, `/fr/tarifs`, `/es/precios`, …
+- Chaque URL publique est préfixée par la langue : `/en/prices`, `/fr/tarifs`, `/es/precios`, `/de/preise`, `/pt/precos`…
   `middleware.ts` redirige une URL sans préfixe d'après le cookie, puis `Accept-Language`,
   puis l'anglais.
 - Les **segments de page sont traduits** (table `SEGMENTS` dans `src/lib/i18n/routes.ts`,
@@ -136,15 +136,16 @@ Google ne voie jamais deux adresses pour un même contenu.
 - Les **slugs de trajet** (`cdg-disneyland`…) sont en revanche identiques dans toutes les
   langues : ce sont des noms propres, et cela garde une seule clé par liaison tarifaire.
 - Les dictionnaires sont des objets TypeScript typés d'après `Dictionary` : ajouter une clé
-  provoque une erreur de compilation dans les 6 autres langues tant qu'elle n'est pas traduite.
+  provoque une erreur de compilation dans les 8 autres langues tant qu'elle n'est pas traduite.
   C'est voulu.
 - **Les forfaits et les options font exception.** Leurs noms et descriptions sont saisis par
-  l'admin à l'exécution et affichés tels quels dans les 7 langues — on ne peut pas traduire
+  l'admin à l'exécution et affichés tels quels dans les 9 langues — on ne peut pas traduire
   une chaîne qui n'existe pas encore à la compilation. `dict.pricing.*` traduit le texte
   *autour* d'eux (titres, « Jusqu'à {pax} passagers », la mention du tarif de nuit).
 - `hreflang` + `x-default` générés automatiquement dans chaque `layout`/`page`.
+- Pages légales (CGV, confidentialité, cookies) avec URL traduites dans les 9 langues.
 - ⚠️ Les traductions non-FR ont été rédigées par l'assistant et **n'ont pas été relues par un
-  locuteur natif**. À faire vérifier avant mise en production, en particulier RU / 中文 / 日本語.
+  locuteur natif**. À faire vérifier avant mise en production, en particulier DE / PT / RU / 中文 / 日本語.
 
 ---
 
@@ -155,11 +156,14 @@ Source unique : `src/lib/prices.ts` (porté depuis `project/prices.js`).
 - 20 liaisons, prix aller simple en €, par palier de passagers `[1-3, 4, 5, 6, 7, 8]`.
 - Aller-retour = ×2.
 - Véhicules : Berline — identifiant `saloon` (×1, 4 pax), SUV (×1,1, 4 pax),
-  Van (×1, 8 pax), Premium Mercedes (×1,5, 3 pax).
+  Van (×1, 8 pax), Premium Mercedes (×1,5, 3 pax). L'admin peut masquer un véhicule et
+  changer son multiplicateur sur `/admin/rates` (stocké dans `settings.vehicles`).
 - Une liaison absente de la grille ⇒ « sur devis, réponse sous 2 h », jamais un prix inventé.
-- L'admin modifie les prix en base ; `prices.ts` ne sert que de valeurs par défaut au premier
-  démarrage (`seedRates()` dans `src/lib/db.ts`). Lire la grille avec `getRates()`, jamais
-  `RATES` directement en dehors de ce peuplement initial.
+- L'admin modifie les prix en base **six cases par ligne** ; `prices.ts` ne sert que de
+  valeurs par défaut au premier démarrage (`seedRates()` dans `src/lib/db.ts`). Lire la
+  grille avec `getRates()`, jamais `RATES` directement en dehors de ce peuplement initial.
+- Lire la flotte avec `getVehicleFleet()`, jamais `VEHICLES` directement hors de ce
+  peuplement / du repli côté client.
 
 **Les prix hors CDG ont été estimés lors du design et doivent être validés par le client.**
 
@@ -216,14 +220,19 @@ ADMIN_PASSWORD_HASH=       # généré par `npm run admin:hash -- 'motdepasse'`
 SMTP_HOST= SMTP_PORT= SMTP_USER= SMTP_PASS= SMTP_SECURE=
 MAIL_FROM="Disney Paris Transfers <contact@disneyparistransfers.com>"
 MAIL_TO=                   # destinataire des demandes de devis
-STRIPE_SECRET_KEY=         # optionnel — Stripe reste désactivable côté admin
+STRIPE_SECRET_KEY=         # optionnel — aussi collable depuis Admin → Settings
 STRIPE_WEBHOOK_SECRET=
 NEXT_PUBLIC_PHONE=+33781662122
 NEXT_PUBLIC_WHATSAPP=33781662122
 ```
 
-Sans `SMTP_HOST`, l'envoi bascule en mode « log console » : le site reste fonctionnel en
-développement et les demandes sont quand même enregistrées en base.
+Les clés Stripe, le SMTP et le mot de passe admin peuvent aussi se saisir depuis
+**Admin → Settings**. Les valeurs en base priment sur le `.env`, sans redémarrage. Les
+formulaires ne réaffichent jamais le secret en clair, seulement un indice `••••abcd`.
+`SESSION_SECRET` et `ADMIN_EMAIL` restent dans le `.env`.
+
+Sans hôte SMTP (ni admin ni `SMTP_HOST`), l'envoi bascule en mode « log console » : le site
+reste fonctionnel en développement et les demandes sont quand même enregistrées en base.
 
 ⚠️ `ADMIN_PASSWORD_HASH` utilise `:` comme séparateur (`scrypt:sel:empreinte`), et **non**
 `$` : dotenv interpréterait `$xxx` comme une variable et tronquerait silencieusement

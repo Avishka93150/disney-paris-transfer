@@ -8,6 +8,8 @@ export function SettingsForm({
   stripeMode,
   depositPercent,
   stripeConfigured,
+  stripeSecretHint,
+  stripeWebhookSet,
   nightSurchargeEnabled,
   nightSurchargePercent,
   nightStart,
@@ -17,6 +19,8 @@ export function SettingsForm({
   stripeMode: 'full' | 'deposit';
   depositPercent: number;
   stripeConfigured: boolean;
+  stripeSecretHint: string | null;
+  stripeWebhookSet: boolean;
   nightSurchargeEnabled: boolean;
   nightSurchargePercent: number;
   nightStart: string;
@@ -26,6 +30,7 @@ export function SettingsForm({
   const [enabled, setEnabled] = useState(stripeEnabled);
   const [mode, setMode] = useState(stripeMode);
   const [percent, setPercent] = useState(String(depositPercent));
+  const [secretDraft, setSecretDraft] = useState('');
 
   const [night, setNight] = useState(nightSurchargeEnabled);
   const [nightPercent, setNightPercent] = useState(String(nightSurchargePercent));
@@ -119,12 +124,52 @@ export function SettingsForm({
 
       <section className="flex flex-col gap-5 rounded-2xl border border-line bg-surface p-6">
         <div>
+          <h2 className="m-0 mb-1 font-display text-xl">Stripe</h2>
+          <p className="m-0 mb-4 text-sm leading-[1.6] text-ink-soft">
+            Keys can be pasted here or left in the <code>.env</code> file. Values saved in
+            admin override the environment. Leave a field blank to keep the current secret.
+          </p>
+
+          <div className="mb-5 grid gap-4 sm:grid-cols-2">
+            <label className="field-label">
+              Secret key
+              <input
+                type="password"
+                name="stripeSecretKey"
+                autoComplete="off"
+                value={secretDraft}
+                onChange={(event) => setSecretDraft(event.target.value)}
+                placeholder={stripeSecretHint ?? 'sk_live_…'}
+                className="field font-mono"
+              />
+              {stripeSecretHint ? (
+                <span className="text-[12px] font-bold text-ink-mute">Saved {stripeSecretHint}</span>
+              ) : (
+                <span className="text-[12px] font-bold text-ink-mute">Not set yet</span>
+              )}
+            </label>
+
+            <label className="field-label">
+              Webhook secret
+              <input
+                type="password"
+                name="stripeWebhookSecret"
+                autoComplete="off"
+                placeholder={stripeWebhookSet ? 'whsec_… (saved)' : 'whsec_…'}
+                className="field font-mono"
+              />
+              <span className="text-[12px] font-bold text-ink-mute">
+                {stripeWebhookSet ? 'Saved — leave blank to keep it' : 'Needed to mark bookings as paid'}
+              </span>
+            </label>
+          </div>
+
           <label className="flex cursor-pointer items-start gap-3">
             <input
               type="checkbox"
               name="stripeEnabled"
               checked={enabled}
-              disabled={!stripeConfigured}
+              disabled={!stripeConfigured && secretDraft.length === 0}
               onChange={(event) => setEnabled(event.target.checked)}
               className="mt-1 h-5 w-5 accent-[#B4552D]"
             />
@@ -132,15 +177,16 @@ export function SettingsForm({
               <span className="block text-base font-extrabold">Enable online payment</span>
               <span className="block text-sm leading-[1.6] text-ink-soft">
                 While this box is unticked, no payment button appears anywhere on the site:
-                customers pay on board, as they do today.
+                customers pay on board, as they do today. You can tick it in the same save as
+                a newly pasted key.
               </span>
             </span>
           </label>
 
           {!stripeConfigured ? (
-            <p className="mb-0 ml-8 mt-3 rounded-[10px] bg-sand p-3 text-[13px] leading-[1.6] text-ink-soft">
-              Set <code>STRIPE_SECRET_KEY</code> and <code>STRIPE_WEBHOOK_SECRET</code> in your{' '}
-              <code>.env</code> file before this option can be switched on.
+            <p className="mb-0 mt-3 rounded-[10px] bg-sand p-3 text-[13px] leading-[1.6] text-ink-soft">
+              Paste a secret key above (or set <code>STRIPE_SECRET_KEY</code> in{' '}
+              <code>.env</code>) before the payment button can be switched on.
             </p>
           ) : null}
         </div>

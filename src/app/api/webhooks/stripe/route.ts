@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import type Stripe from 'stripe';
 import { getBookingByReference, markPayment, updateBooking } from '@/lib/booking';
 import { sendPaymentReceipt } from '@/lib/mail';
+import { stripeWebhookSecret } from '@/lib/settings';
 import { stripe } from '@/lib/stripe';
 
 export const runtime = 'nodejs';
@@ -14,7 +15,7 @@ export const runtime = 'nodejs';
  */
 export async function POST(request: Request) {
   const client = stripe();
-  const secret = process.env.STRIPE_WEBHOOK_SECRET;
+  const secret = stripeWebhookSecret();
 
   if (!client || !secret) {
     return NextResponse.json({ ok: false, error: 'stripe_unconfigured' }, { status: 503 });

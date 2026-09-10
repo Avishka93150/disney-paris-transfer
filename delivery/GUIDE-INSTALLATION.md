@@ -2,7 +2,7 @@
 
 > 🇬🇧 English version: [`INSTALLATION-GUIDE.md`](./INSTALLATION-GUIDE.md)
 
-Site de chauffeur privé VTC, 7 langues, calculateur de prix, formulaire de devis,
+Site de chauffeur privé VTC, 9 langues, calculateur de prix, formulaire de devis,
 espace de gestion et paiement en ligne facultatif.
 
 Ce guide part du principe que vous n'êtes pas développeur. Chaque commande est à
@@ -278,6 +278,9 @@ SMTP_USER=contact@disneyparistransfers.com
 SMTP_PASS=le-mot-de-passe-de-votre-boite-email
 ```
 
+Vous pouvez aussi les saisir plus tard depuis **Admin → Settings → Email (SMTP)**.
+Les valeurs enregistrées là priment sur le `.env`, sans redémarrage.
+
 Réglages selon l'hébergeur :
 
 | Hébergeur | `SMTP_HOST`             | Port |
@@ -323,6 +326,9 @@ Pour l'activer :
 STRIPE_SECRET_KEY=sk_live_...
 ```
 
+Vous pouvez coller cette clé (et le secret webhook) depuis **Admin → Settings**
+à la place du `.env`.
+
 **3.** *Développeurs → Webhooks → Ajouter un point de terminaison* :
 
 - URL : `https://disneyparistransfers.com/api/webhooks/stripe`
@@ -360,7 +366,10 @@ ci-dessous entre parenthèses.
 ### Première connexion
 
 Connectez-vous avec les identifiants de `CREDENTIALS.txt`, puis **changez
-immédiatement le mot de passe** :
+immédiatement le mot de passe** depuis **Admin → Settings** (mot de passe
+actuel + nouveau). Cela écrit le hash en base, sans redémarrage.
+
+Autre possibilité, depuis le serveur :
 
 ```bash
 cd /var/www/disneyparistransfers

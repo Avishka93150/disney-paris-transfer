@@ -5,7 +5,7 @@ import { ROUTE_PAGES } from '@/lib/prices';
 import { absoluteUrl } from '@/lib/site';
 
 /**
- * Sitemap: every page, in all 7 languages, with the `hreflang` alternates —
+ * Sitemap: every page, in all 9 languages, with the `hreflang` alternates —
  * this is what lets Google serve the right version to each visitor.
  */
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -26,7 +26,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
         url: absoluteUrl(path(locale, page)),
         lastModified,
         changeFrequency: page === 'home' ? 'weekly' : 'monthly',
-        priority: page === 'home' ? 1 : page === 'prices' || page === 'booking' ? 0.9 : 0.7,
+        priority: page === 'home' ? 1 : page === 'prices' || page === 'booking' ? 0.9 : page === 'terms' || page === 'privacy' || page === 'cookies' ? 0.3 : 0.7,
         alternates: { languages: languagesFor([page]) },
       });
     }

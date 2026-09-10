@@ -131,6 +131,16 @@ CREATE TABLE IF NOT EXISTS settings (
 --  nightStart             'HH:MM'            when night hours begin
 --  nightEnd               'HH:MM'            when they end (exclusive)
 --
+--  stripeSecretKey        sk_live_… / sk_test_…   (overrides STRIPE_SECRET_KEY)
+--  stripeWebhookSecret    whsec_…                 (overrides STRIPE_WEBHOOK_SECRET)
+--  smtpHost, smtpPort, smtpSecure, smtpUser, smtpPass
+--  mailFrom, mailTo
+--  adminPasswordHash      scrypt:salt:hash        (overrides ADMIN_PASSWORD_HASH)
+--  vehicles               JSON { saloon: { active, mult }, … }
+--
+--  Secrets saved from Admin → Settings override the matching .env values.
+--  The admin forms never display them again, only a last-four-characters hint.
+--
 --  A window whose end is at or before its start runs through midnight, which
 --  is the normal case: 21:00 → 06:00 covers the evening AND the early morning.
 INSERT OR IGNORE INTO settings (key, value) VALUES
@@ -195,7 +205,7 @@ INSERT OR IGNORE INTO rates (pair, prices) VALUES ('paris-versailles',  '[90,90,
 --  The customer picks one at the top of the booking form instead of a route.
 --
 --  `name` and `description` are shown to visitors exactly as typed, in all
---  7 languages — they do not go through the site's translations.
+--  9 languages — they do not go through the site's translations.
 --
 --  `night_surcharge` : 1 = the night supplement applies on top of this package,
 --                      0 = the price is the price, whatever the hour.

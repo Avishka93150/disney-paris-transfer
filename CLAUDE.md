@@ -128,25 +128,26 @@ never sees two URLs for the same content.
 
 ---
 
-## i18n — 7 locales
+## i18n — 9 locales
 
-`en` (default) · `fr` · `es` · `it` · `ru` · `zh` · `ja`
+`en` (default) · `fr` · `es` · `it` · `de` · `pt` · `ru` · `zh` · `ja`
 
 - Every public URL is locale-prefixed. `middleware.ts` redirects `/prices` to `/en/prices`
   based on a cookie, then `Accept-Language`, then English.
 - **Page segments are translated** (`SEGMENTS`, the single source of truth). This is what
   earns local search ranking.
 - **Route slugs are not** (`cdg-disneyland`, `orly-disneyland`…). They are proper nouns, and
-  keeping them stable means one key per priced connection instead of seven.
+  keeping them stable means one key per priced connection instead of nine.
 - Dictionaries are TypeScript objects typed against the `Dictionary` interface: adding a key
-  breaks the build in the other six languages until it is translated. That is intentional.
+  breaks the build in the other eight languages until it is translated. That is intentional.
 - **Packages and add-ons are the one exception.** Their names and descriptions are typed by
-  the admin at runtime and shown verbatim in all seven languages — a string that does not
+  the admin at runtime and shown verbatim in all nine languages — a string that does not
   exist at build time cannot be translated. `dict.pricing.*` translates the wording *around*
   them (headings, "Up to {pax} passengers", the night-rate note).
 - `hreflang` + `x-default` are generated for every page by `pageMetadata()` (`src/lib/seo.ts`).
+- Legal pages (terms, privacy, cookies) have translated URLs in all nine languages.
 - ⚠️ The non-French translations were written by an assistant and **have not been reviewed by
-  a native speaker**. Get RU / 中文 / 日本語 checked before launch — including the
+  a native speaker**. Get DE / PT / RU / 中文 / 日本語 checked before launch — including the
   `pricing` block added for packages, add-ons and the night supplement.
 
 ---
@@ -159,12 +160,15 @@ Single source of truth: `src/lib/prices.ts` (ported from `project/prices.js`).
 - The grid is **symmetric**: `cdg-disney` also serves Disney → CDG.
 - Round trip = ×2.
 - Vehicles: saloon (×1, 4 pax), SUV (×1.1, 4 pax), van (×1, 8 pax),
-  premium Mercedes (×1.5, 3 pax).
+  premium Mercedes (×1.5, 3 pax). The admin can hide a vehicle and change its
+  multiplier on `/admin/rates` (stored in `settings.vehicles`).
 - A connection missing from the grid means "on request, reply within 2 h" — the site never
   invents a price.
-- The admin edits prices in the database; `prices.ts` only seeds the defaults on first boot
-  (`seedRates()` in `src/lib/db.ts`). Read the live grid with `getRates()`, never `RATES`
-  directly, outside of that seed.
+- The admin edits prices in the database as **six separate boxes per row**; `prices.ts` only
+  seeds the defaults on first boot (`seedRates()` in `src/lib/db.ts`). Read the live grid
+  with `getRates()`, never `RATES` directly, outside of that seed.
+- Read the live fleet with `getVehicleFleet()`, never `VEHICLES` directly, outside of that
+  seed / the client-safe fallback.
 
 **Non-CDG prices were estimated during the design phase and must be validated by the client.**
 
@@ -219,14 +223,18 @@ ADMIN_PASSWORD_HASH=       # from `npm run admin:hash -- 'password'`
 SMTP_HOST= SMTP_PORT= SMTP_USER= SMTP_PASS= SMTP_SECURE=
 MAIL_FROM="Disney Paris Transfers <contact@disneyparistransfers.com>"
 MAIL_TO=                   # where quote requests are delivered
-STRIPE_SECRET_KEY=         # optional — Stripe stays switchable from the admin
+STRIPE_SECRET_KEY=         # optional — also pasteable from Admin → Settings
 STRIPE_WEBHOOK_SECRET=
 NEXT_PUBLIC_PHONE=+33781662122
 NEXT_PUBLIC_WHATSAPP=33781662122
 ```
 
-With `SMTP_HOST` empty, mail falls back to console logging: the site stays usable in
-development and bookings are still persisted.
+Stripe keys, SMTP and the admin password can also be saved from **Admin → Settings**.
+Values in the database override `.env` without a restart. The forms never show the full
+secret again — only a `••••abcd` hint. `SESSION_SECRET` and `ADMIN_EMAIL` stay in `.env`.
+
+With no SMTP host (neither admin nor `SMTP_HOST`), mail falls back to console logging: the
+site stays usable in development and bookings are still persisted.
 
 ⚠️ `ADMIN_PASSWORD_HASH` uses `:` as its separator (`scrypt:salt:hash`), **not** `$`.
 Dotenv expands `$name` as a variable and would silently truncate the hash.

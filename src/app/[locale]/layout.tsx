@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import type { ReactNode } from 'react';
+import { CookieBanner } from '@/components/CookieBanner';
 import { fontVariables } from '@/lib/fonts';
 import { getDictionary } from '@/lib/i18n';
 import { LOCALES, LOCALE_META, isLocale } from '@/lib/i18n/config';
@@ -36,6 +37,7 @@ export default async function LocaleLayout({
           {dict.common.skipToContent}
         </a>
         {children}
+        <CookieBanner locale={locale} dict={dict} />
       </body>
     </html>
   );

@@ -4,6 +4,7 @@ import { AboutPage } from '@/components/pages/AboutPage';
 import { BookingPage } from '@/components/pages/BookingPage';
 import { ContactPage } from '@/components/pages/ContactPage';
 import { FaqPage } from '@/components/pages/FaqPage';
+import { LegalPage } from '@/components/pages/LegalPage';
 import { PricesPage } from '@/components/pages/PricesPage';
 import { RouteDetailPage } from '@/components/pages/RouteDetailPage';
 import { RoutesPage } from '@/components/pages/RoutesPage';
@@ -11,7 +12,7 @@ import { getRates } from '@/lib/db';
 import { fill, formatDuration, getDictionary } from '@/lib/i18n';
 import { LOCALES, isLocale, type Locale } from '@/lib/i18n/config';
 import { PAGE_KEYS, SEGMENTS, type PageKey } from '@/lib/i18n/routes';
-import { ROUTE_PAGES, findRoutePage, startingPrice, type RoutePage as RoutePageData } from '@/lib/prices';
+import { ROUTE_PAGES, findRoutePage, startingPrice, transferImageSrc, type RoutePage as RoutePageData } from '@/lib/prices';
 import { pageMetadata } from '@/lib/seo';
 
 type Params = { locale: string; segments: string[] };
@@ -90,6 +91,7 @@ export async function generateMetadata({
     slug: route.slug,
     title: fill(dict.seo.routeDetail.title, values),
     description: fill(dict.seo.routeDetail.description, values),
+    image: transferImageSrc(route.image),
   });
 }
 
@@ -124,6 +126,10 @@ export default async function CatchAllPage({
       // Stripe): `searchParams` is awaited in this branch only, so the other
       // pages stay statically rendered.
       return <BookingPage locale={resolved.locale} searchParams={await searchParams} />;
+    case 'terms':
+    case 'privacy':
+    case 'cookies':
+      return <LegalPage locale={resolved.locale} kind={resolved.page} />;
     default:
       notFound();
   }

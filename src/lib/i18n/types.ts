@@ -3,6 +3,11 @@ import type { TourId, VehicleId, ZoneId } from '@/lib/prices';
 type Entry = { title: string; text: string };
 type Question = { q: string; a: string };
 type Seo = { title: string; description: string };
+type LegalDoc = {
+  h1: string;
+  lead: string;
+  sections: { title: string; paragraphs: string[] }[];
+};
 
 /**
  * The complete shape of the site's copy. Every string a visitor can see goes
@@ -53,6 +58,10 @@ export type Dictionary = {
     booking: string;
     rights: string;
     seoLine: string;
+    colLegal: string;
+    terms: string;
+    privacy: string;
+    cookies: string;
   };
   home: {
     badge: string;
@@ -105,14 +114,22 @@ export type Dictionary = {
     askQuote: string;
     otherLead: string;
     otherLink: string;
-    /** One strapline per route page, keyed by slug. */
-    descriptions: Record<string, string>;
+    /** Fallback strapline, `{from}` / `{to}`, when a slug has no unique copy. */
+    descriptionTemplate: string;
+    /** Optional unique strapline per route page, keyed by slug. */
+    descriptions: Partial<Record<string, string>>;
   };
   routeDetail: {
     breadcrumb: string;
     h1: string;
-    lead: Record<string, string>;
+    /** Fallback lead, `{from}` / `{to}`. */
+    leadTemplate: string;
+    /** Optional unique lead per slug. */
+    lead: Partial<Record<string, string>>;
     ctaBook: string;
+    livePriceTitle: string;
+    relatedTitle: string;
+    imageAlt: string;
     statDuration: string;
     statDistance: string;
     statHours: string;
@@ -206,6 +223,16 @@ export type Dictionary = {
     included: string[];
     required: string;
     invalidEmail: string;
+    stepJourney: string;
+    stepParty: string;
+    stepContact: string;
+    next: string;
+    back: string;
+    trustSeats: string;
+    trustFixed: string;
+    trustHours: string;
+    noCard: string;
+    liveTitle: string;
   };
   about: {
     h1: string;
@@ -245,7 +272,7 @@ export type Dictionary = {
    *
    * Only the surrounding wording is translated here. The package and add-on
    * names themselves are typed by the admin in one language and shown as-is in
-   * all seven — there is no way to translate a string that does not exist yet
+   * all nine — there is no way to translate a string that does not exist yet
    * at build time.
    */
   pricing: {
@@ -269,6 +296,27 @@ export type Dictionary = {
     /** Suffix on a per-unit add-on price, e.g. "10 € each". */
     extrasEach: string;
   };
+  cookieBanner: {
+    message: string;
+    accept: string;
+    more: string;
+  };
+  legal: {
+    updated: string;
+    terms: LegalDoc;
+    privacy: LegalDoc;
+    cookies: LegalDoc;
+  };
+  /**
+   * Labels for grouping departure/arrival places: airports, cities,
+   * castles/parks, and chauffeur-driven tours.
+   */
+  destinationKinds: {
+    airport: string;
+    city: string;
+    castle: string;
+    tours: string;
+  };
   zones: Record<ZoneId, string>;
   vehicles: Record<VehicleId, { label: string; short: string; desc: string; pax: string; bags: string }>;
   tours: Record<TourId, { name: string; dur: string; desc: string }>;
@@ -280,6 +328,9 @@ export type Dictionary = {
     about: Seo;
     faq: Seo;
     contact: Seo;
+    terms: Seo;
+    privacy: Seo;
+    cookies: Seo;
     /** `{from}` / `{to}` templates for the route pages. */
     routeDetail: Seo;
   };

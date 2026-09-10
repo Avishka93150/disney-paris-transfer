@@ -7,7 +7,7 @@ import { euros } from '@/lib/catalog';
 import { fill, getDictionary } from '@/lib/i18n';
 import type { Locale } from '@/lib/i18n/config';
 import { path } from '@/lib/i18n/routes';
-import { TOUR_IDS } from '@/lib/prices';
+import { TOUR_IDS, tourDestValue } from '@/lib/prices';
 import { nightRule } from '@/lib/settings';
 import { site, whatsappLink } from '@/lib/site';
 
@@ -27,7 +27,7 @@ export function PricesPage({ locale }: { locale: Locale }) {
         <PageHero title={dict.prices.h1} lead={dict.prices.lead} />
 
         <Container className="py-14">
-          <PricesTables dict={dict} rates={rates} />
+          <PricesTables dict={dict} rates={rates} bookingHref={path(locale, 'booking')} />
 
           {night.enabled ? (
             <p className="mt-7 rounded-[14px] bg-sand px-5 py-4 text-[15px] font-bold text-ink-soft">
@@ -106,8 +106,8 @@ export function PricesPage({ locale }: { locale: Locale }) {
           </Container>
         ) : null}
 
-        {/* ── Excursions, toujours sur devis ─────────────────────────── */}
-        <section className="border-y border-line bg-surface">
+        {/* ── Excursions, always on request ─────────────────────────── */}
+        <section id="tours" className="border-y border-line bg-surface">
           <Container className="py-14">
             <h2 className="m-0 mb-2 font-display text-[30px]">{dict.prices.toursTitle}</h2>
             <p className="m-0 mb-7 max-w-[640px] text-base text-ink-soft">{dict.prices.toursLead}</p>
@@ -127,14 +127,12 @@ export function PricesPage({ locale }: { locale: Locale }) {
                       </div>
                     </div>
                     <p className="m-0 text-sm leading-[1.6] text-ink-soft">{tour.desc}</p>
-                    <a
-                      href={whatsappLink(fill(dict.prices.whatsappTour, { tour: tour.name }))}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="mt-auto text-[13px] font-extrabold no-underline"
+                    <PrimaryLink
+                      href={`${path(locale, 'booking')}?to=${encodeURIComponent(tourDestValue(id))}`}
+                      className="mt-auto !px-5 !py-2.5 !text-sm"
                     >
-                      {dict.prices.tourCta}
-                    </a>
+                      {dict.prices.bookThis}
+                    </PrimaryLink>
                   </div>
                 );
               })}
