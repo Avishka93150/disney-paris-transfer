@@ -43,6 +43,11 @@
     scroll-behavior: smooth;
   }
 
+  select {
+    field-sizing: fixed;
+    max-width: 100%;
+  }
+
   body {
     background-color: var(--color-cream);
     color: var(--color-ink);
@@ -93,6 +98,7 @@
     max-width: 100%;
     min-width: 0;
     box-sizing: border-box;
+    field-sizing: fixed;
   }
 
   .field:focus {

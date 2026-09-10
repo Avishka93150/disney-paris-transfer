@@ -34,6 +34,7 @@ export const ja: Dictionary = {
     parisTransfers: 'パリ送迎',
     disneyTransfers: 'ディズニー送迎',
     viewAll: 'すべての送迎',
+    more: 'その他',
     groups: {
       airports: 'パリ空港送迎',
       city: 'パリ近郊',

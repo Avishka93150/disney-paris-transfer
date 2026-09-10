@@ -34,6 +34,7 @@ export const pt: Dictionary = {
     parisTransfers: 'Transfers Paris',
     disneyTransfers: 'Transfers Disneyland',
     viewAll: 'Ver todos os transfers',
+    more: 'Mais',
     groups: {
       airports: 'Transfers aeroportos de Paris',
       city: 'Paris e arredores',

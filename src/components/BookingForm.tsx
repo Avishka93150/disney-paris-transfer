@@ -306,7 +306,7 @@ export function BookingForm({
   return (
     <form
       onSubmit={onSubmit}
-      className="relative flex min-w-0 w-full max-w-full flex-col gap-5 overflow-hidden rounded-[20px] border border-line bg-surface p-5 shadow-lifted sm:p-8"
+      className="relative flex min-w-0 w-full max-w-full flex-col gap-5 overflow-visible rounded-[20px] border border-line bg-surface p-5 shadow-lifted sm:p-8"
     >
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
         {trust.map((item) => (

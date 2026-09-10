@@ -50,6 +50,7 @@ export type Dictionary = {
     parisTransfers: string;
     disneyTransfers: string;
     viewAll: string;
+    more: string;
     groups: {
       airports: string;
       city: string;

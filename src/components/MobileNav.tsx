@@ -36,7 +36,7 @@ export function MobileNav({
   const openMenu = menus.find((menu) => menu.id === panel) ?? null;
 
   return (
-    <div className="lg:hidden">
+    <div className="min-[1100px]:hidden">
       <button
         type="button"
         aria-expanded={open}

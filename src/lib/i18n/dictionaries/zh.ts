@@ -34,6 +34,7 @@ export const zh: Dictionary = {
     parisTransfers: '巴黎接送',
     disneyTransfers: '迪士尼接送',
     viewAll: '全部线路',
+    more: '更多',
     groups: {
       airports: '巴黎机场接送',
       city: '巴黎及周边',

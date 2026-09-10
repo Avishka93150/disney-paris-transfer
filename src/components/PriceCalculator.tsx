@@ -121,7 +121,7 @@ export function PriceCalculator({
 
   return (
     <div
-      className={`flex min-w-0 w-full max-w-full flex-col gap-4 overflow-hidden rounded-3xl border border-line p-5 shadow-lifted sm:p-7 ${
+      className={`flex min-w-0 w-full max-w-full flex-col gap-4 overflow-visible rounded-3xl border border-line p-5 shadow-lifted sm:p-7 ${
         variant === 'hero'
           ? 'bg-surface/85 backdrop-blur-md'
           : 'bg-surface'

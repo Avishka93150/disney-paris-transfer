@@ -28,7 +28,7 @@ export function SiteHeader({
   ).map(([key, label]) => ({ href: path(locale, key), label, active: key === active }));
 
   return (
-    <header className="sticky top-0 z-50 border-b border-line bg-surface font-sans">
+    <header className="sticky top-0 z-50 overflow-visible border-b border-line bg-surface font-sans">
       <SiteHeaderBar
         locale={locale}
         brand={dict.common.brand}
@@ -39,6 +39,8 @@ export function SiteHeader({
         homeActive={active === 'home'}
         menus={menus}
         items={items}
+        moreLabel={dict.nav.more}
+        moreItems={items.slice(1)}
         routesActive={active === 'routes'}
         langLabel={dict.common.langLabel}
         showFlags={showFlags}
