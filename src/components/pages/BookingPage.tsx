@@ -91,8 +91,8 @@ export function BookingPage({
           </div>
         </PageHero>
 
-        <Container className="grid items-start gap-10 py-12 lg:grid-cols-[1.5fr_1fr]">
-          <div className="flex flex-col gap-4">
+        <Container className="grid min-w-0 items-start gap-10 py-12 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
+          <div className="flex min-w-0 flex-col gap-4">
             {paid ? (
               <p
                 role="status"

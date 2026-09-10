@@ -31,6 +31,16 @@ export const zh: Dictionary = {
     about: '关于我们',
     faq: '常见问题',
     contact: '联系我们',
+    parisTransfers: '巴黎接送',
+    disneyTransfers: '迪士尼接送',
+    viewAll: '全部线路',
+    more: '更多',
+    groups: {
+      airports: '巴黎机场接送',
+      city: '巴黎及周边',
+      disney: '巴黎迪士尼接送',
+      versailles: '凡尔赛接送',
+    },
   },
   footer: {
     blurb:

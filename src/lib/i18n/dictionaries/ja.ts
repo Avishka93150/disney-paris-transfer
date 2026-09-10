@@ -31,6 +31,16 @@ export const ja: Dictionary = {
     about: '私たちについて',
     faq: 'よくある質問',
     contact: 'お問い合わせ',
+    parisTransfers: 'パリ送迎',
+    disneyTransfers: 'ディズニー送迎',
+    viewAll: 'すべての送迎',
+    more: 'その他',
+    groups: {
+      airports: 'パリ空港送迎',
+      city: 'パリ近郊',
+      disney: 'ディズニーランド・パリ送迎',
+      versailles: 'ヴェルサイユ送迎',
+    },
   },
   footer: {
     blurb:

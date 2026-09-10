@@ -41,7 +41,7 @@ export function LanguageSelect({ locale, label, showFlags }: { locale: Locale; l
       value={locale}
       disabled={pending}
       onChange={(event) => onChange(event.target.value)}
-      className="cursor-pointer rounded-lg border border-line bg-cream px-2 py-1.5 font-sans text-[13px] font-bold text-ink disabled:opacity-60"
+      className="max-w-[4.75rem] cursor-pointer rounded-lg border border-line bg-cream px-1.5 py-1.5 font-sans text-[13px] font-bold text-ink disabled:opacity-60 sm:max-w-none sm:px-2"
     >
       {LOCALES.map((code) => (
         <option key={code} value={code}>

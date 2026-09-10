@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { HeroSlideshow } from '@/components/HeroSlideshow';
 import { PriceCalculator } from '@/components/PriceCalculator';
 import { SiteFooter } from '@/components/SiteFooter';
 import { SiteHeader } from '@/components/SiteHeader';
@@ -66,38 +67,42 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
 
       <main id="contenu">
         {/* ── Hero + calculator ──────────────────────────────────────── */}
-        <section className="bg-[linear-gradient(180deg,#FBF6ED_0%,#F6E9D8_100%)]">
-          <div className="mx-auto grid max-w-[1200px] items-center gap-14 px-6 pb-16 pt-[72px] lg:grid-cols-[1.1fr_1fr]">
-            <div>
-              <div className="mb-5 inline-block rounded-full border border-line bg-surface px-4 py-[7px] text-[13px] font-extrabold text-brand">
+        <section className="relative overflow-hidden">
+          <HeroSlideshow />
+          <div className="relative z-[1] mx-auto grid max-w-[1200px] min-w-0 items-center gap-10 px-6 pb-16 pt-[72px] lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:gap-14">
+            <div className="min-w-0 text-surface">
+              <div className="mb-5 inline-block rounded-full border border-white/25 bg-surface/15 px-4 py-[7px] text-[13px] font-extrabold text-gold">
                 {home.badge}
               </div>
-              <h1 className="m-0 mb-[18px] font-display text-[34px] leading-[1.15] sm:text-[46px]">
+              <h1 className="m-0 mb-[18px] font-display text-[34px] leading-[1.15] text-surface sm:text-[46px]">
                 {home.h1}
               </h1>
-              <p className="m-0 mb-7 max-w-[520px] text-[18px] leading-[1.7] text-ink-soft">
+              <p className="m-0 mb-7 max-w-[520px] text-[18px] leading-[1.7] text-cream-soft">
                 {home.lead}
               </p>
               <div className="mb-7 flex flex-wrap gap-3.5">
                 <PrimaryLink href={path(locale, 'booking')}>{home.ctaPrimary}</PrimaryLink>
-                <ExternalButton href={site.whatsappHref} variant="outline">
+                <ExternalButton href={site.whatsappHref} variant="outline" className="!border-cream-soft !bg-transparent !text-surface hover:!bg-white/10">
                   {home.ctaSecondary}
                 </ExternalButton>
               </div>
-              <div className="flex flex-wrap gap-6 text-sm font-bold text-ink-soft">
+              <div className="flex flex-wrap gap-6 text-sm font-bold text-cream-soft">
                 {home.perks.map((perk) => (
                   <span key={perk}>✓ {perk}</span>
                 ))}
               </div>
             </div>
 
-            <PriceCalculator
-              dict={dict}
-              rates={rates}
-              night={night}
-              vehicles={vehicles}
-              bookingHref={path(locale, 'booking')}
-            />
+            <div className="min-w-0 w-full max-w-full">
+              <PriceCalculator
+                dict={dict}
+                rates={rates}
+                night={night}
+                vehicles={vehicles}
+                bookingHref={path(locale, 'booking')}
+                variant="hero"
+              />
+            </div>
           </div>
         </section>
 

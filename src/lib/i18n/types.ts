@@ -47,6 +47,16 @@ export type Dictionary = {
     about: string;
     faq: string;
     contact: string;
+    parisTransfers: string;
+    disneyTransfers: string;
+    viewAll: string;
+    more: string;
+    groups: {
+      airports: string;
+      city: string;
+      disney: string;
+      versailles: string;
+    };
   };
   footer: {
     blurb: string;

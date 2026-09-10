@@ -36,6 +36,7 @@ export function PriceCalculator({
   bookingHref,
   initialFrom = 'cdg',
   initialTo = 'disney',
+  variant = 'card',
 }: {
   dict: Dictionary;
   rates: Record<string, readonly number[]>;
@@ -44,6 +45,8 @@ export function PriceCalculator({
   bookingHref: string;
   initialFrom?: ZoneId;
   initialTo?: string;
+  /** `hero` = slightly transparent, for the photo background on the home page. */
+  variant?: 'card' | 'hero';
 }) {
   const [from, setFrom] = useState<ZoneId>(initialFrom);
   const [to, setTo] = useState(initialTo);
@@ -113,14 +116,20 @@ export function PriceCalculator({
   }${time ? `&time=${encodeURIComponent(time)}` : ''}`;
 
   const selectClass =
-    'rounded-[10px] border border-line bg-cream p-[11px] font-sans text-sm text-ink';
-  const labelClass = 'flex flex-col gap-[5px] text-[13px] font-bold';
+    'box-border w-full min-w-0 max-w-full rounded-[10px] border border-line bg-cream p-[11px] font-sans text-sm text-ink';
+  const labelClass = 'flex min-w-0 w-full flex-col gap-[5px] text-[13px] font-bold';
 
   return (
-    <div className="flex flex-col gap-4 rounded-3xl border border-line bg-surface p-7 shadow-lifted">
+    <div
+      className={`flex min-w-0 w-full max-w-full flex-col gap-4 overflow-visible rounded-3xl border border-line p-5 shadow-lifted sm:p-7 ${
+        variant === 'hero'
+          ? 'bg-surface/85 backdrop-blur-md'
+          : 'bg-surface'
+      }`}
+    >
       <div className="font-display text-[22px]">{calc.title}</div>
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2">
         <DestinationSelect
           label={calc.fromLabel}
           value={from}
@@ -184,7 +193,7 @@ export function PriceCalculator({
       {fleet.length > 0 ? (
         <div className="flex flex-col gap-[5px]">
           <span className="text-[13px] font-bold">{calc.vehicleLabel}</span>
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+          <div className="grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-2">
             {options.map((option) => (
               <button
                 key={option.id}
@@ -192,13 +201,13 @@ export function PriceCalculator({
                 disabled={!option.fits}
                 aria-pressed={option.active}
                 onClick={() => setVehicleId(option.id)}
-                className={`rounded-xl border-2 px-3 py-[9px] text-left font-sans ${
+                className={`min-w-0 rounded-xl border-2 px-3 py-[9px] text-left font-sans ${
                   option.active ? 'border-brand bg-sand' : 'border-line bg-surface'
                 } ${option.fits ? 'cursor-pointer' : 'cursor-not-allowed opacity-45'}`}
               >
-                <div className="flex items-baseline justify-between gap-2">
-                  <span className="text-[13px] font-extrabold text-ink">{option.label}</span>
-                  <span className="whitespace-nowrap text-[13px] font-extrabold text-brand">
+                <div className="flex min-w-0 items-baseline justify-between gap-2">
+                  <span className="min-w-0 truncate text-[13px] font-extrabold text-ink">{option.label}</span>
+                  <span className="shrink-0 text-[13px] font-extrabold text-brand">
                     {!option.fits
                       ? '—'
                       : option.price != null
@@ -215,9 +224,9 @@ export function PriceCalculator({
 
       <div
         aria-live="polite"
-        className="flex items-center justify-between gap-3 rounded-[14px] bg-sand px-5 py-4"
+        className="flex min-w-0 items-center justify-between gap-3 rounded-[14px] bg-sand px-4 py-4 sm:px-5"
       >
-        <div>
+        <div className="min-w-0">
           <div className="text-[13px] font-bold text-ink-soft">{summaryLabel}</div>
           <div className="font-display text-[30px] text-brand">{priceLabel}</div>
           {breakdown?.night ? (
@@ -242,21 +251,21 @@ export function PriceCalculator({
         </p>
       ) : null}
 
-      <div className="flex flex-col gap-2.5 sm:flex-row">
+      <div className="flex min-w-0 flex-col gap-2.5 sm:flex-row">
+        <Link
+          href={bookingUrl}
+          className="flex-1 rounded-full bg-brand py-[13px] text-center text-[15px] font-extrabold text-surface no-underline hover:bg-brand-dark"
+        >
+          {calc.book}
+        </Link>
         <a
           href={whatsappLink(waMessage)}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex-1 rounded-full bg-brand py-[13px] text-center text-[15px] font-extrabold text-surface no-underline hover:bg-brand-dark"
+          className="flex-1 rounded-full border-2 border-brand bg-transparent py-[11px] text-center text-[15px] font-extrabold text-brand no-underline hover:bg-sand"
         >
           {calc.confirmWhatsapp}
         </a>
-        <Link
-          href={bookingUrl}
-          className="flex-1 rounded-full border-2 border-brand bg-surface py-[11px] text-center text-[15px] font-extrabold text-brand no-underline hover:bg-sand"
-        >
-          {calc.book}
-        </Link>
       </div>
     </div>
   );

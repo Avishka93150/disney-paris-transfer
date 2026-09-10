@@ -24,6 +24,7 @@ export function TransferPhoto({
         sizes={sizes}
         className="object-cover"
         priority={priority}
+        unoptimized
       />
     </div>
   );

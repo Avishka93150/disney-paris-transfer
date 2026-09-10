@@ -31,6 +31,16 @@ export const en: Dictionary = {
     about: 'About',
     faq: 'FAQ',
     contact: 'Contact',
+    parisTransfers: 'Paris Transfers',
+    disneyTransfers: 'Disneyland Transfers',
+    viewAll: 'View all transfers',
+    more: 'More',
+    groups: {
+      airports: 'Paris airport transfers',
+      city: 'Paris & nearby',
+      disney: 'Disneyland Paris transfers',
+      versailles: 'Versailles transfers',
+    },
   },
   footer: {
     blurb:
