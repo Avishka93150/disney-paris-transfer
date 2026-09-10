@@ -20,6 +20,17 @@ export function CookieBanner({ locale, dict }: { locale: Locale; dict: Dictionar
     setVisible(!alreadyAccepted());
   }, []);
 
+  useEffect(() => {
+    if (!visible) {
+      document.body.style.paddingBottom = '';
+      return;
+    }
+    document.body.style.paddingBottom = '7.5rem';
+    return () => {
+      document.body.style.paddingBottom = '';
+    };
+  }, [visible]);
+
   if (!visible) return null;
 
   function accept() {
