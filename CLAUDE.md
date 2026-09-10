@@ -159,12 +159,15 @@ Single source of truth: `src/lib/prices.ts` (ported from `project/prices.js`).
 - The grid is **symmetric**: `cdg-disney` also serves Disney → CDG.
 - Round trip = ×2.
 - Vehicles: saloon (×1, 4 pax), SUV (×1.1, 4 pax), van (×1, 8 pax),
-  premium Mercedes (×1.5, 3 pax).
+  premium Mercedes (×1.5, 3 pax). The admin can hide a vehicle and change its
+  multiplier on `/admin/rates` (stored in `settings.vehicles`).
 - A connection missing from the grid means "on request, reply within 2 h" — the site never
   invents a price.
-- The admin edits prices in the database; `prices.ts` only seeds the defaults on first boot
-  (`seedRates()` in `src/lib/db.ts`). Read the live grid with `getRates()`, never `RATES`
-  directly, outside of that seed.
+- The admin edits prices in the database as **six separate boxes per row**; `prices.ts` only
+  seeds the defaults on first boot (`seedRates()` in `src/lib/db.ts`). Read the live grid
+  with `getRates()`, never `RATES` directly, outside of that seed.
+- Read the live fleet with `getVehicleFleet()`, never `VEHICLES` directly, outside of that
+  seed / the client-safe fallback.
 
 **Non-CDG prices were estimated during the design phase and must be validated by the client.**
 
@@ -219,14 +222,18 @@ ADMIN_PASSWORD_HASH=       # from `npm run admin:hash -- 'password'`
 SMTP_HOST= SMTP_PORT= SMTP_USER= SMTP_PASS= SMTP_SECURE=
 MAIL_FROM="Disney Paris Transfers <contact@disneyparistransfers.com>"
 MAIL_TO=                   # where quote requests are delivered
-STRIPE_SECRET_KEY=         # optional — Stripe stays switchable from the admin
+STRIPE_SECRET_KEY=         # optional — also pasteable from Admin → Settings
 STRIPE_WEBHOOK_SECRET=
 NEXT_PUBLIC_PHONE=+33781662122
 NEXT_PUBLIC_WHATSAPP=33781662122
 ```
 
-With `SMTP_HOST` empty, mail falls back to console logging: the site stays usable in
-development and bookings are still persisted.
+Stripe keys, SMTP and the admin password can also be saved from **Admin → Settings**.
+Values in the database override `.env` without a restart. The forms never show the full
+secret again — only a `••••abcd` hint. `SESSION_SECRET` and `ADMIN_EMAIL` stay in `.env`.
+
+With no SMTP host (neither admin nor `SMTP_HOST`), mail falls back to console logging: the
+site stays usable in development and bookings are still persisted.
 
 ⚠️ `ADMIN_PASSWORD_HASH` uses `:` as its separator (`scrypt:salt:hash`), **not** `$`.
 Dotenv expands `$name` as a variable and would silently truncate the hash.

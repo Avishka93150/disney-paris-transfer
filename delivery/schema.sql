@@ -131,6 +131,16 @@ CREATE TABLE IF NOT EXISTS settings (
 --  nightStart             'HH:MM'            when night hours begin
 --  nightEnd               'HH:MM'            when they end (exclusive)
 --
+--  stripeSecretKey        sk_live_… / sk_test_…   (overrides STRIPE_SECRET_KEY)
+--  stripeWebhookSecret    whsec_…                 (overrides STRIPE_WEBHOOK_SECRET)
+--  smtpHost, smtpPort, smtpSecure, smtpUser, smtpPass
+--  mailFrom, mailTo
+--  adminPasswordHash      scrypt:salt:hash        (overrides ADMIN_PASSWORD_HASH)
+--  vehicles               JSON { saloon: { active, mult }, … }
+--
+--  Secrets saved from Admin → Settings override the matching .env values.
+--  The admin forms never display them again, only a last-four-characters hint.
+--
 --  A window whose end is at or before its start runs through midnight, which
 --  is the normal case: 21:00 → 06:00 covers the evening AND the early morning.
 INSERT OR IGNORE INTO settings (key, value) VALUES

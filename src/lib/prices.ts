@@ -26,6 +26,32 @@ export const ZONE_IDS = [
 
 export type ZoneId = (typeof ZONE_IDS)[number];
 
+/** How a place is grouped in the booking calculator and the prices page. */
+export const DESTINATION_KINDS = ['airport', 'city', 'castle', 'tours'] as const;
+
+export type DestinationKind = (typeof DESTINATION_KINDS)[number];
+
+export const ZONE_KIND: Record<ZoneId, Exclude<DestinationKind, 'tours'>> = {
+  cdg: 'airport',
+  orly: 'airport',
+  beauvais: 'airport',
+  paris: 'city',
+  ladefense: 'city',
+  valeurope: 'city',
+  disney: 'castle',
+  versailles: 'castle',
+};
+
+export const ZONE_KIND_ORDER: Exclude<DestinationKind, 'tours'>[] = ['airport', 'city', 'castle'];
+
+export function isZoneId(value: string): value is ZoneId {
+  return (ZONE_IDS as readonly string[]).includes(value);
+}
+
+export function zonesOfKind(kind: Exclude<DestinationKind, 'tours'>): ZoneId[] {
+  return ZONE_IDS.filter((id) => ZONE_KIND[id] === kind);
+}
+
 export const VEHICLE_IDS = ['saloon', 'suv', 'van', 'premium'] as const;
 
 export type VehicleId = (typeof VEHICLE_IDS)[number];
@@ -38,17 +64,41 @@ export type Vehicle = {
   bags: number;
   /** Multiplier applied to the connection's base price. */
   mult: number;
+  /** When false, the vehicle is hidden from the public site. */
+  active: boolean;
 };
 
+/** Admin-editable slice of a vehicle; capacity and bags stay compiled in. */
+export type VehicleOverride = { active?: boolean; mult?: number };
+
 export const VEHICLES: readonly Vehicle[] = [
-  { id: 'saloon', maxPax: 4, bags: 3, mult: 1 },
-  { id: 'suv', maxPax: 4, bags: 4, mult: 1.1 },
-  { id: 'van', maxPax: 8, bags: 8, mult: 1 },
-  { id: 'premium', maxPax: 3, bags: 3, mult: 1.5 },
+  { id: 'saloon', maxPax: 4, bags: 3, mult: 1, active: true },
+  { id: 'suv', maxPax: 4, bags: 4, mult: 1.1, active: true },
+  { id: 'van', maxPax: 8, bags: 8, mult: 1, active: true },
+  { id: 'premium', maxPax: 3, bags: 3, mult: 1.5, active: true },
 ];
 
-export function getVehicle(id: string): Vehicle | undefined {
-  return VEHICLES.find((v) => v.id === id);
+export function mergeVehicles(
+  overrides?: Partial<Record<VehicleId, VehicleOverride>> | null,
+): Vehicle[] {
+  return VEHICLES.map((vehicle) => {
+    const patch = overrides?.[vehicle.id];
+    const mult = patch?.mult;
+    const validMult = typeof mult === 'number' && Number.isFinite(mult) && mult >= 0.5 && mult <= 5;
+    return {
+      ...vehicle,
+      active: patch?.active ?? vehicle.active,
+      mult: validMult ? Math.round(mult * 100) / 100 : vehicle.mult,
+    };
+  });
+}
+
+export function getVehicle(id: string, fleet: readonly Vehicle[] = VEHICLES): Vehicle | undefined {
+  return fleet.find((vehicle) => vehicle.id === id);
+}
+
+export function activeVehicles(fleet: readonly Vehicle[] = VEHICLES): Vehicle[] {
+  return fleet.filter((vehicle) => vehicle.active);
 }
 
 /** Passenger tiers matching the 6 columns of `RATES`. */
@@ -169,6 +219,8 @@ export type QuoteInput = {
   /** Pickup time `HH:MM`; without it the night surcharge cannot apply. */
   time?: string | null;
   night?: NightRule;
+  /** Live fleet from the admin; defaults to the compiled vehicles. */
+  vehicles?: readonly Vehicle[];
 };
 
 /** A priced trip, broken down so the surcharge can be shown on its own line. */
@@ -195,8 +247,8 @@ export type QuoteBreakdown = {
  * knowing when quoting a night pickup with a daytime return.
  */
 export function quoteBreakdown(input: QuoteInput): QuoteBreakdown | null {
-  const vehicle = getVehicle(input.vehicleId);
-  if (!vehicle || vehicle.maxPax < input.pax) return null;
+  const vehicle = getVehicle(input.vehicleId, input.vehicles);
+  if (!vehicle || !vehicle.active || vehicle.maxPax < input.pax) return null;
 
   const rate = findRate(input.from, input.to, input.rates ?? RATES);
   if (!rate) return null;
@@ -246,18 +298,25 @@ export function applyNight(
 }
 
 /** First vehicle able to seat the group, when the current pick no longer fits. */
-export function fittingVehicle(pax: number, preferred?: string): Vehicle | undefined {
-  const chosen = preferred ? getVehicle(preferred) : undefined;
+export function fittingVehicle(
+  pax: number,
+  preferred?: string,
+  fleet: readonly Vehicle[] = VEHICLES,
+): Vehicle | undefined {
+  const available = activeVehicles(fleet);
+  const chosen = preferred ? available.find((vehicle) => vehicle.id === preferred) : undefined;
   if (chosen && chosen.maxPax >= pax) return chosen;
-  return VEHICLES.find((v) => v.maxPax >= pax);
+  return available.find((vehicle) => vehicle.maxPax >= pax);
 }
 
 /**
  * Groups consecutive tiers that share a price, for the rate tables:
  * `[70,80,85,90,90,105]` → 1–3 / 4 / 5 / 6–7 / 8.
  */
-export function collapseTiers(rate: readonly number[]): { tier: string; ow: number; rt: number }[] {
-  const rows: { tier: string; ow: number; rt: number }[] = [];
+export function collapseTiers(
+  rate: readonly number[],
+): { tier: string; ow: number; rt: number; pax: number }[] {
+  const rows: { tier: string; ow: number; rt: number; pax: number }[] = [];
   let start = 0;
 
   for (let i = 1; i <= rate.length; i++) {
@@ -269,7 +328,7 @@ export function collapseTiers(rate: readonly number[]): { tier: string; ow: numb
       const last = i === 1 ? 3 : i + 2;
       const tier = first === last ? String(first) : `${first} – ${last}`;
 
-      rows.push({ tier, ow: price, rt: price * 2 });
+      rows.push({ tier, ow: price, rt: price * 2, pax: last });
       start = i;
     }
   }
@@ -291,6 +350,41 @@ export const TOUR_IDS = [
 ] as const;
 
 export type TourId = (typeof TOUR_IDS)[number];
+
+/**
+ * Prefix used when a tour is stored as a destination (`to_zone`).
+ * Tour ids can collide with zone ids (`versailles`), so they never share
+ * the same string.
+ */
+export const TOUR_DEST_PREFIX = 'tour:' as const;
+
+export type TourDest = `${typeof TOUR_DEST_PREFIX}${TourId}`;
+
+/** A drop-off: a priced zone, or a tour (always on request). */
+export type ArrivalId = ZoneId | TourDest;
+
+export function isTourId(value: string): value is TourId {
+  return (TOUR_IDS as readonly string[]).includes(value);
+}
+
+export function tourDestValue(id: TourId): TourDest {
+  return `${TOUR_DEST_PREFIX}${id}`;
+}
+
+export function parseTourDest(value: string): TourId | null {
+  if (!value.startsWith(TOUR_DEST_PREFIX)) return null;
+  const id = value.slice(TOUR_DEST_PREFIX.length);
+  return isTourId(id) ? id : null;
+}
+
+export function isArrivalId(value: string): value is ArrivalId {
+  return isZoneId(value) || parseTourDest(value) != null;
+}
+
+export function destinationKindOf(value: string): DestinationKind {
+  if (isZoneId(value)) return ZONE_KIND[value];
+  return 'tours';
+}
 
 /** Dedicated route pages (SEO). One page = one highlighted connection. */
 export type RoutePage = {

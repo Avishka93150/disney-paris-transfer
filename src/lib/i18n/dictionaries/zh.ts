@@ -408,6 +408,12 @@ export const zh: Dictionary = {
     extrasLead: '将计入您的接送费用。',
     extrasEach: '每件',
   },
+  destinationKinds: {
+    airport: '机场',
+    city: '城市',
+    castle: '城堡与乐园',
+    tours: '游览',
+  },
   zones: {
     cdg: '戴高乐机场（CDG）',
     orly: '奥利机场（Orly）',

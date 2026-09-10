@@ -7,6 +7,7 @@ import { ru } from './dictionaries/ru';
 import { zh } from './dictionaries/zh';
 import { ja } from './dictionaries/ja';
 import type { Dictionary } from './types';
+import { isTourId, isZoneId, parseTourDest } from '../prices';
 
 const DICTIONARIES: Record<Locale, Dictionary> = { fr, en, es, it, ru, zh, ja };
 
@@ -38,6 +39,14 @@ export function formatDuration(dict: Dictionary, minutes: number): string {
 
 export function formatDistance(dict: Dictionary, km: number): string {
   return `${dict.common.approx} ${km} ${dict.common.km}`;
+}
+
+/** Zone name, or the tour title when `to` is a `tour:…` destination. */
+export function destinationLabel(dict: Dictionary, id: string): string {
+  if (isZoneId(id)) return dict.zones[id];
+  const tour = parseTourDest(id) ?? (isTourId(id) ? id : null);
+  if (tour) return dict.tours[tour].name;
+  return id;
 }
 
 export type { Dictionary };

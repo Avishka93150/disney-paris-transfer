@@ -2,59 +2,68 @@
 
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
+import { DestinationSelect } from '@/components/DestinationSelect';
 import type { Dictionary } from '@/lib/i18n/types';
 import {
   MAX_PAX,
   NIGHT_RULE_OFF,
   VEHICLES,
-  ZONE_IDS,
+  activeVehicles,
   fittingVehicle,
+  isZoneId,
   quote,
   quoteBreakdown,
   type NightRule,
   type TripType,
+  type Vehicle,
   type ZoneId,
 } from '@/lib/prices';
-import { fill } from '@/lib/i18n';
+import { destinationLabel, fill } from '@/lib/i18n';
 import { whatsappLink } from '@/lib/site';
 
 /**
  * "Your price, live" — the calculator in the home page hero.
  *
- * The rate grid and the night rule both come from the server (the admin can
- * change either). The price shown here is indicative and **recalculated
- * server-side** before anything is stored or charged.
+ * The rate grid, the night rule and the fleet all come from the server (the
+ * admin can change them). The price shown here is indicative and
+ * **recalculated server-side** before anything is stored or charged.
  */
 export function PriceCalculator({
   dict,
   rates,
   night = NIGHT_RULE_OFF,
+  vehicles = VEHICLES,
   bookingHref,
 }: {
   dict: Dictionary;
   rates: Record<string, readonly number[]>;
   night?: NightRule;
+  vehicles?: readonly Vehicle[];
   bookingHref: string;
 }) {
   const [from, setFrom] = useState<ZoneId>('cdg');
-  const [to, setTo] = useState<ZoneId>('disney');
+  const [to, setTo] = useState('disney');
   const [pax, setPax] = useState(2);
   const [trip, setTrip] = useState<TripType>('ow');
   const [vehicleId, setVehicleId] = useState('saloon');
   const [time, setTime] = useState('');
 
   const calc = dict.home.calc;
+  const fleet = activeVehicles(vehicles);
 
   // The chosen vehicle switches automatically when it becomes too small.
-  const selected = fittingVehicle(pax, vehicleId);
+  const selected = fittingVehicle(pax, vehicleId, vehicles);
+  const toIsZone = isZoneId(to);
+  const samePlace = toIsZone && from === to;
 
   const options = useMemo(
     () =>
-      VEHICLES.map((vehicle) => {
+      fleet.map((vehicle) => {
         const fits = vehicle.maxPax >= pax;
-        const price = fits
-          ? quote({ from, to, pax, vehicleId: vehicle.id, trip, rates, time, night })
-          : null;
+        const price =
+          fits && toIsZone
+            ? quote({ from, to, pax, vehicleId: vehicle.id, trip, rates, time, night, vehicles })
+            : null;
         return {
           id: vehicle.id,
           label: dict.vehicles[vehicle.id].short,
@@ -64,13 +73,13 @@ export function PriceCalculator({
           active: selected?.id === vehicle.id,
         };
       }),
-    [from, to, pax, trip, rates, time, night, dict, selected],
+    [from, to, toIsZone, pax, trip, rates, time, night, dict, selected, fleet, vehicles],
   );
 
-  const breakdown = selected
-    ? quoteBreakdown({ from, to, pax, vehicleId: selected.id, trip, rates, time, night })
-    : null;
-  const samePlace = from === to;
+  const breakdown =
+    selected && toIsZone
+      ? quoteBreakdown({ from, to, pax, vehicleId: selected.id, trip, rates, time, night, vehicles })
+      : null;
 
   let summaryLabel: string;
   let priceLabel: string;
@@ -87,15 +96,15 @@ export function PriceCalculator({
   }
 
   const waMessage = fill(calc.whatsappMessage, {
-    from: dict.zones[from],
-    to: dict.zones[to],
+    from: destinationLabel(dict, from),
+    to: destinationLabel(dict, to),
     pax,
     vehicle: selected ? dict.vehicles[selected.id].label : '',
     trip: trip === 'rt' ? calc.roundTrip : calc.oneWay,
   });
 
   // Pre-fills the booking form with the current simulation.
-  const bookingUrl = `${bookingHref}?from=${from}&to=${to}&pax=${pax}&trip=${trip}&vehicle=${
+  const bookingUrl = `${bookingHref}?from=${from}&to=${encodeURIComponent(to)}&pax=${pax}&trip=${trip}&vehicle=${
     selected?.id ?? ''
   }${time ? `&time=${encodeURIComponent(time)}` : ''}`;
 
@@ -108,35 +117,24 @@ export function PriceCalculator({
       <div className="font-display text-[22px]">{calc.title}</div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <label className={labelClass}>
-          {calc.fromLabel}
-          <select
-            className={selectClass}
-            value={from}
-            onChange={(event) => setFrom(event.target.value as ZoneId)}
-          >
-            {ZONE_IDS.map((zone) => (
-              <option key={zone} value={zone}>
-                {dict.zones[zone]}
-              </option>
-            ))}
-          </select>
-        </label>
+        <DestinationSelect
+          label={calc.fromLabel}
+          value={from}
+          onChange={(value) => {
+            if (isZoneId(value)) setFrom(value);
+          }}
+          dict={dict}
+          selectClassName={selectClass}
+        />
 
-        <label className={labelClass}>
-          {calc.toLabel}
-          <select
-            className={selectClass}
-            value={to}
-            onChange={(event) => setTo(event.target.value as ZoneId)}
-          >
-            {ZONE_IDS.map((zone) => (
-              <option key={zone} value={zone}>
-                {dict.zones[zone]}
-              </option>
-            ))}
-          </select>
-        </label>
+        <DestinationSelect
+          label={calc.toLabel}
+          value={to}
+          onChange={setTo}
+          dict={dict}
+          includeTours
+          selectClassName={selectClass}
+        />
 
         <label className={labelClass}>
           {calc.paxLabel}
@@ -179,31 +177,37 @@ export function PriceCalculator({
         ) : null}
       </div>
 
-      <div className="flex flex-col gap-[5px]">
-        <span className="text-[13px] font-bold">{calc.vehicleLabel}</span>
-        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-          {options.map((option) => (
-            <button
-              key={option.id}
-              type="button"
-              disabled={!option.fits}
-              aria-pressed={option.active}
-              onClick={() => setVehicleId(option.id)}
-              className={`rounded-xl border-2 px-3 py-[9px] text-left font-sans ${
-                option.active ? 'border-brand bg-sand' : 'border-line bg-surface'
-              } ${option.fits ? 'cursor-pointer' : 'cursor-not-allowed opacity-45'}`}
-            >
-              <div className="flex items-baseline justify-between gap-2">
-                <span className="text-[13px] font-extrabold text-ink">{option.label}</span>
-                <span className="whitespace-nowrap text-[13px] font-extrabold text-brand">
-                  {!option.fits ? '—' : option.price != null ? `${option.price} €` : dict.common.quoteOnly}
-                </span>
-              </div>
-              <div className="text-[11px] font-bold text-ink-mute">{option.desc}</div>
-            </button>
-          ))}
+      {fleet.length > 0 ? (
+        <div className="flex flex-col gap-[5px]">
+          <span className="text-[13px] font-bold">{calc.vehicleLabel}</span>
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            {options.map((option) => (
+              <button
+                key={option.id}
+                type="button"
+                disabled={!option.fits}
+                aria-pressed={option.active}
+                onClick={() => setVehicleId(option.id)}
+                className={`rounded-xl border-2 px-3 py-[9px] text-left font-sans ${
+                  option.active ? 'border-brand bg-sand' : 'border-line bg-surface'
+                } ${option.fits ? 'cursor-pointer' : 'cursor-not-allowed opacity-45'}`}
+              >
+                <div className="flex items-baseline justify-between gap-2">
+                  <span className="text-[13px] font-extrabold text-ink">{option.label}</span>
+                  <span className="whitespace-nowrap text-[13px] font-extrabold text-brand">
+                    {!option.fits
+                      ? '—'
+                      : option.price != null
+                        ? `${option.price} €`
+                        : dict.common.quoteOnly}
+                  </span>
+                </div>
+                <div className="text-[11px] font-bold text-ink-mute">{option.desc}</div>
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      ) : null}
 
       <div
         aria-live="polite"

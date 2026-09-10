@@ -273,6 +273,9 @@ SMTP_USER=contact@disneyparistransfers.com
 SMTP_PASS=your-mailbox-password
 ```
 
+You can also paste these later from **Admin → Settings → Email (SMTP)**. Values saved there
+override `.env` without a restart.
+
 Settings by host:
 
 | Host      | `SMTP_HOST`             | Port |
@@ -317,6 +320,8 @@ To enable it:
 STRIPE_SECRET_KEY=sk_live_...
 ```
 
+You can paste this key (and the webhook secret) from **Admin → Settings** instead of `.env`.
+
 **3.** *Developers → Webhooks → Add endpoint*:
 
 - URL: `https://disneyparistransfers.com/api/webhooks/stripe`
@@ -350,7 +355,11 @@ The back office is in English.
 
 ### First login
 
-Sign in with the credentials from `CREDENTIALS.txt`, then **change the password right away**:
+Sign in with the credentials from `CREDENTIALS.txt`, then **change the password right away**
+from **Admin → Settings** (current password + new password). That writes the new hash to the
+database and does not require a restart.
+
+Alternatively, from the server:
 
 ```bash
 cd /var/www/disneyparistransfers

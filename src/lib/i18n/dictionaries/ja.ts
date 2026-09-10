@@ -423,6 +423,12 @@ export const ja: Dictionary = {
     extrasLead: '送迎料金に加算されます。',
     extrasEach: '1点につき',
   },
+  destinationKinds: {
+    airport: '空港',
+    city: '都市',
+    castle: '城・テーマパーク',
+    tours: 'ツアー',
+  },
   zones: {
     cdg: 'シャルル・ド・ゴール空港（CDG）',
     orly: 'オルリー空港',

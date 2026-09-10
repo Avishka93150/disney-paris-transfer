@@ -4,8 +4,9 @@ import { BookingEditor } from './BookingEditor';
 import { requireAdmin } from '@/lib/auth';
 import { bookingExtras, getBookingById } from '@/lib/booking';
 import { euros } from '@/lib/catalog';
+import { destinationLabel } from '@/lib/i18n';
 import { en } from '@/lib/i18n/dictionaries/en';
-import type { VehicleId, ZoneId } from '@/lib/prices';
+import type { VehicleId } from '@/lib/prices';
 import { whatsappLink } from '@/lib/site';
 
 export const dynamic = 'force-dynamic';
@@ -22,7 +23,7 @@ export default async function BookingDetail({ params }: { params: Promise<{ id: 
   const booking = getBookingById(Number(id));
   if (!booking) notFound();
 
-  const zone = (value: string) => en.zones[value as ZoneId] ?? value;
+  const zone = (value: string) => destinationLabel(en, value);
 
   // Old bookings can carry a vehicle id that no longer exists in the app.
   const vehicleEntry = booking.vehicle ? en.vehicles[booking.vehicle as VehicleId] : undefined;

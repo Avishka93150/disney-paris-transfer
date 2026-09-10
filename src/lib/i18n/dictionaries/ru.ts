@@ -438,6 +438,12 @@ export const ru: Dictionary = {
     extrasLead: 'Добавляются к стоимости трансфера.',
     extrasEach: 'за штуку',
   },
+  destinationKinds: {
+    airport: 'Аэропорты',
+    city: 'Города',
+    castle: 'Замки и парки',
+    tours: 'Экскурсии',
+  },
   zones: {
     cdg: 'Аэропорт CDG',
     orly: 'Аэропорт Orly',

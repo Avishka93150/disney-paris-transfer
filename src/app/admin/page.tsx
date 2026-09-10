@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import { requireAdmin } from '@/lib/auth';
 import { countByStatus, listBookings } from '@/lib/booking';
+import { destinationLabel } from '@/lib/i18n';
 import { en } from '@/lib/i18n/dictionaries/en';
-import type { ZoneId } from '@/lib/prices';
 
 export const dynamic = 'force-dynamic';
 
@@ -28,7 +28,7 @@ const PAYMENT_LABELS: Record<string, string> = {
 };
 
 function zone(id: string): string {
-  return en.zones[id as ZoneId] ?? id;
+  return destinationLabel(en, id);
 }
 
 function euros(cents: number | null): string {

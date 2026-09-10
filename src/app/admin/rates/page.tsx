@@ -1,10 +1,11 @@
 import Link from 'next/link';
 import { RatesEditor } from './RatesEditor';
+import { VehiclesEditor } from './VehiclesEditor';
 import { requireAdmin } from '@/lib/auth';
 import { getRates } from '@/lib/db';
 import { en } from '@/lib/i18n/dictionaries/en';
 import { ZONE_IDS, type ZoneId } from '@/lib/prices';
-import { getSettings } from '@/lib/settings';
+import { getSettings, getVehicleFleet } from '@/lib/settings';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,6 +14,7 @@ export default async function AdminRates() {
 
   const rates = getRates();
   const settings = getSettings();
+  const fleet = getVehicleFleet();
   const zone = (id: string) => en.zones[id as ZoneId] ?? id;
 
   const rows = Object.entries(rates)
@@ -21,7 +23,7 @@ export default async function AdminRates() {
       return {
         pair,
         label: `${zone(from ?? '')} ↔ ${zone(to ?? '')}`,
-        prices: prices.join(' '),
+        prices: prices.map(String),
       };
     })
     .sort((a, b) => a.label.localeCompare(b.label, 'en'));
@@ -52,7 +54,19 @@ export default async function AdminRates() {
         </Link>
       </p>
 
-      <RatesEditor rows={rows} zones={zones} />
+      <div className="flex flex-col gap-8">
+        <VehiclesEditor
+          vehicles={fleet.map((vehicle) => ({
+            id: vehicle.id,
+            label: en.vehicles[vehicle.id].label,
+            pax: en.vehicles[vehicle.id].pax,
+            bags: en.vehicles[vehicle.id].bags,
+            active: vehicle.active,
+            mult: vehicle.mult.toFixed(2),
+          }))}
+        />
+        <RatesEditor rows={rows} zones={zones} />
+      </div>
     </main>
   );
 }

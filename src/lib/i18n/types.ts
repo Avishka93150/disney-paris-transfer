@@ -269,6 +269,16 @@ export type Dictionary = {
     /** Suffix on a per-unit add-on price, e.g. "10 € each". */
     extrasEach: string;
   };
+  /**
+   * Labels for grouping departure/arrival places: airports, cities,
+   * castles/parks, and chauffeur-driven tours.
+   */
+  destinationKinds: {
+    airport: string;
+    city: string;
+    castle: string;
+    tours: string;
+  };
   zones: Record<ZoneId, string>;
   vehicles: Record<VehicleId, { label: string; short: string; desc: string; pax: string; bags: string }>;
   tours: Record<TourId, { name: string; dur: string; desc: string }>;

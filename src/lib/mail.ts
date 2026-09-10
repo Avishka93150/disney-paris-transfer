@@ -3,34 +3,51 @@ import nodemailer, { type Transporter } from 'nodemailer';
 import { bookingExtras } from './booking';
 import { euros } from './catalog';
 import type { BookingRow } from './db';
-import { fill, getDictionary } from './i18n';
+import { destinationLabel, fill, getDictionary } from './i18n';
 import { isLocale } from './i18n/config';
 import { en } from './i18n/dictionaries/en';
-import type { VehicleId, ZoneId } from './prices';
+import type { VehicleId } from './prices';
+import { getSmtpConfig } from './settings';
 import { site } from './site';
 
 /**
  * Plain SMTP (the host's mailbox: OVH, Gandi, Ionos…).
  *
- * Without `SMTP_HOST`, emails are written to the console: the site stays usable
- * in development and requests are still recorded.
+ * Without a host (admin settings or `SMTP_HOST`), emails are written to the
+ * console: the site stays usable in development and requests are still recorded.
  */
 
 let transporter: Transporter | null = null;
+let transporterKey: string | null = null;
+
+function adminInbox(): string {
+  return getSmtpConfig().mailTo || site.email;
+}
 
 function getTransport(): Transporter | null {
-  if (!process.env.SMTP_HOST) return null;
-  if (transporter) return transporter;
+  const smtp = getSmtpConfig();
+  if (!smtp.host) {
+    transporter = null;
+    transporterKey = null;
+    return null;
+  }
+
+  const key = JSON.stringify({
+    host: smtp.host,
+    port: smtp.port,
+    secure: smtp.secure,
+    user: smtp.user,
+    pass: smtp.pass,
+  });
+  if (transporter && transporterKey === key) return transporter;
 
   transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: Number.parseInt(process.env.SMTP_PORT ?? '465', 10),
-    secure: process.env.SMTP_SECURE !== 'false',
-    auth: process.env.SMTP_USER
-      ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS ?? '' }
-      : undefined,
+    host: smtp.host,
+    port: smtp.port,
+    secure: smtp.secure,
+    auth: smtp.user ? { user: smtp.user, pass: smtp.pass } : undefined,
   });
-
+  transporterKey = key;
   return transporter;
 }
 
@@ -42,7 +59,8 @@ export async function sendMail(message: {
   replyTo?: string;
 }): Promise<void> {
   const transport = getTransport();
-  const from = process.env.MAIL_FROM || `${site.name} <${site.email}>`;
+  const smtp = getSmtpConfig();
+  const from = smtp.mailFrom || `${site.name} <${site.email}>`;
 
   if (!transport) {
     console.info(
@@ -87,8 +105,8 @@ function describe(booking: BookingRow, localeCode: string) {
       ...(booking.package_name
         ? ([[dict.pricing.packageLabel, booking.package_name]] as [string, string][])
         : []),
-      [dict.booking.fromLabel, dict.zones[booking.from_zone as ZoneId] ?? booking.from_zone],
-      [dict.booking.toLabel, dict.zones[booking.to_zone as ZoneId] ?? booking.to_zone],
+      [dict.booking.fromLabel, destinationLabel(dict, booking.from_zone)],
+      [dict.booking.toLabel, destinationLabel(dict, booking.to_zone)],
       [dict.booking.tripLabel, booking.trip === 'rt' ? dict.booking.roundTrip : dict.booking.oneWay],
       [dict.booking.dateLabel, booking.travel_date ?? '—'],
       [dict.booking.timeLabel, booking.travel_time ?? '—'],
@@ -171,7 +189,7 @@ function price(cents: number | null): string {
 /** Notification to the driver — always in English, whatever the customer read. */
 export async function sendBookingNotification(booking: BookingRow): Promise<void> {
   const { rows } = describe(booking, 'en');
-  const to = process.env.MAIL_TO || site.email;
+  const to = adminInbox();
 
   const details: [string, string][] = [
     ...rows,
@@ -258,7 +276,7 @@ export async function sendPaymentReceipt(booking: BookingRow, amountCents: numbe
   });
 
   await sendMail({
-    to: process.env.MAIL_TO || site.email,
+    to: adminInbox(),
     subject: `Payment received ${booking.reference} — ${price(amountCents)}`,
     text: `Payment received for ${booking.reference}: ${price(amountCents)} (${booking.customer_name}).`,
     html: wrap(

@@ -1,17 +1,20 @@
 'use client';
 
 import { useMemo, useState, type FormEvent } from 'react';
+import { DestinationSelect } from '@/components/DestinationSelect';
 import type { Dictionary } from '@/lib/i18n/types';
 import type { Locale } from '@/lib/i18n/config';
 import {
   MAX_PAX,
   NIGHT_RULE_OFF,
-  VEHICLE_IDS,
-  ZONE_IDS,
+  VEHICLES,
+  activeVehicles,
   applyNight,
+  isZoneId,
   quoteBreakdown,
   type NightRule,
   type TripType,
+  type Vehicle,
   type ZoneId,
 } from '@/lib/prices';
 import { euros, findPackage, priceExtras, type Extra, type Package } from '@/lib/catalog';
@@ -19,7 +22,7 @@ import { fill } from '@/lib/i18n';
 
 type Defaults = {
   from: ZoneId;
-  to: ZoneId;
+  to: string;
   pax: number;
   trip: TripType;
   vehicle: string;
@@ -42,6 +45,7 @@ export function BookingForm({
   packages,
   extras,
   night = NIGHT_RULE_OFF,
+  vehicles = VEHICLES,
   defaults,
 }: {
   locale: Locale;
@@ -50,12 +54,13 @@ export function BookingForm({
   packages: Package[];
   extras: Extra[];
   night?: NightRule;
+  vehicles?: readonly Vehicle[];
   defaults: Defaults;
 }) {
   const b = dict.booking;
 
   const [from, setFrom] = useState<ZoneId>(defaults.from);
-  const [to, setTo] = useState<ZoneId>(defaults.to);
+  const [to, setTo] = useState(defaults.to);
   const [pax, setPax] = useState(defaults.pax);
   const [trip, setTrip] = useState<TripType>(defaults.trip);
   const [vehicle, setVehicle] = useState(defaults.vehicle);
@@ -94,8 +99,18 @@ export function BookingForm({
       baseCents = selectedPackage.priceCents;
       nightCents = applied.surcharge;
       nightPercent = applied.night ? night.percent : 0;
-    } else if (vehicle !== 'advise') {
-      const breakdown = quoteBreakdown({ from, to, pax, vehicleId: vehicle, trip, rates, time, night });
+    } else if (vehicle !== 'advise' && isZoneId(to)) {
+      const breakdown = quoteBreakdown({
+        from,
+        to,
+        pax,
+        vehicleId: vehicle,
+        trip,
+        rates,
+        time,
+        night,
+        vehicles,
+      });
       if (breakdown) {
         baseCents = breakdown.baseEuros * 100;
         nightCents = breakdown.nightEuros * 100;
@@ -112,7 +127,7 @@ export function BookingForm({
       extraLines: extrasPriced.lines,
       totalCents: baseCents + nightCents + extrasPriced.totalCents,
     };
-  }, [selectedPackage, vehicle, from, to, pax, trip, rates, time, night, extras, chosenExtras]);
+  }, [selectedPackage, vehicle, from, to, pax, trip, rates, time, night, extras, chosenExtras, vehicles]);
 
   function setExtraQty(slug: string, qty: number) {
     setChosenExtras((current) => ({ ...current, [slug]: qty }));
@@ -259,37 +274,24 @@ export function BookingForm({
       ) : null}
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <label className="field-label">
-          {b.fromLabel}
-          <select
-            name="from"
-            className="field"
-            value={from}
-            onChange={(event) => setFrom(event.target.value as ZoneId)}
-          >
-            {ZONE_IDS.map((zone) => (
-              <option key={zone} value={zone}>
-                {dict.zones[zone]}
-              </option>
-            ))}
-          </select>
-        </label>
+        <DestinationSelect
+          label={b.fromLabel}
+          name="from"
+          value={from}
+          onChange={(value) => {
+            if (isZoneId(value)) setFrom(value);
+          }}
+          dict={dict}
+        />
 
-        <label className="field-label">
-          {b.toLabel}
-          <select
-            name="to"
-            className="field"
-            value={to}
-            onChange={(event) => setTo(event.target.value as ZoneId)}
-          >
-            {ZONE_IDS.map((zone) => (
-              <option key={zone} value={zone}>
-                {dict.zones[zone]}
-              </option>
-            ))}
-          </select>
-        </label>
+        <DestinationSelect
+          label={b.toLabel}
+          name="to"
+          value={to}
+          onChange={setTo}
+          dict={dict}
+          includeTours
+        />
 
         <label className="field-label">
           {b.tripLabel}
@@ -355,9 +357,9 @@ export function BookingForm({
             value={vehicle}
             onChange={(event) => setVehicle(event.target.value)}
           >
-            {VEHICLE_IDS.map((id) => (
-              <option key={id} value={id}>
-                {dict.vehicles[id].label}
+            {activeVehicles(vehicles).map((item) => (
+              <option key={item.id} value={item.id}>
+                {dict.vehicles[item.id].label}
               </option>
             ))}
             <option value="advise">{b.vehicleAdvise}</option>

@@ -5,8 +5,17 @@ import { Container, PageHero } from '@/components/ui';
 import { getRates, listActiveExtras, listActivePackages } from '@/lib/db';
 import { getDictionary } from '@/lib/i18n';
 import type { Locale } from '@/lib/i18n/config';
-import { VEHICLE_IDS, ZONE_IDS, parseClock, type TripType, type ZoneId } from '@/lib/prices';
-import { nightRule } from '@/lib/settings';
+import {
+  VEHICLE_IDS,
+  activeVehicles,
+  fittingVehicle,
+  isArrivalId,
+  isZoneId,
+  parseClock,
+  type TripType,
+  type ZoneId,
+} from '@/lib/prices';
+import { getVehicleFleet, nightRule } from '@/lib/settings';
 import { site } from '@/lib/site';
 
 type SearchParams = Record<string, string | string[] | undefined>;
@@ -17,7 +26,11 @@ function one(params: SearchParams, key: string): string | undefined {
 }
 
 function asZone(value: string | undefined, fallback: ZoneId): ZoneId {
-  return value && (ZONE_IDS as readonly string[]).includes(value) ? (value as ZoneId) : fallback;
+  return value && isZoneId(value) ? value : fallback;
+}
+
+function asArrival(value: string | undefined, fallback: string): string {
+  return value && isArrivalId(value) ? value : fallback;
 }
 
 /** Booking page — carried over from `project/Reservation.dc.html`. */
@@ -33,21 +46,26 @@ export function BookingPage({
   const packages = listActivePackages();
   const extras = listActiveExtras();
   const night = nightRule();
+  const vehicles = getVehicleFleet();
+  const offered = activeVehicles(vehicles);
 
-  // Pre-filled from the home page calculator.
+  // Pre-filled from the home page calculator or the prices page.
   const paxParam = Number.parseInt(one(searchParams, 'pax') ?? '', 10);
   const vehicleParam = one(searchParams, 'vehicle');
   const timeParam = one(searchParams, 'time');
+  const pax = Number.isFinite(paxParam) && paxParam >= 1 && paxParam <= 8 ? paxParam : 2;
+  const preferred =
+    vehicleParam && (VEHICLE_IDS as readonly string[]).includes(vehicleParam)
+      ? vehicleParam
+      : offered[0]?.id;
+  const fitted = fittingVehicle(pax, preferred, vehicles);
 
   const defaults = {
     from: asZone(one(searchParams, 'from'), 'cdg'),
-    to: asZone(one(searchParams, 'to'), 'disney'),
-    pax: Number.isFinite(paxParam) && paxParam >= 1 && paxParam <= 8 ? paxParam : 2,
+    to: asArrival(one(searchParams, 'to'), 'disney'),
+    pax,
     trip: (one(searchParams, 'trip') === 'rt' ? 'rt' : 'ow') as TripType,
-    vehicle:
-      vehicleParam && (VEHICLE_IDS as readonly string[]).includes(vehicleParam)
-        ? vehicleParam
-        : 'saloon',
+    vehicle: fitted?.id ?? 'advise',
     time: parseClock(timeParam) == null ? '' : (timeParam as string),
   };
 
@@ -88,6 +106,7 @@ export function BookingPage({
               packages={packages}
               extras={extras}
               night={night}
+              vehicles={vehicles}
               defaults={defaults}
             />
           </div>

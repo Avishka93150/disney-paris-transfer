@@ -16,8 +16,8 @@ import { getRates } from '@/lib/db';
 import { fill, formatDistance, formatDuration, getDictionary } from '@/lib/i18n';
 import { isLocale } from '@/lib/i18n/config';
 import { path, routePath } from '@/lib/i18n/routes';
-import { ROUTE_PAGES } from '@/lib/prices';
-import { nightRule } from '@/lib/settings';
+import { ROUTE_PAGES, activeVehicles } from '@/lib/prices';
+import { getVehicleFleet, nightRule } from '@/lib/settings';
 import { localBusinessJsonLd, pageMetadata } from '@/lib/seo';
 import { site } from '@/lib/site';
 
@@ -48,10 +48,14 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   const dict = getDictionary(locale);
   const rates = getRates();
   const night = nightRule();
+  const vehicles = getVehicleFleet();
   const home = dict.home;
 
   const featured = ROUTE_PAGES.filter((route) => route.featured);
-  const fleet = (['saloon', 'van', 'premium'] as const).map((id) => ({ id, ...dict.vehicles[id] }));
+  const fleet = activeVehicles(vehicles).map((vehicle) => ({
+    id: vehicle.id,
+    ...dict.vehicles[vehicle.id],
+  }));
 
   return (
     <>
@@ -89,6 +93,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
               dict={dict}
               rates={rates}
               night={night}
+              vehicles={vehicles}
               bookingHref={path(locale, 'booking')}
             />
           </div>
@@ -178,11 +183,16 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         </section>
 
         {/* ── Fleet ──────────────────────────────────────────────────── */}
+        {fleet.length > 0 ? (
         <section className="bg-sand">
           <Container className="py-[72px]">
             <h2 className="m-0 mb-2 font-display text-[32px]">{home.fleetTitle}</h2>
             <p className="m-0 mb-8 text-base text-ink-soft">{home.fleetLead}</p>
-            <div className="grid gap-5 md:grid-cols-3">
+            <div
+              className={`grid gap-5 ${
+                fleet.length >= 4 ? 'md:grid-cols-2 lg:grid-cols-4' : 'md:grid-cols-3'
+              }`}
+            >
               {fleet.map((vehicle) => (
                 <div
                   key={vehicle.id}
@@ -204,6 +214,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             </div>
           </Container>
         </section>
+        ) : null}
 
         {/* ── Reviews ────────────────────────────────────────────────── */}
         <section className="py-[72px]">

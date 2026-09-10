@@ -1,9 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getBookingByReference, markPayment } from '@/lib/booking';
-import { getDictionary } from '@/lib/i18n';
+import { destinationLabel, getDictionary } from '@/lib/i18n';
 import { isLocale } from '@/lib/i18n/config';
 import { path } from '@/lib/i18n/routes';
-import type { ZoneId } from '@/lib/prices';
 import { clientIp, rateLimit } from '@/lib/ratelimit';
 import { getSettings, payableCents } from '@/lib/settings';
 import { absoluteUrl } from '@/lib/site';
@@ -60,9 +59,7 @@ export async function POST(request: Request) {
   // A package was sold under its own name; anything else is a route.
   const label =
     booking.package_name ??
-    `${dict.zones[booking.from_zone as ZoneId] ?? booking.from_zone} → ${
-      dict.zones[booking.to_zone as ZoneId] ?? booking.to_zone
-    }`;
+    `${destinationLabel(dict, booking.from_zone)} → ${destinationLabel(dict, booking.to_zone)}`;
   const bookingUrl = absoluteUrl(path(locale, 'booking'));
 
   const session = await client.checkout.sessions.create({

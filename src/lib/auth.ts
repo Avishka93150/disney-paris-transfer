@@ -2,6 +2,7 @@ import 'server-only';
 import { createHmac, randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
+import { getAdminPasswordHash } from './settings';
 
 /**
  * Admin authentication — a single account, the driver's.
@@ -14,6 +15,7 @@ import { redirect } from 'next/navigation';
 const COOKIE = 'dpt_admin';
 const MAX_AGE_SECONDS = 12 * 60 * 60;
 const SCRYPT_KEYLEN = 64;
+export const MIN_PASSWORD_LENGTH = 10;
 
 function secret(): string {
   const value = process.env.SESSION_SECRET;
@@ -85,10 +87,10 @@ function parse(token: string): { sub: string } | null {
   }
 }
 
-/** Checks the credentials against the environment variables. */
+/** Checks the credentials against the admin email (.env) and the live hash. */
 export function checkCredentials(email: string, password: string): boolean {
   const expectedEmail = process.env.ADMIN_EMAIL;
-  const hash = process.env.ADMIN_PASSWORD_HASH;
+  const hash = getAdminPasswordHash();
   if (!expectedEmail || !hash) return false;
 
   // Case-insensitive email comparison, then a constant-time password check.
@@ -134,5 +136,5 @@ export async function requireAdmin(): Promise<{ sub: string }> {
 
 /** The admin is unusable until the account is configured. */
 export function adminConfigured(): boolean {
-  return Boolean(process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD_HASH && process.env.SESSION_SECRET);
+  return Boolean(process.env.ADMIN_EMAIL && process.env.SESSION_SECRET && getAdminPasswordHash());
 }

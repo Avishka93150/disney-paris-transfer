@@ -436,6 +436,12 @@ export const fr: Dictionary = {
     extrasLead: 'Ajoutées au prix de votre transfert.',
     extrasEach: "l'unité",
   },
+  destinationKinds: {
+    airport: 'Aéroports',
+    city: 'Villes',
+    castle: 'Châteaux & parcs',
+    tours: 'Excursions',
+  },
   zones: {
     cdg: 'Aéroport CDG',
     orly: 'Aéroport Orly',
