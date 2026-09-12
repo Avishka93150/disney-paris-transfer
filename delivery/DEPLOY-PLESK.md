@@ -1,142 +1,98 @@
-# Deploying on Plesk (Node.js application)
+# Deploying on the Plesk server — `deploy.sh`
 
 > 🇫🇷 Version française : [`DEPLOIEMENT-PLESK.md`](./DEPLOIEMENT-PLESK.md)
 >
-> This guide is for a server managed with **Plesk** and its Node.js support. For a bare VPS
-> without Plesk, follow [`INSTALLATION-GUIDE.md`](./INSTALLATION-GUIDE.md) instead.
+> For the server at **151.80.21.79** managed with Plesk, serving `disneyparistransfers.com`.
+> For a server without Plesk, see [`INSTALLATION-GUIDE.md`](./INSTALLATION-GUIDE.md).
 
-## How it works
+One script does everything, first deployment and every update alike: `deploy.sh`, at the
+root of the project. You run it from the terminal built into Plesk.
 
-The site is **built by GitHub, not by your server**. Every time code lands on the `main`
-branch, a GitHub Action compiles the site and publishes the result on a branch called
-`deploy`. Plesk pulls that branch, installs the runtime components and restarts the
-application. Your server never runs the build.
+## Before the first deployment — one thing to check
 
-```
-GitHub main ──(Action: build)──▶ GitHub deploy ──(Plesk Git: pull)──▶ your server
-```
+The site needs **Node.js 22 (or newer)**. In Plesk: *Tools & Settings → Updates →
+Add/Remove Components → Web hosting → Node.js support*: tick **Node.js 22**. The script
+stops with a clear message if it is missing.
 
-## Before you start — two things to check
+## First deployment (5 minutes)
 
-1. **Node.js 22 (or newer) is installed in Plesk.** *Tools & Settings → Updates → Add/Remove
-   Components → Web hosting → Node.js support*: tick **Node.js 22** (and later versions if
-   offered). The site cannot run on Node 20 or 18.
-2. The **Git** extension is present (*Websites & Domains → your domain → Git*). It is part
-   of Plesk Obsidian; if the icon is missing, install it from *Extensions*.
+1. In Plesk, open **Tools & Settings → SSH Terminal** (you are `root` there). If the
+   *SSH Terminal* icon is missing, install the free extension of that name from
+   *Extensions*, or connect with any SSH client as `root@151.80.21.79`.
+2. Paste this line and press Enter:
 
-## 1. Publish the `deploy` branch (once)
+   ```bash
+   curl -fsSL https://raw.githubusercontent.com/Avishka93150/disney-paris-transfer/main/deploy.sh | bash
+   ```
 
-1. Merge the site into `main` on GitHub (or open the **Actions** tab, choose *Build deploy
-   branch*, click *Run workflow* and pick the branch you want to publish).
-2. Wait for the green tick. A `deploy` branch now exists in the repository.
+3. The script asks two questions — the **email** and **password** for the back office
+   (leave the password empty and it generates one, shown at the end). Everything else is
+   automatic:
 
-## 2. Pull it with Plesk Git
+   - the code is downloaded from GitHub into `/var/www/vhosts/disneyparistransfers.com/httpdocs`.
+     Whatever was in that folder before is moved to `httpdocs.before-<date>`, and if it was
+     the previous version of this site, its **bookings database and `.env` are carried
+     over**;
+   - a `.env` is created (secret key, admin login, database in
+     `/var/www/vhosts/disneyparistransfers.com/data/app.db` — outside the code folder, so a
+     redeploy can never touch it);
+   - the site is installed and built;
+   - the Node.js application is configured in Plesk and started.
 
-*Websites & Domains → disneyparistransfers.com → Git → Add Repository*:
+4. Read the final lines: the script prints the admin password if it generated one, and
+   says whether `https://disneyparistransfers.com/en` answers. If it does not yet, check
+   the settings in the next section and click *Restart App*.
 
-| Field                          | Value                                                              |
-| ------------------------------ | ------------------------------------------------------------------ |
-| Repository                     | Remote Git hosting like GitHub                                     |
-| Remote Git repository          | `https://github.com/Avishka93150/disney-paris-transfer.git`        |
-| Branch                         | **`deploy`**                                                       |
-| Deploy to                      | `/httpdocs` (the default)                                          |
-| Deployment mode                | *Automatic* (see step 5) — or *Manual* if you prefer to click      |
-| Additional deployment actions  | `bash /var/www/vhosts/disneyparistransfers.com/httpdocs/deploy.sh` |
+> 🔒 The previous site is not deleted, only moved aside. Delete `httpdocs.before-<date>`
+> yourself once the new site is confirmed working.
 
-> If the GitHub repository is private, Plesk shows an SSH public key when you choose the SSH
-> URL (`git@github.com:Avishka93150/disney-paris-transfer.git`): add it on GitHub as a
-> *deploy key* on the repository.
->
-> The deployment action needs the domain's system user to have a real shell: *Websites &
-> Domains → Hosting & DNS → Web Hosting Access → Access to the server over SSH*:
-> **`/bin/bash`** (not *chrooted*, not *forbidden*). Without it, skip the action and use the
-> *NPM install* and *Restart App* buttons of step 3 after each deployment instead.
+## The Node.js application in Plesk
 
-Click *OK*: Plesk clones the branch into `httpdocs`.
+The script sets these itself when it runs as `root`. If it could not (it says so), set
+them in *Websites & Domains → disneyparistransfers.com → Node.js*:
 
-## 3. Enable Node.js on the domain
+| Field                    | Value                                         |
+| ------------------------ | --------------------------------------------- |
+| Node.js version          | **22** (or newer)                             |
+| Application mode         | production                                    |
+| Application root         | `/httpdocs`                                   |
+| Document root            | `/httpdocs/dist/client`                       |
+| Application startup file | `server.mjs`                                  |
 
-*Websites & Domains → disneyparistransfers.com → Node.js → Enable Node.js*, then set:
+No environment variables are needed in the panel: the site reads
+`httpdocs/.env`. Then *Enable Node.js* (first time) or *Restart App*.
 
-| Field                     | Value                                              |
-| ------------------------- | -------------------------------------------------- |
-| Node.js version           | **22** (or newer)                                  |
-| Package manager           | npm                                                |
-| Document root             | `/httpdocs/dist/client` — photos, fonts and scripts are then served straight by the web server |
-| Application mode          | production                                         |
-| Application root          | `/httpdocs`                                        |
-| Application startup file  | `server.mjs`                                       |
+**HTTPS:** *Websites & Domains → SSL/TLS Certificates → Let's Encrypt*, for the domain and
+`www`, and tick *Redirect from HTTP to HTTPS* in *Hosting Settings*. (Probably already in
+place if the domain was live before.)
 
-Then **Custom environment variables → Specify** and add them (copy from `.env.example`);
-the important ones:
+## Every update afterwards — one command
 
-| Variable              | Value                                                                        |
-| --------------------- | ---------------------------------------------------------------------------- |
-| `APP_URL`             | `https://disneyparistransfers.com`                                           |
-| `SESSION_SECRET`      | 32+ random characters                                                        |
-| `ADMIN_EMAIL`         | your login                                                                   |
-| `ADMIN_PASSWORD_HASH` | the line from `npm run admin:hash` (starts with `scrypt:`)                   |
-| `DATABASE_PATH`       | `/var/www/vhosts/disneyparistransfers.com/data/app.db` — **outside** `httpdocs`, so a redeploy can never touch your bookings |
-| `SMTP_HOST` … `MAIL_TO` | your mailbox (can also be set later from Admin → Settings)                  |
-| `SITE_PHONE`, `SITE_PHONE_DISPLAY`, `SITE_WHATSAPP`, `SITE_EMAIL` | your public contact details |
-
-Click *Apply*, then **NPM install** (only needed the first time, or if the deployment
-action could not run), then **Restart App**.
-
-Open `https://disneyparistransfers.com` — the site is live. Sign in at `/admin`.
-
-> ℹ️ Instead of the panel you can also place a `.env` file in `httpdocs`: `server.mjs`
-> reads it at start. Variables set in Plesk win over the file.
-
-## 4. HTTPS
-
-*Websites & Domains → SSL/TLS Certificates → Let's Encrypt*: issue a certificate for the
-domain and `www`, and tick *Redirect from HTTP to HTTPS* in *Hosting Settings*.
-
-## 5. Updating the site later — one command
-
-From the project folder on your own computer:
+Open the Plesk terminal and run:
 
 ```bash
-npm run deploy
+bash /var/www/vhosts/disneyparistransfers.com/httpdocs/deploy.sh
 ```
 
-That single command checks and builds the site, then delivers it. Which way depends on
-two lines in your local `.env` (see `.env.example`, section *Deployment*):
+It fetches the latest code from GitHub (`main`), rebuilds, restarts. About one minute.
+Your `.env` and your bookings are untouched.
 
-- **`DEPLOY_SSH=user@disneyparistransfers.com`** — the site is copied straight to the
-  server and `deploy.sh` runs there (install + restart). Nothing goes through GitHub. The
-  user is the domain's system user, with *Access over SSH: /bin/bash* in Plesk, and your
-  computer's SSH key added under *Websites & Domains → SSH Access* (or use a password).
-  Optional: `DEPLOY_PATH` if the application is not in `httpdocs`.
-- **No `DEPLOY_SSH`** — the built site is pushed to the `deploy` branch on GitHub, and if
-  `PLESK_WEBHOOK_URL` is set (the *Webhook URL* shown on the repository's Git page in Plesk)
-  Plesk is told to pull and restart at once. Without the URL, Plesk pulls on its next
-  automatic deployment or when you click *Pull Updates*.
+To deploy a specific branch (a pull request you want to try before merging):
 
-Useful flags: `--skip-check` (skip the type check), `--skip-build` (redeploy the last build),
-`--dry-run` (show what would happen), `--method=git` (force the GitHub route even with SSH
-configured).
+```bash
+BRANCH=name-of-the-branch bash /var/www/vhosts/disneyparistransfers.com/httpdocs/deploy.sh
+```
 
-### …or let GitHub do it
+## Settings
 
-Without running anything yourself:
+- **Mailbox, Stripe, phone number:** edit `httpdocs/.env` (see `.env.example`), then
+  *Restart App* — or, for SMTP and Stripe, use *Admin → Settings*, which needs no restart.
+- **Prices, night hours, packages, add-ons:** the back office, live immediately.
 
-1. Merge the change into `main` on GitHub → the Action rebuilds the `deploy` branch
-   (about two minutes).
-2. **Automatic mode:** Plesk shows a *Webhook URL* on the repository's page. On GitHub, open
-   *Settings → Webhooks → Add webhook*, paste that URL, content type `application/json`,
-   event *Just the push event*. From then on every new build deploys itself: Plesk pulls
-   `deploy` and runs `deploy.sh`, which installs any new components and restarts the app.
-3. **Manual mode:** *Websites & Domains → Git → Pull Updates* (then *NPM install* and
-   *Restart App* if the deployment action is not set up).
+## Backups
 
-Your database is untouched either way — it lives outside `httpdocs`.
-
-## 6. Backups
-
-Everything is in one file: the `DATABASE_PATH` above. Include `/data` in Plesk's *Backup
-Manager* schedule, or add a *Scheduled Task*:
+Everything is in one file: `/var/www/vhosts/disneyparistransfers.com/data/app.db`. Include
+the `data` folder in Plesk's *Backup Manager* schedule, or add a *Scheduled Task*:
 
 ```
 cp /var/www/vhosts/disneyparistransfers.com/data/app.db /var/www/vhosts/disneyparistransfers.com/backups/app-$(date +\%F).db
@@ -146,10 +102,10 @@ cp /var/www/vhosts/disneyparistransfers.com/data/app.db /var/www/vhosts/disneypa
 
 | Symptom                                              | Cause and fix                                                                                          |
 | ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| Node.js 22 is not in the version list                | Install the *Node.js 22* component (*Tools & Settings → Updates*). The site does not run on older versions. |
-| The deployment action fails with "npm not found"     | The system user's shell is *chrooted* or *forbidden*: set it to `/bin/bash`, or use the *NPM install* button. |
-| *NPM install* fails on `better-sqlite3`              | The server blocks the download of the prebuilt module or lacks build tools (`gcc`, `make`, `python3`). Install them or allow the download, then retry. |
-| "Web application could not be started" / 503        | Open the log: *Node.js → the application → Logs* (`stderr`). Usually a missing `SESSION_SECRET` or a `DATABASE_PATH` folder the system user cannot write to (`chown` it to the domain's user). |
-| The site shows the old version after a deploy        | Click *Restart App*, or run `touch /var/www/vhosts/disneyparistransfers.com/httpdocs/tmp/restart.txt`. |
-| Photos or fonts return 404                           | *Document root* must be `/httpdocs/dist/client` (step 3).                                              |
-| Emails are not sent                                  | Fill in the SMTP variables (panel or Admin → Settings). Until then, emails are written to the app log. |
+| "Node.js not found" / "too old"                      | Install the *Node.js 22* component (*Tools & Settings → Updates*), run the script again.               |
+| `npm ci` fails on `better-sqlite3`                   | The server lacks build tools or blocks the module download. `apt install build-essential python3` (Ubuntu/Debian) or `dnf groupinstall "Development Tools"` (AlmaLinux), then run the script again. |
+| "Web application could not be started" / 503        | *Node.js → Logs* (`stderr`). Usually the Node.js settings above (startup file, application root) or a wrong document root. |
+| The site shows the old version                       | Click *Restart App*, or `touch /var/www/vhosts/disneyparistransfers.com/httpdocs/tmp/restart.txt`.     |
+| Photos or fonts return 404                           | *Document root* must be `/httpdocs/dist/client`.                                                       |
+| Emails are not sent                                  | Fill in the SMTP settings (`.env` or Admin → Settings). Until then, emails are written to the app log. |
+| Lost the admin password                              | On the server: `cd /var/www/vhosts/disneyparistransfers.com/httpdocs && npm run admin:hash -- 'new-password'`, paste the printed `ADMIN_PASSWORD_HASH=` line into `.env`, *Restart App*. |

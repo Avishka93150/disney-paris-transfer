@@ -88,9 +88,7 @@ this implementation — the prototypes did not cover it.
 project/                       Exported DC mockups (visual reference, not compiled)
 chats/  README.md              Claude Design handoff bundle (what the client actually asked for)
 delivery/                      Client-facing docs: install guides (VPS, Plesk; EN + FR), schema.sql
-deploy/plesk/                  deploy.sh shipped on the `deploy` branch (Plesk deployment action)
-.github/workflows/             deploy-branch.yml: builds main → publishes the `deploy` branch
-Dockerfile                     For container hosts (persistent volume on /app/data)
+deploy.sh                      One-command deployment on the Plesk server (clone/pull, build, restart)
 server.mjs                     Production entry: loads .env, starts dist/server/entry.mjs
 astro.config.mjs               Astro: server output, Node adapter, Tailwind plugin
 src/
@@ -306,31 +304,25 @@ Dotenv-style loaders expand `$name` as a variable and would silently truncate th
 
 ## Deployment
 
-Three supported routes, all documented for the client under `delivery/`:
+Two supported routes, both documented for the client under `delivery/`:
 
 - **VPS** (`INSTALLATION-GUIDE.md`): `npm ci && npm run build`, then `npm start` under pm2
   behind nginx.
-- **Plesk** (`DEPLOY-PLESK.md`) — the client's server: the site is **never built on the
-  server**. `npm run deploy` (`scripts/deploy.mjs`) checks, builds, assembles the
-  ready-to-run tree in `out/` (`scripts/assemble-deploy.mjs`: `dist/`, `server.mjs`,
-  `package*.json`, `scripts/`, `deploy/plesk/deploy.sh`, `BUILD`) and delivers it either
-  straight to the server over SSH (`DEPLOY_SSH`, tar over ssh + `deploy.sh`) or by
-  force-pushing the `deploy` branch and pinging `PLESK_WEBHOOK_URL`.
-  `.github/workflows/deploy-branch.yml` does the same assemble + push on every merge to
-  `main`, with the same `assemble-deploy.mjs`. Plesk's Git tool pulls that branch into
-  `httpdocs` (automatically through a GitHub webhook, or on click) and runs `deploy.sh` as
-  its deployment action: it puts `/opt/plesk/node/22/bin` on the PATH, runs
-  `npm ci --omit=dev` and touches `tmp/restart.txt` for Passenger. The domain's Node.js
-  screen points *Application root* at `httpdocs`, *Document root* at `httpdocs/dist/client`
-  (static files served by the web server) and the startup file at `server.mjs`; Passenger
-  ignores the port `server.mjs` listens on. Set `DATABASE_PATH` outside `httpdocs` so a
-  redeploy can never touch the bookings.
-- **Container hosts** (Render, Railway, Coolify…): the `Dockerfile` at the root; mount a
-  persistent volume on `/app/data`.
+- **Plesk** (`DEPLOY-PLESK.md`) — the client's server (151.80.21.79): **`deploy.sh`**, run
+  from the Plesk terminal as root. First time: `curl -fsSL …/main/deploy.sh | bash`; then
+  `bash /var/www/vhosts/disneyparistransfers.com/httpdocs/deploy.sh`. It puts
+  `/opt/plesk/node/22/bin` on the PATH, clones or hard-resets `httpdocs` to `origin/main`
+  (an older site there is moved to `httpdocs.before-<date>`, its `data/app.db` and `.env`
+  carried over), creates `.env` on the first run (generated `SESSION_SECRET`, admin login
+  asked on `/dev/tty`, `DATABASE_PATH` at `/var/www/vhosts/<domain>/data/app.db`), runs
+  `npm ci` + `npm run build`, configures the Node.js app through `plesk ext nodejs`
+  (version, app root `/httpdocs`, startup file `server.mjs`, production mode) and
+  `plesk bin site -www-root httpdocs/dist/client`, chowns to the subscription user, and
+  restarts Passenger (`tmp/restart.txt`). Passenger ignores the port `server.mjs` listens
+  on; `.env` is read by `server.mjs`, so no panel environment variables are needed.
+  `BRANCH=` deploys another branch (a PR preview).
 
-Whichever route: Node **22.12+**, one process, and the `.env` variables from
-`.env.example` (or the panel's environment variables — `server.mjs` only fills in what is
-not already set).
+Either route: Node **22.12+**, one process, and the `.env` variables from `.env.example`.
 
 ---
 
@@ -342,8 +334,8 @@ npm run build        # production build → dist/
 npm start            # production server (node server.mjs, reads .env, port 3000)
 npm run check        # astro check — TypeScript on .astro and .ts files
 npm run lint         # ESLint
-npm run deploy       # check + build + deliver to the Plesk server (see Deployment)
 npm run admin:hash   # generate an ADMIN_PASSWORD_HASH
+bash deploy.sh       # on the Plesk server only (see Deployment)
 ```
 
 ---

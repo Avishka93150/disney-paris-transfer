@@ -89,9 +89,7 @@ mobile). Les maquettes n'ont été dessinées qu'en 1280 px ; le comportement re
 project/                       Maquettes DC exportées (référence visuelle, non compilées)
 chats/  README.md              Bundle de transfert Claude Design (ce que le client a demandé)
 delivery/                      Docs client : guides d'installation (VPS, Plesk ; EN + FR), schema.sql
-deploy/plesk/                  deploy.sh livré sur la branche `deploy` (action de déploiement Plesk)
-.github/workflows/             deploy-branch.yml : compile main → publie la branche `deploy`
-Dockerfile                     Pour les hébergeurs à conteneurs (volume persistant sur /app/data)
+deploy.sh                      Mise en ligne en une commande sur le serveur Plesk (clone/pull, build, redémarrage)
 server.mjs                     Point d'entrée production : charge .env, lance dist/server/entry.mjs
 astro.config.mjs               Astro : rendu serveur, adaptateur Node, plugin Tailwind
 src/
@@ -319,31 +317,27 @@ silencieusement le hash.
 
 ## Déploiement
 
-Trois voies prises en charge, toutes documentées pour le client dans `delivery/` :
+Deux voies prises en charge, toutes deux documentées pour le client dans `delivery/` :
 
 - **VPS** (`GUIDE-INSTALLATION.md`) : `npm ci && npm run build`, puis `npm start` sous pm2
   derrière nginx.
-- **Plesk** (`DEPLOIEMENT-PLESK.md`) — le serveur du client : le site n'est **jamais
-  compilé sur le serveur**. `npm run deploy` (`scripts/deploy.mjs`) vérifie, compile,
-  assemble l'arborescence prête à l'emploi dans `out/` (`scripts/assemble-deploy.mjs` :
-  `dist/`, `server.mjs`, `package*.json`, `scripts/`, `deploy/plesk/deploy.sh`, `BUILD`) et
-  la livre soit directement au serveur via SSH (`DEPLOY_SSH`, tar sur ssh + `deploy.sh`),
-  soit en poussant (en force) la branche `deploy` puis en appelant `PLESK_WEBHOOK_URL`.
-  `.github/workflows/deploy-branch.yml` fait le même assemblage + push à chaque fusion dans
-  `main`, avec le même `assemble-deploy.mjs`. L'outil Git de Plesk récupère cette branche
-  dans `httpdocs` (automatiquement via un webhook GitHub, ou
-  au clic) et lance `deploy.sh` comme action de déploiement : il place
-  `/opt/plesk/node/22/bin` dans le PATH, lance `npm ci --omit=dev` et touche
-  `tmp/restart.txt` pour Passenger. L'écran Node.js du domaine pointe la *racine de
-  l'application* sur `httpdocs`, la *racine du document* sur `httpdocs/dist/client` (fichiers
-  statiques servis par le serveur web) et le fichier de démarrage sur `server.mjs` ;
-  Passenger ignore le port sur lequel `server.mjs` écoute. Placer `DATABASE_PATH` hors de
-  `httpdocs` pour qu'une mise à jour ne touche jamais les réservations.
-- **Hébergeurs à conteneurs** (Render, Railway, Coolify…) : le `Dockerfile` à la racine ;
-  monter un volume persistant sur `/app/data`.
+- **Plesk** (`DEPLOIEMENT-PLESK.md`) — le serveur du client (151.80.21.79) :
+  **`deploy.sh`**, lancé depuis le terminal Plesk en root. La première fois :
+  `curl -fsSL …/main/deploy.sh | bash` ; ensuite
+  `bash /var/www/vhosts/disneyparistransfers.com/httpdocs/deploy.sh`. Il place
+  `/opt/plesk/node/22/bin` dans le PATH, clone ou remet `httpdocs` sur `origin/main`
+  (un ancien site présent est déplacé dans `httpdocs.before-<date>`, ses `data/app.db` et
+  `.env` repris), crée `.env` au premier passage (`SESSION_SECRET` généré, identifiants
+  admin demandés sur `/dev/tty`, `DATABASE_PATH` dans `/var/www/vhosts/<domaine>/data/app.db`),
+  lance `npm ci` + `npm run build`, configure l'application Node.js via `plesk ext nodejs`
+  (version, racine `/httpdocs`, fichier de démarrage `server.mjs`, mode production) et
+  `plesk bin site -www-root httpdocs/dist/client`, rend les fichiers à l'utilisateur de
+  l'abonnement et redémarre Passenger (`tmp/restart.txt`). Passenger ignore le port sur
+  lequel `server.mjs` écoute ; `.env` est lu par `server.mjs`, donc aucune variable
+  d'environnement n'est nécessaire dans le panneau. `BRANCH=` met en ligne une autre
+  branche (aperçu d'une PR).
 
-Dans tous les cas : Node **22.12+**, un seul processus, et les variables de `.env.example`
-(ou celles du panneau — `server.mjs` ne remplit que ce qui n'est pas déjà défini).
+Dans les deux cas : Node **22.12+**, un seul processus, et les variables de `.env.example`.
 
 ---
 
@@ -355,8 +349,8 @@ npm run build        # build de production → dist/
 npm start            # serveur de production (node server.mjs, lit .env, port 3000)
 npm run check        # astro check — TypeScript sur les fichiers .astro et .ts
 npm run lint         # ESLint
-npm run deploy       # vérifier + compiler + livrer au serveur Plesk (voir Déploiement)
 npm run admin:hash   # générer un ADMIN_PASSWORD_HASH
+bash deploy.sh       # sur le serveur Plesk uniquement (voir Déploiement)
 ```
 
 ---
