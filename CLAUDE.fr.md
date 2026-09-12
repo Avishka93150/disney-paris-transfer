@@ -88,7 +88,10 @@ mobile). Les maquettes n'ont été dessinées qu'en 1280 px ; le comportement re
 ```
 project/                       Maquettes DC exportées (référence visuelle, non compilées)
 chats/  README.md              Bundle de transfert Claude Design (ce que le client a demandé)
-delivery/                      Docs client : guide d'installation (EN + FR), schema.sql
+delivery/                      Docs client : guides d'installation (VPS, cPanel ; EN + FR), schema.sql
+deploy/cpanel/                 .cpanel.yml + deploy.sh livrés sur la branche `deploy`
+.github/workflows/             deploy-branch.yml : compile main → publie la branche `deploy`
+Dockerfile                     Pour les hébergeurs à conteneurs (volume persistant sur /app/data)
 server.mjs                     Point d'entrée production : charge .env, lance dist/server/entry.mjs
 astro.config.mjs               Astro : rendu serveur, adaptateur Node, plugin Tailwind
 src/
@@ -314,10 +317,34 @@ silencieusement le hash.
 
 ---
 
+## Déploiement
+
+Trois voies prises en charge, toutes documentées pour le client dans `delivery/` :
+
+- **VPS** (`GUIDE-INSTALLATION.md`) : `npm ci && npm run build`, puis `npm start` sous pm2
+  derrière nginx.
+- **Hébergement mutualisé avec un panneau « application Node.js »** — o2switch, cPanel,
+  Plesk (`DEPLOIEMENT-CPANEL.md`) : le site est **compilé par GitHub, pas par
+  l'hébergeur**. `.github/workflows/deploy-branch.yml` compile à chaque push sur `main` et
+  pousse (en force) une branche `deploy` prête à l'emploi (`dist/`, `server.mjs`,
+  `package*.json`, `scripts/`, plus `deploy/cpanel/.cpanel.yml` et `deploy.sh`). L'outil
+  Git de cPanel récupère cette branche dans la racine de l'application ; `deploy.sh` active
+  le Node propre à l'application, lance `npm ci --omit=dev` et touche `tmp/restart.txt`
+  pour Passenger. Passenger ignore le port sur lequel `server.mjs` écoute et route le
+  domaine lui-même. Placer `DATABASE_PATH` hors du dépôt pour qu'une mise à jour ne touche
+  jamais les réservations.
+- **Hébergeurs à conteneurs** (Render, Railway, Coolify…) : le `Dockerfile` à la racine ;
+  monter un volume persistant sur `/app/data`.
+
+Dans tous les cas : Node **22.12+**, un seul processus, et les variables de `.env.example`
+(ou celles du panneau — `server.mjs` ne remplit que ce qui n'est pas déjà défini).
+
+---
+
 ## Commandes
 
 ```bash
-npm run dev          # serveur de développement (http://localhost:4321)
+npm run dev          # serveur de développement (http://localhost:3000)
 npm run build        # build de production → dist/
 npm start            # serveur de production (node server.mjs, lit .env, port 3000)
 npm run check        # astro check — TypeScript sur les fichiers .astro et .ts

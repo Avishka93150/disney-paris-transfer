@@ -87,7 +87,10 @@ this implementation — the prototypes did not cover it.
 ```
 project/                       Exported DC mockups (visual reference, not compiled)
 chats/  README.md              Claude Design handoff bundle (what the client actually asked for)
-delivery/                      Client-facing docs: install guide (EN + FR), schema.sql
+delivery/                      Client-facing docs: install guides (VPS, cPanel; EN + FR), schema.sql
+deploy/cpanel/                 .cpanel.yml + deploy.sh shipped on the `deploy` branch
+.github/workflows/             deploy-branch.yml: builds main → publishes the `deploy` branch
+Dockerfile                     For container hosts (persistent volume on /app/data)
 server.mjs                     Production entry: loads .env, starts dist/server/entry.mjs
 astro.config.mjs               Astro: server output, Node adapter, Tailwind plugin
 src/
@@ -301,10 +304,34 @@ Dotenv-style loaders expand `$name` as a variable and would silently truncate th
 
 ---
 
+## Deployment
+
+Three supported routes, all documented for the client under `delivery/`:
+
+- **VPS** (`INSTALLATION-GUIDE.md`): `npm ci && npm run build`, then `npm start` under pm2
+  behind nginx.
+- **Shared hosting with a "Node.js application" panel** — o2switch, cPanel, Plesk
+  (`DEPLOY-CPANEL.md`): the site is **built by GitHub, not by the host**.
+  `.github/workflows/deploy-branch.yml` builds on every push to `main` and force-pushes a
+  ready-to-run `deploy` branch (`dist/`, `server.mjs`, `package*.json`, `scripts/`, plus
+  `deploy/cpanel/.cpanel.yml` and `deploy.sh`). cPanel's Git tool pulls that branch into
+  the application root; `deploy.sh` activates the app's own Node, runs
+  `npm ci --omit=dev` and touches `tmp/restart.txt` for Passenger. Passenger ignores the
+  port `server.mjs` listens on and routes the domain itself. Set `DATABASE_PATH` outside
+  the repository so a redeploy can never touch the bookings.
+- **Container hosts** (Render, Railway, Coolify…): the `Dockerfile` at the root; mount a
+  persistent volume on `/app/data`.
+
+Whichever route: Node **22.12+**, one process, and the `.env` variables from
+`.env.example` (or the panel's environment variables — `server.mjs` only fills in what is
+not already set).
+
+---
+
 ## Commands
 
 ```bash
-npm run dev          # development server (http://localhost:4321)
+npm run dev          # development server (http://localhost:3000)
 npm run build        # production build → dist/
 npm start            # production server (node server.mjs, reads .env, port 3000)
 npm run check        # astro check — TypeScript on .astro and .ts files

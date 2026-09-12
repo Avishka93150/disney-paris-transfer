@@ -1,6 +1,9 @@
 # Installation guide — Disney Paris Transfers
 
 > 🇫🇷 Version française : [`GUIDE-INSTALLATION.md`](./GUIDE-INSTALLATION.md)
+>
+> **On shared hosting with a "Setup Node.js App" panel (o2switch, cPanel, Plesk)?** Use
+> [`DEPLOY-CPANEL.md`](./DEPLOY-CPANEL.md) instead of section 4 below.
 
 Private chauffeur website in 9 languages, with a live price calculator, a quote form, a
 back office and optional online payment.

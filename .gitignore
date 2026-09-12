@@ -2,6 +2,7 @@ node_modules/
 dist/
 .astro/
 build/
+out/
 *.tsbuildinfo
 
 # SQLite database (the folder is created on first run)

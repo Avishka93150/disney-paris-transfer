@@ -1,0 +1,57 @@
+# Builds the site and publishes a ready-to-run `deploy` branch.
+#
+# The hosting panel (cPanel / o2switch / Plesk "Node.js application") pulls
+# that branch and only has to install the production dependencies and
+# restart: it never runs the build itself, which shared hosts handle badly.
+#
+# Runs on every push to main, and on demand from the Actions tab (where a
+# different branch — a pull request's — can be chosen for a preview deploy).
+name: Build deploy branch
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: deploy-branch
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+      - run: npm run check
+      - run: npm run build
+
+      - name: Assemble the deploy tree
+        run: |
+          rm -rf out
+          mkdir out
+          cp -R dist server.mjs scripts package.json package-lock.json out/
+          cp -R deploy/cpanel/. out/
+          echo "${GITHUB_SHA}" > out/BUILD
+          ls -la out
+
+      - name: Push the deploy branch
+        run: |
+          cd out
+          git init -b deploy
+          git add -A
+          git -c user.name="github-actions[bot]" \
+              -c user.email="github-actions[bot]@users.noreply.github.com" \
+              commit -q -m "Build ${GITHUB_SHA::7} from ${GITHUB_REF_NAME}"
+          git push --force "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" deploy
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
