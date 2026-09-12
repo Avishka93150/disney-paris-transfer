@@ -2,8 +2,8 @@
 
 > 🇬🇧 English version: [`INSTALLATION-GUIDE.md`](./INSTALLATION-GUIDE.md)
 >
-> **Hébergement mutualisé avec un panneau « Setup Node.js App » (o2switch, cPanel, Plesk) ?**
-> Suivez [`DEPLOIEMENT-CPANEL.md`](./DEPLOIEMENT-CPANEL.md) à la place de la section 4.
+> **Serveur administré avec Plesk ?** Suivez [`DEPLOIEMENT-PLESK.md`](./DEPLOIEMENT-PLESK.md)
+> à la place de la section 4.
 
 Site de chauffeur privé VTC, 9 langues, calculateur de prix, formulaire de devis,
 espace de gestion et paiement en ligne facultatif.

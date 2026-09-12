@@ -87,8 +87,8 @@ this implementation — the prototypes did not cover it.
 ```
 project/                       Exported DC mockups (visual reference, not compiled)
 chats/  README.md              Claude Design handoff bundle (what the client actually asked for)
-delivery/                      Client-facing docs: install guides (VPS, cPanel; EN + FR), schema.sql
-deploy/cpanel/                 .cpanel.yml + deploy.sh shipped on the `deploy` branch
+delivery/                      Client-facing docs: install guides (VPS, Plesk; EN + FR), schema.sql
+deploy/plesk/                  deploy.sh shipped on the `deploy` branch (Plesk deployment action)
 .github/workflows/             deploy-branch.yml: builds main → publishes the `deploy` branch
 Dockerfile                     For container hosts (persistent volume on /app/data)
 server.mjs                     Production entry: loads .env, starts dist/server/entry.mjs
@@ -310,15 +310,17 @@ Three supported routes, all documented for the client under `delivery/`:
 
 - **VPS** (`INSTALLATION-GUIDE.md`): `npm ci && npm run build`, then `npm start` under pm2
   behind nginx.
-- **Shared hosting with a "Node.js application" panel** — o2switch, cPanel, Plesk
-  (`DEPLOY-CPANEL.md`): the site is **built by GitHub, not by the host**.
-  `.github/workflows/deploy-branch.yml` builds on every push to `main` and force-pushes a
-  ready-to-run `deploy` branch (`dist/`, `server.mjs`, `package*.json`, `scripts/`, plus
-  `deploy/cpanel/.cpanel.yml` and `deploy.sh`). cPanel's Git tool pulls that branch into
-  the application root; `deploy.sh` activates the app's own Node, runs
-  `npm ci --omit=dev` and touches `tmp/restart.txt` for Passenger. Passenger ignores the
-  port `server.mjs` listens on and routes the domain itself. Set `DATABASE_PATH` outside
-  the repository so a redeploy can never touch the bookings.
+- **Plesk** (`DEPLOY-PLESK.md`) — the client's server: the site is **built by GitHub, not
+  by the server**. `.github/workflows/deploy-branch.yml` builds on every push to `main` and
+  force-pushes a ready-to-run `deploy` branch (`dist/`, `server.mjs`, `package*.json`,
+  `scripts/`, plus `deploy/plesk/deploy.sh`). Plesk's Git tool pulls that branch into
+  `httpdocs` (automatically through a GitHub webhook, or on click) and runs `deploy.sh` as
+  its deployment action: it puts `/opt/plesk/node/22/bin` on the PATH, runs
+  `npm ci --omit=dev` and touches `tmp/restart.txt` for Passenger. The domain's Node.js
+  screen points *Application root* at `httpdocs`, *Document root* at `httpdocs/dist/client`
+  (static files served by the web server) and the startup file at `server.mjs`; Passenger
+  ignores the port `server.mjs` listens on. Set `DATABASE_PATH` outside `httpdocs` so a
+  redeploy can never touch the bookings.
 - **Container hosts** (Render, Railway, Coolify…): the `Dockerfile` at the root; mount a
   persistent volume on `/app/data`.
 

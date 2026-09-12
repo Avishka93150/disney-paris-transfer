@@ -88,8 +88,8 @@ mobile). Les maquettes n'ont été dessinées qu'en 1280 px ; le comportement re
 ```
 project/                       Maquettes DC exportées (référence visuelle, non compilées)
 chats/  README.md              Bundle de transfert Claude Design (ce que le client a demandé)
-delivery/                      Docs client : guides d'installation (VPS, cPanel ; EN + FR), schema.sql
-deploy/cpanel/                 .cpanel.yml + deploy.sh livrés sur la branche `deploy`
+delivery/                      Docs client : guides d'installation (VPS, Plesk ; EN + FR), schema.sql
+deploy/plesk/                  deploy.sh livré sur la branche `deploy` (action de déploiement Plesk)
 .github/workflows/             deploy-branch.yml : compile main → publie la branche `deploy`
 Dockerfile                     Pour les hébergeurs à conteneurs (volume persistant sur /app/data)
 server.mjs                     Point d'entrée production : charge .env, lance dist/server/entry.mjs
@@ -323,16 +323,18 @@ Trois voies prises en charge, toutes documentées pour le client dans `delivery/
 
 - **VPS** (`GUIDE-INSTALLATION.md`) : `npm ci && npm run build`, puis `npm start` sous pm2
   derrière nginx.
-- **Hébergement mutualisé avec un panneau « application Node.js »** — o2switch, cPanel,
-  Plesk (`DEPLOIEMENT-CPANEL.md`) : le site est **compilé par GitHub, pas par
-  l'hébergeur**. `.github/workflows/deploy-branch.yml` compile à chaque push sur `main` et
-  pousse (en force) une branche `deploy` prête à l'emploi (`dist/`, `server.mjs`,
-  `package*.json`, `scripts/`, plus `deploy/cpanel/.cpanel.yml` et `deploy.sh`). L'outil
-  Git de cPanel récupère cette branche dans la racine de l'application ; `deploy.sh` active
-  le Node propre à l'application, lance `npm ci --omit=dev` et touche `tmp/restart.txt`
-  pour Passenger. Passenger ignore le port sur lequel `server.mjs` écoute et route le
-  domaine lui-même. Placer `DATABASE_PATH` hors du dépôt pour qu'une mise à jour ne touche
-  jamais les réservations.
+- **Plesk** (`DEPLOIEMENT-PLESK.md`) — le serveur du client : le site est **compilé par
+  GitHub, pas par le serveur**. `.github/workflows/deploy-branch.yml` compile à chaque push
+  sur `main` et pousse (en force) une branche `deploy` prête à l'emploi (`dist/`,
+  `server.mjs`, `package*.json`, `scripts/`, plus `deploy/plesk/deploy.sh`). L'outil Git de
+  Plesk récupère cette branche dans `httpdocs` (automatiquement via un webhook GitHub, ou
+  au clic) et lance `deploy.sh` comme action de déploiement : il place
+  `/opt/plesk/node/22/bin` dans le PATH, lance `npm ci --omit=dev` et touche
+  `tmp/restart.txt` pour Passenger. L'écran Node.js du domaine pointe la *racine de
+  l'application* sur `httpdocs`, la *racine du document* sur `httpdocs/dist/client` (fichiers
+  statiques servis par le serveur web) et le fichier de démarrage sur `server.mjs` ;
+  Passenger ignore le port sur lequel `server.mjs` écoute. Placer `DATABASE_PATH` hors de
+  `httpdocs` pour qu'une mise à jour ne touche jamais les réservations.
 - **Hébergeurs à conteneurs** (Render, Railway, Coolify…) : le `Dockerfile` à la racine ;
   monter un volume persistant sur `/app/data`.
 
