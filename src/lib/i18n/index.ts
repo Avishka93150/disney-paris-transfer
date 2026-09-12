@@ -17,17 +17,9 @@ export function getDictionary(locale: Locale): Dictionary {
   return DICTIONARIES[locale] ?? DICTIONARIES[DEFAULT_LOCALE];
 }
 
-/**
- * Fills a template's placeholders: `fill('{a} → {b}', {a: 'CDG'})`.
- * A placeholder with no value is left as-is, which makes it visible in testing
- * rather than silently producing "undefined".
- */
-export function fill(template: string, values: Record<string, string | number>): string {
-  return template.replace(/\{(\w+)\}/g, (match, key: string) => {
-    const value = values[key];
-    return value === undefined ? match : String(value);
-  });
-}
+import { fill } from './fill';
+
+export { fill };
 
 /** "≈ 45 min", "≈ 1 h 30" — in the current language's own words. */
 export function formatDuration(dict: Dictionary, minutes: number): string {

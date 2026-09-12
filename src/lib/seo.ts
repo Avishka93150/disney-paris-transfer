@@ -1,10 +1,21 @@
-import type { Metadata } from 'next';
 import { getDictionary } from './i18n';
-import { DEFAULT_LOCALE, LOCALES, type Locale } from './i18n/config';
+import { DEFAULT_LOCALE, LOCALES, LOCALE_META, type Locale } from './i18n/config';
 import { type PageKey, path } from './i18n/routes';
 import { absoluteUrl, site } from './site';
 
 const DEFAULT_OG_IMAGE = '/transfers/airport.png';
+
+/** Everything the `<head>` of a public page needs. Rendered by `PublicLayout.astro`. */
+export type PageMeta = {
+  title: string;
+  description: string;
+  canonical: string;
+  /** `hreflang` → absolute URL, including `x-default`. */
+  alternates: { hreflang: string; href: string }[];
+  ogLocale: string;
+  ogImage: string;
+  robots: string;
+};
 
 /**
  * Metadata for a public page: title, description, canonical and `hreflang` to
@@ -25,42 +36,31 @@ export function pageMetadata({
   title?: string;
   description?: string;
   image?: string;
-}): Metadata {
+}): PageMeta {
   const dict = getDictionary(locale);
   const seo = page === 'home' ? dict.seo.home : dict.seo[page];
   const rest = slug ? [slug] : [];
 
-  const languages: Record<string, string> = Object.fromEntries(
-    LOCALES.map((code) => [code, absoluteUrl(path(code, page, ...rest))]),
-  );
-  languages['x-default'] = absoluteUrl(path(DEFAULT_LOCALE, page, ...rest));
-
-  const resolvedTitle = title ?? seo.title;
-  const resolvedDescription = description ?? seo.description;
-  const canonical = absoluteUrl(path(locale, page, ...rest));
-  const ogImage = absoluteUrl(image ?? DEFAULT_OG_IMAGE);
+  const alternates: PageMeta['alternates'] = LOCALES.map((code) => ({
+    hreflang: code,
+    href: absoluteUrl(path(code, page, ...rest)),
+  }));
+  alternates.push({ hreflang: 'x-default', href: absoluteUrl(path(DEFAULT_LOCALE, page, ...rest)) });
 
   return {
-    title: resolvedTitle,
-    description: resolvedDescription,
-    alternates: { canonical, languages },
-    robots: { index: true, follow: true },
-    openGraph: {
-      type: 'website',
-      siteName: site.name,
-      url: canonical,
-      title: resolvedTitle,
-      description: resolvedDescription,
-      locale: locale,
-      images: [{ url: ogImage, width: 1600, height: 900, alt: resolvedTitle }],
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: resolvedTitle,
-      description: resolvedDescription,
-      images: [ogImage],
-    },
+    title: title ?? seo.title,
+    description: description ?? seo.description,
+    canonical: absoluteUrl(path(locale, page, ...rest)),
+    alternates,
+    ogLocale: LOCALE_META[locale].htmlLang.replace('-', '_'),
+    ogImage: absoluteUrl(image ?? DEFAULT_OG_IMAGE),
+    robots: 'index, follow, max-image-preview:large',
   };
+}
+
+/** JSON-LD, escaped so it can never close its own `<script>` tag. */
+export function jsonLd(data: Record<string, unknown>): string {
+  return JSON.stringify(data).replace(/</g, '\\u003c');
 }
 
 /** Business card, injected on the home page. */

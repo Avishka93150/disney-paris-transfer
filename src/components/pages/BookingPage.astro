@@ -1,0 +1,141 @@
+---
+import BookingForm, { type BookingDefaults } from '@/components/BookingForm.astro';
+import PageHero from '@/components/PageHero.astro';
+import SiteFooter from '@/components/SiteFooter.astro';
+import SiteHeader from '@/components/SiteHeader.astro';
+import PublicLayout from '@/layouts/PublicLayout.astro';
+import { getRates, listActiveExtras, listActivePackages } from '@/lib/db';
+import { getDictionary } from '@/lib/i18n';
+import type { Locale } from '@/lib/i18n/config';
+import { VEHICLE_IDS, activeVehicles, fittingVehicle, isArrivalId, isZoneId, parseClock, type TripType, type ZoneId } from '@/lib/prices';
+import { pageMetadata } from '@/lib/seo';
+import { getVehicleFleet, nightRule } from '@/lib/settings';
+import { site } from '@/lib/site';
+
+/**
+ * Booking page — carried over from `project/Reservation.dc.html`.
+ *
+ * The only public page that reads the query string: pre-fill from the
+ * calculator or the prices page (`?from=cdg&to=disney&pax=4…`), return from
+ * Stripe (`?paid=1` / `?cancelled=1`) and the no-JavaScript confirmation
+ * (`?sent=1&ref=…`). The middleware therefore never caches it with a query.
+ */
+interface Props {
+  locale: Locale;
+  searchParams: URLSearchParams;
+}
+
+const { locale, searchParams } = Astro.props;
+const dict = getDictionary(locale);
+const rates = getRates();
+const packages = listActivePackages();
+const extras = listActiveExtras();
+const night = nightRule();
+const vehicles = getVehicleFleet();
+const offered = activeVehicles(vehicles);
+
+const one = (key: string) => searchParams.get(key) ?? undefined;
+const asZone = (value: string | undefined, fallback: ZoneId): ZoneId => (value && isZoneId(value) ? value : fallback);
+const asArrival = (value: string | undefined, fallback: string): string => (value && isArrivalId(value) ? value : fallback);
+
+const paxParam = Number.parseInt(one('pax') ?? '', 10);
+const vehicleParam = one('vehicle');
+const timeParam = one('time');
+const packageParam = one('package') ?? '';
+const selectedPackage = packages.find((item) => item.slug === packageParam);
+const paxFromQuery = Number.isFinite(paxParam) && paxParam >= 1 && paxParam <= 8 ? paxParam : null;
+const pax = paxFromQuery ?? (selectedPackage ? Math.min(selectedPackage.maxPax, 2) : 2);
+const preferred =
+  vehicleParam && (VEHICLE_IDS as readonly string[]).includes(vehicleParam) ? vehicleParam : offered[0]?.id;
+const fitted = fittingVehicle(pax, preferred, vehicles);
+
+const defaults: BookingDefaults = {
+  from: asZone(one('from'), 'cdg'),
+  to: asArrival(one('to'), 'disney'),
+  pax,
+  trip: (one('trip') === 'rt' ? 'rt' : 'ow') as TripType,
+  vehicle: fitted?.id ?? 'advise',
+  time: parseClock(timeParam) == null ? '' : (timeParam as string),
+  packageSlug: selectedPackage?.slug ?? '',
+};
+
+const paid = one('paid') === '1';
+const cancelled = one('cancelled') === '1';
+const sent = one('sent') === '1';
+const sentRef = (one('ref') ?? '').replace(/[^A-Z0-9-]/gi, '');
+
+const meta = pageMetadata({ locale, page: 'booking' });
+---
+
+<PublicLayout locale={locale} meta={meta}>
+  <SiteHeader locale={locale} active="booking" />
+
+  <main id="contenu">
+    <PageHero title={dict.booking.h1} lead={dict.booking.lead}>
+      <div class="mb-6 flex flex-wrap gap-x-6 gap-y-2 text-sm font-extrabold text-ink">
+        <span>✓ {dict.booking.trustSeats}</span>
+        <span>✓ {dict.booking.trustFixed}</span>
+        <span>✓ {dict.booking.trustHours}</span>
+        <span>✓ {dict.booking.noCard}</span>
+      </div>
+    </PageHero>
+
+    <div class="mx-auto grid min-w-0 max-w-[1200px] items-start gap-10 px-6 py-12 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
+      <div class="flex min-w-0 flex-col gap-4">
+        {
+          paid ? (
+            <p role="status" class="m-0 rounded-xl border border-success-border bg-whatsapp px-[18px] py-3.5 text-[15px] font-bold text-success-text">
+              ✓ {dict.booking.paySuccess}
+            </p>
+          ) : null
+        }
+        {
+          cancelled ? (
+            <p role="status" class="m-0 rounded-xl border border-line bg-sand px-[18px] py-3.5 text-[15px] font-bold text-ink-soft">
+              {dict.booking.payCancelled}
+            </p>
+          ) : null
+        }
+        {
+          sent ? (
+            <div class="flex flex-col gap-5 rounded-[20px] border border-line bg-surface p-8">
+              <div class="rounded-xl border border-success-border bg-whatsapp px-[18px] py-3.5 text-[15px] font-bold text-success-text">
+                ✓ {dict.booking.success} <span class="font-mono">{sentRef}</span>
+              </div>
+              <p class="m-0 text-[15px] leading-[1.7] text-ink-soft">{dict.booking.successLead}</p>
+              <p class="m-0 text-[13px] text-ink-faint">{dict.booking.note}</p>
+            </div>
+          ) : (
+            <BookingForm locale={locale} dict={dict} rates={rates} packages={packages} extras={extras} night={night} vehicles={vehicles} defaults={defaults} />
+          )
+        }
+      </div>
+
+      <div class="flex flex-col gap-4 lg:sticky lg:top-24">
+        <a
+          href={site.whatsappHref}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="flex flex-col gap-1.5 rounded-[18px] bg-ink p-6 text-surface no-underline hover:bg-ink-light"
+        >
+          <span class="text-lg font-extrabold">💬 {dict.booking.sidebarWhatsapp}</span>
+          <span class="text-sm text-cream-soft">{dict.booking.sidebarWhatsappNote}</span>
+        </a>
+
+        <a href={site.phoneHref} class="flex flex-col gap-1.5 rounded-[18px] border border-line bg-surface p-6 text-ink no-underline hover:border-brand">
+          <span class="text-lg font-extrabold">📞 {site.phoneDisplay}</span>
+          <span class="text-sm text-ink-soft">{dict.booking.sidebarPhoneNote}</span>
+        </a>
+
+        <div class="rounded-[18px] bg-sand p-6">
+          <div class="mb-2.5 text-[15px] font-extrabold">{dict.booking.includedTitle}</div>
+          <div class="flex flex-col gap-[7px] text-sm text-ink-soft">
+            {dict.booking.included.map((item) => <span>✓ {item}</span>)}
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <SiteFooter locale={locale} />
+</PublicLayout>

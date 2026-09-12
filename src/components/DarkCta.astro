@@ -1,0 +1,17 @@
+---
+/** Deep-brown call-to-action band at the end of a page. */
+interface Props {
+  title: string;
+  lead: string;
+}
+
+const { title, lead } = Astro.props;
+---
+
+<section class="bg-ink">
+  <div class="mx-auto max-w-[900px] px-6 py-16 text-center">
+    <h2 class="m-0 mb-3.5 font-display text-[28px] text-surface sm:text-[34px]">{title}</h2>
+    <p class="m-0 mb-7 text-[17px] text-cream-soft">{lead}</p>
+    <div class="flex flex-wrap justify-center gap-3.5"><slot /></div>
+  </div>
+</section>

@@ -1,0 +1,236 @@
+---
+import Button from '@/components/Button.astro';
+import PriceCalculator from '@/components/PriceCalculator.astro';
+import RateTable from '@/components/RateTable.astro';
+import SiteFooter from '@/components/SiteFooter.astro';
+import SiteHeader from '@/components/SiteHeader.astro';
+import TransferPhoto from '@/components/TransferPhoto.astro';
+import PublicLayout from '@/layouts/PublicLayout.astro';
+import { getRates } from '@/lib/db';
+import { fill, formatDistance, formatDuration, getDictionary, routeLead } from '@/lib/i18n';
+import type { Locale } from '@/lib/i18n/config';
+import { path, routePath } from '@/lib/i18n/routes';
+import { collapseTiers, findRate, relatedRoutes, startingPrice, transferImageSrc, type RoutePage } from '@/lib/prices';
+import { breadcrumbJsonLd, faqJsonLd, pageMetadata, serviceJsonLd } from '@/lib/seo';
+import { getVehicleFleet, nightRule } from '@/lib/settings';
+import { absoluteUrl, site, whatsappLink } from '@/lib/site';
+
+/**
+ * Dedicated SEO page for one priced connection: image, unique copy, live
+ * price with departure and arrival already selected, fare table, FAQ.
+ */
+interface Props {
+  locale: Locale;
+  route: RoutePage;
+}
+
+const { locale, route } = Astro.props;
+const dict = getDictionary(locale);
+const detail = dict.routeDetail;
+const rates = getRates();
+const night = nightRule();
+const vehicles = getVehicleFleet();
+
+const fromName = dict.zones[route.from];
+const toName = dict.zones[route.to];
+const title = fill(detail.h1, { from: fromName, to: toName });
+const lead = routeLead(dict, route.slug, fromName, toName);
+const imageAlt = fill(detail.imageAlt, { from: fromName, to: toName });
+
+const rate = findRate(route.from, route.to, rates);
+const rows = rate ? collapseTiers(rate) : [];
+const cheapest = startingPrice(route.from, route.to, rates);
+const related = relatedRoutes(route.slug);
+
+const isAirportPickup = route.from === 'cdg' || route.from === 'orly' || route.from === 'beauvais';
+const url = absoluteUrl(routePath(locale, route.slug));
+const bookingHref = `${path(locale, 'booking')}?from=${route.from}&to=${route.to}`;
+
+const steps = [
+  { title: detail.stepPickupTitle, text: isAirportPickup ? detail.stepPickupAirport : detail.stepPickupCity },
+  { title: detail.stepDriveTitle, text: detail.stepDrive },
+  { title: detail.stepArrivalTitle, text: route.to === 'disney' ? detail.stepArrivalDisney : detail.stepArrivalOther },
+  { title: detail.stepReturnTitle, text: detail.stepReturn },
+];
+
+const stats = [
+  { value: formatDuration(dict, route.durationMin), label: detail.statDuration },
+  { value: formatDistance(dict, route.distanceKm), label: detail.statDistance },
+  { value: detail.statHoursValue, label: detail.statHours },
+  { value: cheapest != null ? `${dict.common.from} ${cheapest} €` : detail.statPriceValue, label: detail.statPrice },
+];
+
+const seoValues = {
+  from: fromName,
+  to: toName,
+  price: cheapest ?? '—',
+  duration: formatDuration(dict, route.durationMin).replace(`${dict.common.approx} `, ''),
+};
+const meta = pageMetadata({
+  locale,
+  page: 'routes',
+  slug: route.slug,
+  title: fill(dict.seo.routeDetail.title, seoValues),
+  description: fill(dict.seo.routeDetail.description, seoValues),
+  image: transferImageSrc(route.image),
+});
+
+const faq = detail.faq.map((item) => ({ q: fill(item.q, { from: fromName, to: toName }), a: item.a }));
+const structuredData = [
+  serviceJsonLd({ name: title, description: lead, url, price: cheapest, image: transferImageSrc(route.image) }),
+  faqJsonLd(faq),
+  breadcrumbJsonLd([
+    { name: dict.nav.home, url: absoluteUrl(path(locale, 'home')) },
+    { name: detail.breadcrumb, url: absoluteUrl(path(locale, 'routes')) },
+    { name: `${fromName} ↔ ${toName}`, url },
+  ]),
+];
+---
+
+<PublicLayout locale={locale} meta={meta} structuredData={structuredData}>
+  <SiteHeader locale={locale} active="routes" />
+
+  <main id="contenu">
+    <section class="relative min-h-[320px] overflow-hidden bg-ink sm:min-h-[420px]">
+      <TransferPhoto image={route.image} alt={imageAlt} priority class="absolute inset-0 min-h-[320px] sm:min-h-[420px]" sizes="100vw" />
+      <div class="absolute inset-0 bg-[linear-gradient(180deg,rgb(58_46_36_/_0.15)_0%,rgb(58_46_36_/_0.72)_100%)]"></div>
+      <div class="relative mx-auto max-w-[1200px] px-6 pb-12 pt-10 sm:pb-16 sm:pt-16">
+        <div class="mb-3 text-[13px] font-bold text-cream-soft">
+          <a href={path(locale, 'routes')} class="text-cream-soft no-underline hover:text-gold">{detail.breadcrumb}</a>
+          {' '}› {fromName} ↔ {toName}
+        </div>
+        <h1 class="m-0 mb-3.5 max-w-[760px] font-display text-[32px] leading-tight text-surface sm:text-[44px]">{title}</h1>
+        <p class="m-0 mb-6 max-w-[680px] text-[17px] leading-[1.7] text-line">{lead}</p>
+        <div class="flex flex-wrap gap-3.5">
+          <Button href={bookingHref} class="px-7! py-3.5! text-base!">{detail.ctaBook}</Button>
+          <Button href={whatsappLink(fill(dict.prices.whatsappRoute, { from: fromName, to: toName }))} variant="goldOutline" class="px-6! py-3! text-base!">
+            {dict.common.whatsappQuote}
+          </Button>
+        </div>
+      </div>
+    </section>
+
+    <div class="mx-auto grid max-w-[1200px] gap-4 px-6 py-12 sm:grid-cols-2 lg:grid-cols-4">
+      {
+        stats.map((stat) => (
+          <div class="rounded-2xl border border-line bg-surface p-5 text-center">
+            <div class="font-display text-[26px] text-brand">{stat.value}</div>
+            <div class="text-[13px] font-bold text-ink-soft">{stat.label}</div>
+          </div>
+        ))
+      }
+    </div>
+
+    <section class="border-y border-line bg-sand">
+      <div class="mx-auto grid max-w-[1200px] items-start gap-10 px-6 py-14 lg:grid-cols-[1fr_1.05fr]">
+        <div>
+          <h2 class="m-0 mb-3 font-display text-[28px]">{detail.livePriceTitle}</h2>
+          <p class="m-0 mb-6 text-[15px] leading-[1.7] text-ink-soft">{lead}</p>
+          <div class="rounded-[18px] bg-surface p-6">
+            <div class="mb-2.5 text-base font-extrabold">{detail.priceBoxTitle}</div>
+            <div class="flex flex-col gap-2 text-sm text-ink-soft">
+              {detail.priceFactors.map((factor, index) => <span>{['👤', '🧳', '🚘'][index]} {factor}</span>)}
+            </div>
+            <Button href={bookingHref} class="mt-4 px-[22px]! py-[11px]! text-sm!">{detail.priceBoxCta}</Button>
+          </div>
+        </div>
+        <PriceCalculator
+          dict={dict}
+          rates={rates}
+          night={night}
+          vehicles={vehicles}
+          bookingHref={path(locale, 'booking')}
+          initialFrom={route.from}
+          initialTo={route.to}
+        />
+      </div>
+    </section>
+
+    <div class="mx-auto grid max-w-[1200px] gap-12 px-6 py-14 lg:grid-cols-[1.3fr_1fr]">
+      <div>
+        <h2 class="m-0 mb-4 font-display text-[28px]">{detail.howTitle}</h2>
+        <div class="flex flex-col gap-[18px] text-[15px] leading-[1.7] text-ink-soft">
+          {
+            steps.map((step) => (
+              <p class="m-0">
+                <strong class="text-ink">{step.title}</strong> — {step.text}
+              </p>
+            ))
+          }
+        </div>
+      </div>
+    </div>
+
+    {
+      rows.length > 0 ? (
+        <section class="border-y border-line bg-surface">
+          <div class="mx-auto max-w-[900px] px-6 py-14">
+            <h2 class="m-0 mb-6 font-display text-[28px]">{fill(detail.tableTitle, { from: fromName, to: toName })}</h2>
+            <RateTable
+              dict={dict}
+              rows={rows}
+              caption={`${fromName} ↔ ${toName}`}
+              hrefFor={(row, trip) => `${path(locale, 'booking')}?from=${route.from}&to=${route.to}&pax=${row.pax}&trip=${trip}`}
+            />
+          </div>
+        </section>
+      ) : null
+    }
+
+    {
+      related.length > 0 ? (
+        <section class="py-14">
+          <div class="mx-auto max-w-[1200px] px-6">
+            <h2 class="m-0 mb-6 font-display text-[28px]">{detail.relatedTitle}</h2>
+            <div class="grid gap-5 md:grid-cols-3">
+              {related.map((item) => (
+                <a
+                  href={routePath(locale, item.slug)}
+                  class="overflow-hidden rounded-[18px] border border-line bg-surface no-underline hover:border-brand hover:shadow-card"
+                >
+                  <TransferPhoto
+                    image={item.image}
+                    alt={fill(detail.imageAlt, { from: dict.zones[item.from], to: dict.zones[item.to] })}
+                    class="aspect-[16/9]"
+                  />
+                  <div class="flex flex-col gap-1.5 p-5">
+                    <div class="font-display text-lg text-ink">
+                      {dict.zones[item.from]} ↔ {dict.zones[item.to]}
+                    </div>
+                    <div class="text-sm font-bold text-ink-soft">
+                      {formatDuration(dict, item.durationMin)} · {formatDistance(dict, item.distanceKm)}
+                    </div>
+                    <div class="text-sm font-extrabold text-brand">{dict.routes.see}</div>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : null
+    }
+
+    <section class="bg-cream">
+      <div class="mx-auto max-w-[900px] px-6 py-14">
+        <h2 class="m-0 mb-6 font-display text-[28px]">{fill(detail.faqTitle, { from: fromName, to: toName })}</h2>
+        <div class="flex flex-col gap-3">
+          {
+            faq.map((item) => (
+              <details class="rounded-[14px] border border-line bg-surface px-5 py-4">
+                <summary class="cursor-pointer text-base font-extrabold">{item.q}</summary>
+                <p class="mb-0 mt-3 text-[15px] leading-[1.7] text-ink-soft">{item.a}</p>
+              </details>
+            ))
+          }
+        </div>
+
+        <div class="mt-8 flex flex-wrap justify-center gap-3.5">
+          <Button href={bookingHref}>{detail.ctaBook}</Button>
+          <Button href={site.phoneHref} variant="outline">📞 {site.phoneDisplay}</Button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <SiteFooter locale={locale} />
+</PublicLayout>

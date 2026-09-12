@@ -1,0 +1,349 @@
+---
+import DestinationSelect from '@/components/DestinationSelect.astro';
+import { euros, type Extra, type Package } from '@/lib/catalog';
+import { computeEstimate, renderEstimateBox, selectedPackage, type EstimateLabels } from '@/lib/estimate';
+import { fill } from '@/lib/i18n';
+import type { Dictionary } from '@/lib/i18n/types';
+import type { Locale } from '@/lib/i18n/config';
+import { MAX_PAX, NIGHT_RULE_OFF, VEHICLES, activeVehicles, isZoneId, type NightRule, type TripType, type Vehicle, type ZoneId } from '@/lib/prices';
+
+/**
+ * Quote form — carried over from `project/Reservation.dc.html` and wired to
+ * `/api/booking`. The estimate shown is indicative: the server recomputes the
+ * price from its own grid, packages and add-ons before storing anything.
+ *
+ * Everything is in the HTML (three steps, packages, add-ons, success panel);
+ * `src/scripts/booking-form.ts` moves between steps, keeps the estimate in
+ * sync and submits.
+ */
+export type BookingDefaults = {
+  from: ZoneId;
+  to: string;
+  pax: number;
+  trip: TripType;
+  vehicle: string;
+  time: string;
+  packageSlug?: string;
+};
+
+interface Props {
+  locale: Locale;
+  dict: Dictionary;
+  rates: Record<string, readonly number[]>;
+  packages: Package[];
+  extras: Extra[];
+  night?: NightRule;
+  vehicles?: readonly Vehicle[];
+  defaults: BookingDefaults;
+}
+
+const { locale, dict, rates, packages, extras, night = NIGHT_RULE_OFF, vehicles = VEHICLES, defaults } = Astro.props;
+const b = dict.booking;
+
+const activePackages = packages.filter((item) => item.active);
+const activeExtras = extras.filter((item) => item.active);
+const packageSlug = defaults.packageSlug ?? '';
+const pack = selectedPackage(activePackages, packageSlug, defaults.pax);
+const initialStep: number = defaults.packageSlug ? 1 : 0;
+
+const estimateLabels: EstimateLabels = {
+  liveTitle: b.liveTitle,
+  baseLine: dict.pricing.baseLine,
+  nightLine: dict.pricing.nightLine,
+  nightNote: dict.pricing.nightNote,
+  estimateLabel: b.estimateLabel,
+  estimateCustom: b.estimateCustom,
+};
+
+const estimate = computeEstimate({
+  packages: activePackages,
+  packageSlug,
+  vehicle: defaults.vehicle,
+  from: defaults.from,
+  to: defaults.to,
+  pax: defaults.pax,
+  trip: defaults.trip,
+  rates,
+  time: defaults.time,
+  night,
+  vehicles,
+  extras: activeExtras,
+  chosenExtras: {},
+});
+
+const config = {
+  locale,
+  rates,
+  night,
+  vehicles,
+  packages: activePackages,
+  extras: activeExtras,
+  labels: estimateLabels,
+  text: {
+    submit: b.submit,
+    submitting: b.submitting,
+    payCta: b.payCta,
+    packageUpTo: dict.pricing.packageUpTo,
+  },
+};
+const configJson = JSON.stringify(config).replace(/</g, '\\u003c');
+
+const steps = [b.stepJourney, b.stepParty, b.stepContact];
+const trust = [
+  { icon: '👶', text: b.trustSeats },
+  { icon: '💶', text: b.trustFixed },
+  { icon: '🕑', text: b.trustHours },
+  { icon: '✓', text: b.noCard },
+];
+const samePlace = isZoneId(defaults.to) && defaults.from === defaults.to;
+const paxOptions = Array.from({ length: MAX_PAX }, (_, index) => index + 1);
+---
+
+<div data-booking>
+  <script is:inline type="application/json" data-booking-config set:html={configJson} />
+
+  <form
+    method="post"
+    action="/api/booking"
+    data-booking-form
+    data-step={initialStep}
+    class="relative flex min-w-0 w-full max-w-full flex-col gap-5 overflow-visible rounded-[20px] border border-line bg-surface p-5 shadow-lifted sm:p-8"
+  >
+    <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
+      {
+        trust.map((item) => (
+          <div class="rounded-[14px] bg-sand px-3 py-2.5 text-center text-[12px] font-extrabold leading-snug text-ink">
+            <span class="mb-1 block text-base">{item.icon}</span>
+            {item.text}
+          </div>
+        ))
+      }
+    </div>
+
+    <ol class="m-0 flex list-none gap-2 p-0">
+      {
+        steps.map((label, index) => (
+          <li class="flex min-w-0 flex-1 flex-col gap-1.5">
+            <span class:list={['h-1.5 rounded-full', index <= initialStep ? 'bg-brand' : 'bg-line']} aria-hidden="true" data-step-bar={index} />
+            <span class:list={['text-[12px] font-extrabold', index === initialStep ? 'text-brand' : 'text-ink-mute']} data-step-label={index}>
+              {index + 1}. {label}
+            </span>
+          </li>
+        ))
+      }
+    </ol>
+
+    <div class="grid gap-4 sm:grid-cols-2" data-step-panel="0" hidden={initialStep !== 0}>
+      <DestinationSelect label={b.fromLabel} name="from" value={defaults.from} dict={dict} />
+      <DestinationSelect label={b.toLabel} name="to" value={defaults.to} dict={dict} includeTours />
+      <label class="field-label">
+        {b.tripLabel}
+        <select name="trip" class="field">
+          <option value="ow" selected={defaults.trip === 'ow'}>{b.oneWay}</option>
+          <option value="rt" selected={defaults.trip === 'rt'}>{b.roundTrip}</option>
+        </select>
+      </label>
+      <label class="field-label">
+        {b.dateLabel}
+        <input type="date" name="date" class="field" />
+      </label>
+      <label class="field-label">
+        {b.timeLabel}
+        <input type="time" name="time" class="field" value={defaults.time} />
+      </label>
+      <label class="field-label">
+        {b.flightLabel}
+        <input type="text" name="flight" placeholder={b.flightPlaceholder} class="field" maxlength="20" />
+      </label>
+    </div>
+
+    <div class="flex flex-col gap-5" data-step-panel="1" hidden={initialStep !== 1}>
+      {
+        activePackages.length > 0 ? (
+          <div class="rounded-[14px] bg-sand p-5">
+            <label class="field-label">
+              {dict.pricing.packageLabel}
+              <select name="package" class="field">
+                <option value="" selected={!pack}>
+                  {dict.pricing.packageNone}
+                </option>
+                {activePackages.map((item) => (
+                  <option value={item.slug} selected={pack?.slug === item.slug} disabled={item.maxPax < defaults.pax} data-max-pax={item.maxPax}>
+                    {item.name} — {euros(item.priceCents)}
+                  </option>
+                ))}
+              </select>
+            </label>
+            {activePackages.map((item) => (
+              <p class="mb-0 mt-3 text-[13px] leading-[1.6] text-ink-soft" data-package-info={item.slug} hidden={pack?.slug !== item.slug}>
+                {item.description} <span class="font-bold">{fill(dict.pricing.packageUpTo, { pax: item.maxPax })}</span>
+              </p>
+            ))}
+          </div>
+        ) : null
+      }
+
+      <div class="grid gap-4 sm:grid-cols-2">
+        <label class="field-label">
+          {b.paxLabel}
+          <select name="pax" class="field">
+            {paxOptions.map((n) => <option value={n} selected={n === defaults.pax}>{n}</option>)}
+          </select>
+        </label>
+        <label class="field-label">
+          {b.bagsLabel}
+          <select name="bags" class="field">
+            {b.bagOptions.map((option, index) => <option value={index} selected={index === 0}>{option}</option>)}
+          </select>
+        </label>
+        <label class="field-label">
+          {b.vehicleLabel}
+          <select name="vehicle" class="field">
+            {
+              activeVehicles(vehicles).map((item) => (
+                <option value={item.id} selected={item.id === defaults.vehicle}>
+                  {dict.vehicles[item.id].label}
+                </option>
+              ))
+            }
+            <option value="advise" selected={defaults.vehicle === 'advise'}>{b.vehicleAdvise}</option>
+          </select>
+        </label>
+        <label class="field-label">
+          {b.seatsLabel}
+          <select name="childSeats" class="field">
+            {b.seatOptions.map((option, index) => <option value={index} selected={index === 0}>{option}</option>)}
+          </select>
+        </label>
+      </div>
+
+      {
+        activeExtras.length > 0 ? (
+          <fieldset class="m-0 rounded-[14px] border border-line p-5">
+            <legend class="px-2 text-[15px] font-extrabold">{dict.pricing.extrasTitle}</legend>
+            <p class="m-0 mb-4 text-[13px] text-ink-soft">{dict.pricing.extrasLead}</p>
+            <div class="flex flex-col gap-3">
+              {activeExtras.map((extra) => (
+                <div class="flex flex-wrap items-center gap-3 text-sm">
+                  {extra.maxQty === 1 ? (
+                    <label class="flex cursor-pointer items-center gap-2 font-bold">
+                      <input type="checkbox" name={`extra:${extra.slug}`} data-extra={extra.slug} value="1" class="h-4 w-4 accent-[#B4552D]" />
+                      {extra.label}
+                    </label>
+                  ) : (
+                    <label class="flex items-center gap-2 font-bold">
+                      <select name={`extra:${extra.slug}`} data-extra={extra.slug} class="field w-[70px] py-1">
+                        {Array.from({ length: extra.maxQty + 1 }, (_, index) => index).map((n) => (
+                          <option value={n} selected={n === 0}>
+                            {n}
+                          </option>
+                        ))}
+                      </select>
+                      {extra.label}
+                    </label>
+                  )}
+                  <span class="ml-auto font-extrabold text-brand">
+                    {euros(extra.priceCents)}
+                    {extra.perUnit ? ` ${dict.pricing.extrasEach}` : ''}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </fieldset>
+        ) : null
+      }
+    </div>
+
+    <div class="grid gap-4 sm:grid-cols-2" data-step-panel="2" hidden={initialStep !== 2}>
+      <label class="field-label">
+        {b.nameLabel}
+        <input type="text" name="name" required minlength="2" maxlength="120" placeholder={b.namePlaceholder} class="field" autocomplete="name" />
+      </label>
+      <label class="field-label">
+        {b.emailLabel}
+        <input type="email" name="email" required maxlength="180" placeholder={b.emailPlaceholder} class="field" autocomplete="email" />
+      </label>
+      <label class="field-label sm:col-span-2">
+        {b.phoneLabel}
+        <input type="tel" name="phone" required minlength="6" maxlength="40" placeholder={b.phonePlaceholder} class="field" autocomplete="tel" />
+      </label>
+      <label class="field-label sm:col-span-2">
+        {b.messageLabel}
+        <textarea name="message" rows="3" maxlength="2000" class="field resize-y"></textarea>
+      </label>
+    </div>
+
+    <input type="hidden" name="locale" value={locale} />
+
+    <div aria-hidden="true" class="absolute left-[-9999px] h-0 w-0 overflow-hidden">
+      <label>
+        Website
+        <input type="text" name="website" tabindex="-1" autocomplete="off" />
+      </label>
+    </div>
+
+    <p role="alert" class="m-0 text-[14px] font-bold text-brand" data-same-place hidden={!(samePlace && initialStep === 0)}>
+      {dict.home.calc.samePlace}
+    </p>
+
+    <div aria-live="polite" class="rounded-[14px] bg-sand px-5 py-4" data-booking-estimate set:html={renderEstimateBox(estimate, estimateLabels, night)} />
+
+    <div class="flex flex-col gap-2.5 sm:flex-row">
+      <button
+        type="button"
+        data-booking-back
+        hidden={initialStep === 0}
+        class="cursor-pointer rounded-full border-2 border-brand bg-surface px-6 py-[13px] font-sans text-[16px] font-extrabold text-brand hover:bg-sand"
+      >
+        {b.back}
+      </button>
+      <button
+        type="button"
+        data-booking-next
+        hidden={initialStep === 2}
+        disabled={samePlace}
+        class="flex-1 cursor-pointer rounded-full border-none bg-brand px-6 py-[15px] font-sans text-[17px] font-extrabold text-surface hover:bg-brand-dark disabled:opacity-60"
+      >
+        {b.next}
+      </button>
+      <button
+        type="submit"
+        data-booking-submit
+        hidden={initialStep !== 2}
+        class="flex-1 cursor-pointer rounded-full border-none bg-brand px-6 py-[15px] font-sans text-[17px] font-extrabold text-surface hover:bg-brand-dark disabled:opacity-60"
+      >
+        {b.submit}
+      </button>
+    </div>
+
+    <p role="alert" class="m-0 text-[15px] font-bold text-brand" data-booking-error hidden>{b.error}</p>
+
+    <p class="m-0 text-[13px] text-ink-faint">{b.note}</p>
+  </form>
+
+  <div class="flex flex-col gap-5 rounded-[20px] border border-line bg-surface p-8" data-booking-success hidden>
+    <div class="rounded-xl border border-success-border bg-whatsapp px-[18px] py-3.5 text-[15px] font-bold text-success-text">
+      ✓ {b.success} <span class="font-mono" data-booking-ref></span>
+    </div>
+    <p class="m-0 text-[15px] leading-[1.7] text-ink-soft">{b.successLead}</p>
+
+    <div class="rounded-2xl bg-sand p-6" data-booking-pay hidden>
+      <div class="mb-2 text-base font-extrabold">{b.payTitle}</div>
+      <p class="m-0 mb-4 text-sm leading-[1.6] text-ink-soft">{b.payLead}</p>
+      <button
+        type="button"
+        data-booking-pay-btn
+        class="cursor-pointer rounded-full border-none bg-brand px-7 py-3.5 font-sans text-base font-extrabold text-surface hover:bg-brand-dark disabled:opacity-60"
+      >
+        {b.payCta}
+      </button>
+      <p class="mb-0 mt-3 text-[13px] text-ink-mute">{b.paySkip}</p>
+    </div>
+
+    <p class="m-0 text-[13px] text-ink-faint">{b.note}</p>
+  </div>
+</div>
+
+<script>
+  import '@/scripts/booking-form';
+</script>

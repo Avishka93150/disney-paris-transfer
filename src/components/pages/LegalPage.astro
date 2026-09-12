@@ -1,0 +1,43 @@
+---
+import PageHero from '@/components/PageHero.astro';
+import SiteFooter from '@/components/SiteFooter.astro';
+import SiteHeader from '@/components/SiteHeader.astro';
+import PublicLayout from '@/layouts/PublicLayout.astro';
+import { getDictionary } from '@/lib/i18n';
+import type { Locale } from '@/lib/i18n/config';
+import { pageMetadata } from '@/lib/seo';
+
+/** Terms, privacy and cookie policy — one template, three documents. */
+interface Props {
+  locale: Locale;
+  kind: 'terms' | 'privacy' | 'cookies';
+}
+
+const { locale, kind } = Astro.props;
+const dict = getDictionary(locale);
+const doc = dict.legal[kind];
+const meta = pageMetadata({ locale, page: kind });
+---
+
+<PublicLayout locale={locale} meta={meta}>
+  <SiteHeader locale={locale} />
+
+  <main id="contenu">
+    <PageHero title={doc.h1} lead={doc.lead} narrow>
+      <p class="mb-3 text-[13px] font-bold text-ink-mute">{dict.legal.updated}</p>
+    </PageHero>
+
+    <article class="mx-auto max-w-[900px] px-6 py-14">
+      {
+        doc.sections.map((section) => (
+          <section class="mb-10">
+            <h2 class="m-0 mb-3 font-display text-[26px]">{section.title}</h2>
+            {section.paragraphs.map((paragraph) => <p class="mb-3 text-[16px] leading-[1.75] text-ink-soft">{paragraph}</p>)}
+          </section>
+        ))
+      }
+    </article>
+  </main>
+
+  <SiteFooter locale={locale} />
+</PublicLayout>

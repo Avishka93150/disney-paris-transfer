@@ -1,0 +1,300 @@
+---
+import { getDictionary } from '@/lib/i18n';
+import { LOCALES, LOCALE_META, type Locale } from '@/lib/i18n/config';
+import { type PageKey, SEGMENTS, path, pageKeyFromSegment } from '@/lib/i18n/routes';
+import { site } from '@/lib/site';
+import { transferMegaMenus } from '@/lib/transfersMenu';
+
+/**
+ * Sticky header, carried over from `project/SiteHeader.dc.html`.
+ *
+ * The two "Transfers" mega-menus open on hover / focus with CSS alone
+ * (`.mega-item` in `globals.css`). The burger menu, the phone popover and the
+ * language picker are driven by `src/scripts/site.ts`.
+ */
+interface Props {
+  locale: Locale;
+  active?: PageKey;
+  showFlags?: boolean;
+}
+
+const { locale, active, showFlags = true } = Astro.props;
+const dict = getDictionary(locale);
+const menus = transferMegaMenus(locale, dict);
+
+type NavItem = { href: string; label: string; active: boolean };
+
+const items: NavItem[] = (
+  [
+    ['prices', dict.nav.prices],
+    ['about', dict.nav.about],
+    ['faq', dict.nav.faq],
+    ['contact', dict.nav.contact],
+  ] as [PageKey, string][]
+).map(([key, label]) => ({ href: path(locale, key), label, active: key === active }));
+
+const pricesItem = items[0]!;
+const moreItems = items.slice(1);
+const homeHref = path(locale, 'home');
+const homeActive = active === 'home';
+const routesActive = active === 'routes';
+const bookHref = path(locale, 'booking');
+
+/**
+ * The language picker keeps the current page: `/en/prices` → `/es/precios`,
+ * not `/es`. Route slugs are identical in every language, so the tail of the
+ * URL is carried over as-is.
+ */
+const parts = Astro.url.pathname.split('/').filter(Boolean);
+const rest = parts.slice(1);
+const currentPage = pageKeyFromSegment(locale, rest[0]);
+const tail = rest.slice(1);
+
+function translated(target: Locale): string {
+  if (!currentPage) return `/${target}`;
+  return `/${[target, SEGMENTS[currentPage][target], ...tail].filter(Boolean).join('/')}`;
+}
+
+const languageOptions = LOCALES.map((code) => ({
+  code,
+  href: translated(code),
+  label: LOCALE_META[code].label,
+  flag: LOCALE_META[code].flag,
+}));
+
+const navLink = (isActive: boolean) =>
+  `whitespace-nowrap text-[15px] no-underline hover:text-brand ${isActive ? 'font-extrabold text-brand' : 'font-semibold text-ink'}`;
+---
+
+<header class="sticky top-0 z-50 overflow-visible border-b border-line bg-surface font-sans" data-site-header>
+  <div class="relative">
+    <div class="relative mx-auto flex min-h-14 max-w-[1200px] items-center gap-3 px-4 py-2.5 sm:gap-4 sm:px-6 lg:gap-5">
+      <a href={homeHref} class="flex min-w-0 max-w-[46%] flex-col overflow-hidden leading-[1.1] no-underline min-[1100px]:max-w-none">
+        <span class="font-display text-[18px] text-ink sm:text-[21px]">
+          {dict.common.brand} <span class="text-brand">{dict.common.brandAccent}</span>
+        </span>
+        <span class="hidden text-[11px] font-bold tracking-[1.5px] text-ink-faint uppercase sm:block">{dict.common.tagline}</span>
+      </a>
+
+      <nav class="ml-auto hidden items-center gap-4 min-[1100px]:flex xl:gap-5" aria-label={dict.common.menu}>
+        <a href={homeHref} aria-current={homeActive ? 'page' : undefined} class={navLink(homeActive)}>{dict.nav.home}</a>
+
+        {
+          menus.map((menu) => (
+            <div class="mega-item group relative">
+              <a
+                href={menu.href}
+                class:list={[
+                  'inline-flex items-center gap-1 whitespace-nowrap text-[15px] no-underline hover:text-brand',
+                  routesActive ? 'font-extrabold text-brand' : 'font-semibold text-ink',
+                ]}
+              >
+                {menu.label}
+                <svg viewBox="0 0 12 12" aria-hidden="true" class="h-2.5 w-2.5 shrink-0 transition-transform group-hover:rotate-180 group-focus-within:rotate-180">
+                  <path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </a>
+              <div class="mega-panel absolute top-full left-1/2 z-[80] -translate-x-1/2 pt-3">
+                <div class="w-[min(42rem,calc(100vw-1.5rem))] rounded-2xl border border-line bg-surface p-6 shadow-popover">
+                  <div class="columns-1 gap-x-10 sm:columns-2">
+                    {menu.groups.map((group) => (
+                      <div class="mb-6 break-inside-avoid">
+                        <p class="m-0 mb-3 text-[12px] font-extrabold tracking-[0.04em] text-ink-mute uppercase">{group.heading}</p>
+                        <div class="flex flex-col gap-2.5">
+                          {group.links.map((link) => (
+                            <a href={link.href} class="block text-[14px] leading-snug font-semibold text-ink no-underline hover:text-brand">
+                              {link.label}
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <a href={menu.href} class="text-[13px] font-extrabold text-brand no-underline hover:text-brand-dark">{menu.viewAll} →</a>
+                </div>
+              </div>
+            </div>
+          ))
+        }
+
+        <a href={pricesItem.href} aria-current={pricesItem.active ? 'page' : undefined} class={navLink(pricesItem.active)}>
+          {pricesItem.label}
+        </a>
+
+        <div class="mega-item group relative">
+          <button
+            type="button"
+            class="inline-flex cursor-pointer items-center gap-1 border-0 bg-transparent p-0 font-sans text-[15px] font-semibold whitespace-nowrap text-ink hover:text-brand"
+          >
+            {dict.nav.more}
+            <svg viewBox="0 0 12 12" aria-hidden="true" class="h-2.5 w-2.5 shrink-0 transition-transform group-hover:rotate-180 group-focus-within:rotate-180">
+              <path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </button>
+          <div class="mega-panel absolute top-full right-0 z-[80] pt-3">
+            <div class="min-w-[220px] rounded-2xl border border-line bg-surface py-2 shadow-popover">
+              {
+                moreItems.map((item) => (
+                  <a
+                    href={item.href}
+                    class:list={[
+                      'block px-4 py-2 text-[14px] no-underline hover:bg-sand hover:text-brand',
+                      item.active ? 'font-extrabold text-brand' : 'font-semibold text-ink',
+                    ]}
+                  >
+                    {item.label}
+                  </a>
+                ))
+              }
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <div class="ml-auto flex shrink-0 items-center gap-2 sm:gap-3 min-[1100px]:ml-0">
+        <div class="sm:hidden">
+          <select
+            aria-label={dict.common.langLabel}
+            data-language-select
+            class="max-w-[4.75rem] cursor-pointer rounded-lg border border-line bg-cream px-1.5 py-1.5 font-sans text-[13px] font-bold text-ink disabled:opacity-60 sm:max-w-none sm:px-2"
+          >
+            {languageOptions.map((option) => <option value={option.code} data-href={option.href} selected={option.code === locale}>{option.label}</option>)}
+          </select>
+        </div>
+        <div class="hidden sm:block">
+          <select
+            aria-label={dict.common.langLabel}
+            data-language-select
+            class="max-w-[4.75rem] cursor-pointer rounded-lg border border-line bg-cream px-1.5 py-1.5 font-sans text-[13px] font-bold text-ink disabled:opacity-60 sm:max-w-none sm:px-2"
+          >
+            {
+              languageOptions.map((option) => (
+                <option value={option.code} data-href={option.href} selected={option.code === locale}>
+                  {showFlags ? `${option.flag} ${option.label}` : option.label}
+                </option>
+              ))
+            }
+          </select>
+        </div>
+
+        <div class="relative hidden xl:block" data-phone-menu>
+          <button
+            type="button"
+            aria-expanded="false"
+            aria-haspopup="menu"
+            data-phone-toggle
+            class="cursor-pointer whitespace-nowrap border-none bg-transparent p-0 font-sans text-[15px] font-extrabold text-ink hover:text-brand"
+          >
+            {site.phoneDisplay}
+          </button>
+          <div
+            role="menu"
+            hidden
+            data-phone-panel
+            class="absolute right-0 top-[calc(100%+10px)] z-[100] flex min-w-[210px] flex-col gap-2 rounded-[14px] border border-line bg-surface p-2.5 shadow-popover"
+          >
+            <a role="menuitem" href={site.phoneHref} class="flex items-center gap-2.5 rounded-[10px] bg-brand px-4 py-[11px] text-sm font-extrabold text-surface no-underline hover:bg-brand-dark">
+              📞 {dict.common.callNow}
+            </a>
+            <a
+              role="menuitem"
+              href={site.whatsappHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="flex items-center gap-2.5 rounded-[10px] bg-whatsapp px-4 py-[11px] text-sm font-extrabold text-ink no-underline hover:bg-whatsapp-dark"
+            >
+              💬 {dict.common.writeWhatsapp}
+            </a>
+          </div>
+        </div>
+
+        <a
+          href={bookHref}
+          class="rounded-full bg-brand px-3.5 py-2 text-[13px] font-extrabold whitespace-nowrap text-surface no-underline hover:bg-brand-dark sm:px-5 sm:py-2.5 sm:text-[15px]"
+        >
+          {dict.common.book}
+        </a>
+
+        <div class="min-[1100px]:hidden" data-mobile-nav>
+          <button
+            type="button"
+            aria-expanded="false"
+            aria-label={dict.common.menu}
+            data-mobile-toggle
+            class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-[10px] border border-line bg-cream text-ink"
+          >
+            <span aria-hidden="true" class="text-lg leading-none" data-mobile-icon>☰</span>
+          </button>
+
+          <div
+            hidden
+            data-mobile-panel
+            class="absolute left-0 right-0 top-full z-[90] max-h-[80vh] overflow-y-auto border-b border-line bg-surface p-4 shadow-popover"
+          >
+            <div class="flex flex-col gap-1" data-mobile-root>
+              <a
+                href={homeHref}
+                class:list={[
+                  'rounded-[10px] px-3 py-2.5 text-[15px] no-underline',
+                  homeActive ? 'bg-sand font-extrabold text-brand' : 'font-semibold text-ink',
+                ]}
+              >
+                {dict.nav.home}
+              </a>
+              {
+                menus.map((menu) => (
+                  <button
+                    type="button"
+                    data-mobile-open={menu.id}
+                    class="flex cursor-pointer items-center justify-between rounded-[10px] border-0 bg-transparent px-3 py-2.5 text-left text-[15px] font-semibold text-ink"
+                  >
+                    <span>{menu.label}</span>
+                    <span aria-hidden="true">›</span>
+                  </button>
+                ))
+              }
+              {
+                items.map((item) => (
+                  <a
+                    href={item.href}
+                    class:list={[
+                      'rounded-[10px] px-3 py-2.5 text-[15px] no-underline',
+                      item.active ? 'bg-sand font-extrabold text-brand' : 'font-semibold text-ink',
+                    ]}
+                  >
+                    {item.label}
+                  </a>
+                ))
+              }
+            </div>
+
+            {
+              menus.map((menu) => (
+                <div class="flex flex-col gap-1" hidden data-mobile-submenu={menu.id}>
+                  <button
+                    type="button"
+                    data-mobile-back
+                    class="mb-2 cursor-pointer rounded-[10px] border-0 bg-transparent px-3 py-2.5 text-left text-[15px] font-extrabold text-brand"
+                  >
+                    ← {menu.label}
+                  </button>
+                  <a href={menu.href} class="rounded-[10px] px-3 py-2.5 text-[15px] font-semibold text-ink no-underline">{menu.viewAll}</a>
+                  {menu.groups.map((group) => (
+                    <div class="mt-3">
+                      <p class="m-0 mb-1 px-3 text-[11px] font-extrabold uppercase tracking-[1.2px] text-ink-mute">{group.heading}</p>
+                      {group.links.map((link) => (
+                        <a href={link.href} class="block rounded-[10px] px-3 py-2 text-[15px] font-semibold text-ink no-underline">
+                          {link.label}
+                        </a>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              ))
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>

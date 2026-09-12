@@ -1,4 +1,3 @@
-import 'server-only';
 
 /**
  * In-process rate limiting — enough for a single-process site, and one fewer

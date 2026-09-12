@@ -1,0 +1,38 @@
+---
+import type { Dictionary } from '@/lib/i18n/types';
+import type { Locale } from '@/lib/i18n/config';
+import { path } from '@/lib/i18n/routes';
+
+/**
+ * Essential-cookies notice. Rendered hidden; `src/scripts/site.ts` reveals it
+ * unless the `dpt_cookies` cookie says the visitor already accepted.
+ */
+interface Props {
+  locale: Locale;
+  dict: Dictionary;
+}
+
+const { locale, dict } = Astro.props;
+---
+
+<div
+  role="dialog"
+  aria-live="polite"
+  hidden
+  data-cookie-banner
+  class="fixed inset-x-0 bottom-0 z-[80] border-t border-line bg-surface/95 px-4 py-4 shadow-lifted backdrop-blur-sm"
+>
+  <div class="mx-auto flex max-w-[1200px] flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <p class="m-0 max-w-[720px] text-sm leading-[1.6] text-ink-soft">{dict.cookieBanner.message}</p>
+    <div class="flex shrink-0 flex-wrap items-center gap-3">
+      <a href={path(locale, 'cookies')} class="text-sm font-extrabold text-brand no-underline">{dict.cookieBanner.more}</a>
+      <button
+        type="button"
+        data-cookie-accept
+        class="cursor-pointer rounded-full border-none bg-brand px-5 py-2.5 font-sans text-sm font-extrabold text-surface hover:bg-brand-dark"
+      >
+        {dict.cookieBanner.accept}
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,277 @@
+---
+import Feedback from '@/components/admin/Feedback.astro';
+import AdminLayout from '@/layouts/AdminLayout.astro';
+import { deleteExtraAction, deletePackageAction, saveExtraAction, savePackageAction } from '@/lib/admin/actions';
+import { feedbackFor, handlePost, submitted, submittedChecked, type Feedback as FeedbackState } from '@/lib/admin/page';
+import { getSession } from '@/lib/auth';
+import type { Extra, Package } from '@/lib/catalog';
+import { listExtras, listPackages } from '@/lib/db';
+import { getSettings } from '@/lib/settings';
+
+/**
+ * Packages and add-ons share one screen because the admin thinks of them
+ * together ("what can I sell on top of a transfer?"), but they are two
+ * independent lists with their own actions.
+ *
+ * Every row is its own `<form>`: HTML forbids nesting, and a delete button
+ * needs a form of its own next to the save form. The hidden `action` field
+ * says which operation a post is; `key` (action + id) says which form to
+ * show the feedback under.
+ */
+
+if (!getSession(Astro.cookies)) return Astro.redirect('/admin/login');
+
+const { redirect, feedback } = await handlePost(Astro, (form) => {
+  const id = String(form.get('id') ?? '');
+  switch (form.get('action')) {
+    case 'savePackage':
+      return { key: `package:${id}`, state: savePackageAction(form) };
+    case 'deletePackage':
+      return { key: `package:${id}`, state: deletePackageAction(form) };
+    case 'saveExtra':
+      return { key: `extra:${id}`, state: saveExtraAction(form) };
+    case 'deleteExtra':
+      return { key: `extra:${id}`, state: deleteExtraAction(form) };
+    default:
+      return null;
+  }
+});
+if (redirect) return redirect;
+
+const packages = listPackages();
+const extras = listExtras();
+const settings = getSettings();
+
+function packageForm(fb: FeedbackState, item?: Package) {
+  const key = `package:${item?.id ?? ''}`;
+  return {
+    key,
+    name: submitted(fb, key, 'name') ?? item?.name ?? '',
+    description: submitted(fb, key, 'description') ?? item?.description ?? '',
+    price: submitted(fb, key, 'price') ?? (item ? String(item.priceCents / 100) : ''),
+    maxPax: submitted(fb, key, 'maxPax') ?? String(item?.maxPax ?? 8),
+    nightSurcharge: submittedChecked(fb, key, 'nightSurcharge') ?? item?.nightSurcharge ?? true,
+    active: submittedChecked(fb, key, 'active') ?? item?.active ?? true,
+    sortOrder: submitted(fb, key, 'sortOrder') ?? String(item?.sortOrder ?? 0),
+  };
+}
+
+function extraForm(fb: FeedbackState, item?: Extra) {
+  const key = `extra:${item?.id ?? ''}`;
+  return {
+    key,
+    label: submitted(fb, key, 'label') ?? item?.label ?? '',
+    price: submitted(fb, key, 'price') ?? (item ? String(item.priceCents / 100) : ''),
+    perUnit: submittedChecked(fb, key, 'perUnit') ?? item?.perUnit ?? false,
+    maxQty: submitted(fb, key, 'maxQty') ?? String(item?.maxQty ?? 1),
+    active: submittedChecked(fb, key, 'active') ?? item?.active ?? true,
+    sortOrder: submitted(fb, key, 'sortOrder') ?? String(item?.sortOrder ?? 0),
+  };
+}
+
+const packageForms = [...packages.map((item) => ({ item, form: packageForm(feedback, item) })), { item: undefined, form: packageForm(feedback) }];
+const extraForms = [...extras.map((item) => ({ item, form: extraForm(feedback, item) })), { item: undefined, form: extraForm(feedback) }];
+
+const saveButton = (existing: boolean) =>
+  `cursor-pointer rounded-full px-6 py-3 font-sans text-[15px] font-extrabold disabled:opacity-60 ${
+    existing ? 'border border-brand bg-surface text-brand hover:bg-sand' : 'border-none bg-brand text-surface hover:bg-brand-dark'
+  }`;
+const deleteButton =
+  'cursor-pointer rounded-full border border-line bg-cream px-4 py-2 font-sans text-[13px] font-bold text-ink-soft hover:border-brand hover:text-brand disabled:opacity-60';
+---
+
+<AdminLayout title="Packages & add-ons" signedIn>
+  <main class="mx-auto max-w-[1100px] px-6 py-10">
+    <h1 class="m-0 mb-2 font-display text-[28px]">Packages &amp; add-ons</h1>
+    <p class="m-0 mb-6 max-w-[720px] text-[15px] leading-[1.7] text-ink-soft">
+      Everything here is yours to create — unlike the rate grid, which is fixed by connection. Changes appear on the site immediately.
+    </p>
+
+    <p class="mb-10 rounded-[10px] bg-sand p-4 text-sm leading-[1.6] text-ink-soft">
+      Names and descriptions are shown to visitors <strong>exactly as typed</strong>, in all 9 languages — they do not go through the site’s
+      translations. Write them in the language most of your customers read.
+      {
+        settings.nightSurchargeEnabled ? (
+          <>
+            {' '}
+            The night supplement of <strong>+{settings.nightSurchargePercent} %</strong> ({settings.nightStart}–{settings.nightEnd}) applies to
+            any package left ticked below. <a href="/admin/settings" class="font-bold text-brand">Change night hours</a>
+          </>
+        ) : null
+      }
+    </p>
+
+    <div class="flex flex-col gap-12">
+      <section class="flex flex-col gap-5">
+        <div>
+          <h2 class="m-0 mb-2 font-display text-xl">Packages</h2>
+          <p class="m-0 max-w-[720px] text-sm leading-[1.6] text-ink-soft">
+            A package is sold at its own fixed price and ignores the rate grid entirely. Customers pick one at the top of the booking form
+            instead of a route.
+          </p>
+        </div>
+
+        {
+          packageForms.map(({ item, form }) => (
+            <>
+              {!item ? <h3 class="m-0 -mb-2 font-display text-lg text-ink-soft">New package</h3> : null}
+              <div class="rounded-2xl border border-line bg-surface p-6">
+                <form method="post" class="flex flex-col gap-4">
+                  <input type="hidden" name="action" value="savePackage" />
+                  {item ? <input type="hidden" name="id" value={item.id} /> : null}
+
+                  <div class="grid gap-4 sm:grid-cols-[2fr_1fr_1fr]">
+                    <label class="field-label">
+                      Package name
+                      <input name="name" required minlength="2" placeholder="CDG ⇄ Disneyland round trip" value={form.name} class="field" />
+                    </label>
+
+                    <label class="field-label">
+                      Price (€)
+                      <input name="price" required inputmode="decimal" placeholder="150" value={form.price} class="field" />
+                    </label>
+
+                    <label class="field-label">
+                      Up to … passengers
+                      <input type="number" name="maxPax" min="1" max="8" value={form.maxPax} class="field" />
+                    </label>
+                  </div>
+
+                  <label class="field-label">
+                    Description shown to the customer
+                    <textarea name="description" rows="2" placeholder="Return transfer, 60 min free waiting on arrival, child seats included." class="field resize-y">
+                      {form.description}
+                    </textarea>
+                  </label>
+
+                  <div class="flex flex-wrap items-center gap-6">
+                    <label class="flex cursor-pointer items-center gap-2 text-sm font-bold">
+                      <input type="checkbox" name="active" checked={form.active} class="h-4 w-4 accent-[#B4552D]" />
+                      Visible on the site
+                    </label>
+
+                    <label class="flex cursor-pointer items-center gap-2 text-sm font-bold">
+                      <input type="checkbox" name="nightSurcharge" checked={form.nightSurcharge} class="h-4 w-4 accent-[#B4552D]" />
+                      Night supplement applies
+                    </label>
+
+                    <label class="flex items-center gap-2 text-sm font-bold">
+                      Order
+                      <input type="number" name="sortOrder" min="0" max="999" value={form.sortOrder} class="field w-[80px]" />
+                    </label>
+                  </div>
+
+                  <div class="flex flex-wrap items-center gap-3">
+                    <button type="submit" class={saveButton(Boolean(item))}>
+                      {item ? 'Save' : 'Create the package'}
+                    </button>
+                    <Feedback state={feedbackFor(feedback, form.key)} />
+                  </div>
+                </form>
+
+                {item ? (
+                  <div class="mt-4 border-t border-line-strong pt-4">
+                    <form method="post" onsubmit={`return confirm(${JSON.stringify(`Delete “${item.name}”? This cannot be undone.`)})`}>
+                      <input type="hidden" name="action" value="deletePackage" />
+                      <input type="hidden" name="id" value={item.id} />
+                      <button type="submit" class={deleteButton}>
+                        Delete
+                      </button>
+                    </form>
+                  </div>
+                ) : null}
+              </div>
+            </>
+          ))
+        }
+      </section>
+
+      <section class="flex flex-col gap-5">
+        <div>
+          <h2 class="m-0 mb-2 font-display text-xl">Paid add-ons</h2>
+          <p class="m-0 max-w-[720px] text-sm leading-[1.6] text-ink-soft">
+            Add-ons are charged on top of the fare or the package. They are never night-surcharged — a child seat costs the same at 3 am as
+            at 3 pm.
+          </p>
+        </div>
+
+        {
+          extraForms.map(({ item, form }) => (
+            <>
+              {!item ? <h3 class="m-0 -mb-2 font-display text-lg text-ink-soft">New add-on</h3> : null}
+              <div class="rounded-2xl border border-line bg-surface p-6">
+                <form method="post" class="flex flex-col gap-4" data-extra-form>
+                  <input type="hidden" name="action" value="saveExtra" />
+                  {item ? <input type="hidden" name="id" value={item.id} /> : null}
+
+                  <div class="grid gap-4 sm:grid-cols-[2fr_1fr_1fr]">
+                    <label class="field-label">
+                      Add-on name
+                      <input name="label" required minlength="2" placeholder="Child seat" value={form.label} class="field" />
+                    </label>
+
+                    <label class="field-label">
+                      Price (€)
+                      <input name="price" required inputmode="decimal" placeholder="10" value={form.price} class="field" />
+                    </label>
+
+                    <label class="field-label">
+                      Max quantity
+                      <input type="number" name="maxQty" min="1" max="20" value={form.maxQty} class="field" />
+                    </label>
+                  </div>
+
+                  <div class="flex flex-wrap items-center gap-6">
+                    <label class="flex cursor-pointer items-center gap-2 text-sm font-bold">
+                      <input type="checkbox" name="active" checked={form.active} class="h-4 w-4 accent-[#B4552D]" />
+                      Offered at booking
+                    </label>
+
+                    <label class="flex cursor-pointer items-center gap-2 text-sm font-bold">
+                      <input type="checkbox" name="perUnit" checked={form.perUnit} class="h-4 w-4 accent-[#B4552D]" />
+                      Charge per unit
+                    </label>
+
+                    <label class="flex items-center gap-2 text-sm font-bold">
+                      Order
+                      <input type="number" name="sortOrder" min="0" max="999" value={form.sortOrder} class="field w-[80px]" />
+                    </label>
+                  </div>
+
+                  <p class="m-0 text-[13px] leading-[1.6] text-ink-mute" data-extra-hint>
+                    {form.perUnit
+                      ? `Charged for each unit chosen — ${form.maxQty} × ${form.price || '0'} € at most.`
+                      : 'Charged once, whatever quantity the customer picks.'}
+                  </p>
+
+                  <div class="flex flex-wrap items-center gap-3">
+                    <button type="submit" class={saveButton(Boolean(item))}>
+                      {item ? 'Save' : 'Create the add-on'}
+                    </button>
+                    <Feedback state={feedbackFor(feedback, form.key)} />
+                  </div>
+                </form>
+
+                {item ? (
+                  <div class="mt-4 border-t border-line-strong pt-4">
+                    <form method="post" onsubmit={`return confirm(${JSON.stringify(`Delete “${item.label}”? This cannot be undone.`)})`}>
+                      <input type="hidden" name="action" value="deleteExtra" />
+                      <input type="hidden" name="id" value={item.id} />
+                      <button type="submit" class={deleteButton}>
+                        Delete
+                      </button>
+                    </form>
+                  </div>
+                ) : null}
+              </div>
+            </>
+          ))
+        }
+      </section>
+    </div>
+  </main>
+
+  <script>
+    import '@/scripts/admin';
+  </script>
+</AdminLayout>

@@ -1,0 +1,66 @@
+---
+import Button from '@/components/Button.astro';
+import PageHero from '@/components/PageHero.astro';
+import PhotoPlaceholder from '@/components/PhotoPlaceholder.astro';
+import SiteFooter from '@/components/SiteFooter.astro';
+import SiteHeader from '@/components/SiteHeader.astro';
+import PublicLayout from '@/layouts/PublicLayout.astro';
+import { getDictionary } from '@/lib/i18n';
+import type { Locale } from '@/lib/i18n/config';
+import { path } from '@/lib/i18n/routes';
+import { pageMetadata } from '@/lib/seo';
+
+/** About — carried over from `project/APropos.dc.html`. */
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const dict = getDictionary(locale);
+const about = dict.about;
+const meta = pageMetadata({ locale, page: 'about' });
+---
+
+<PublicLayout locale={locale} meta={meta}>
+  <SiteHeader locale={locale} active="about" />
+
+  <main id="contenu">
+    <PageHero title={about.h1} lead={about.lead} />
+
+    <div class="mx-auto grid max-w-[1200px] items-center gap-14 px-6 py-16 lg:grid-cols-[1fr_1.3fr]">
+      <PhotoPlaceholder label={about.photo} aspect="aspect-[3/4]" class="rounded-3xl" />
+
+      <div>
+        <h2 class="m-0 mb-[18px] font-display text-[28px]">{about.h2}</h2>
+        <div class="flex flex-col gap-4 text-base leading-[1.75] text-ink-soft">
+          {about.paragraphs.map((paragraph) => <p class="m-0">{paragraph}</p>)}
+          <p class="m-0 rounded-[10px] bg-sand px-4 py-3 font-mono text-sm text-ink-mute">{about.editorNote}</p>
+        </div>
+      </div>
+    </div>
+
+    <section class="border-y border-line bg-surface">
+      <div class="mx-auto grid max-w-[1200px] gap-5 px-6 py-14 text-center sm:grid-cols-2 lg:grid-cols-4">
+        {
+          about.stats.map((stat) => (
+            <div>
+              <div class="font-display text-[34px] text-brand">{stat.value}</div>
+              <div class="text-sm font-bold text-ink-soft">{stat.label}</div>
+            </div>
+          ))
+        }
+      </div>
+    </section>
+
+    <section class="mx-auto max-w-[900px] px-6 py-16 text-center">
+      <h2 class="m-0 mb-3.5 font-display text-[30px]">{about.ctaTitle}</h2>
+      <p class="m-0 mb-7 text-base text-ink-soft">{about.ctaLead}</p>
+      <div class="flex flex-wrap justify-center gap-3.5">
+        <Button href={path(locale, 'contact')}>{about.ctaContact}</Button>
+        <Button href={path(locale, 'booking')} variant="outline">{about.ctaBook}</Button>
+      </div>
+    </section>
+  </main>
+
+  <SiteFooter locale={locale} />
+</PublicLayout>

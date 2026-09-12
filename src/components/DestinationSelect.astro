@@ -1,0 +1,118 @@
+---
+import DestinationIcon from '@/components/DestinationIcon.astro';
+import { destinationLabel } from '@/lib/i18n';
+import type { Dictionary } from '@/lib/i18n/types';
+import {
+  DESTINATION_KINDS,
+  TOUR_IDS,
+  ZONE_KIND_ORDER,
+  destinationKindOf,
+  tourDestValue,
+  zonesOfKind,
+} from '@/lib/prices';
+
+/**
+ * From/to picker with a type icon and grouped options.
+ *
+ * Native `<select>` sizes itself to the longest option, which pushed
+ * "Disneyland Paris" out of the calculator card. This listbox keeps a
+ * truncated trigger at 100% width. The chosen value lives in a hidden input
+ * (so a form still posts it); `src/scripts/destination-select.ts` opens and
+ * closes the list and dispatches a `change` event on that input.
+ */
+interface Props {
+  label: string;
+  name: string;
+  value: string;
+  dict: Dictionary;
+  includeTours?: boolean;
+  selectClass?: string;
+}
+
+const { label, name, value, dict, includeTours = false, selectClass = 'field' } = Astro.props;
+
+const id = `ds-${name}-${Math.random().toString(36).slice(2, 8)}`;
+const listId = `${id}-list`;
+const labelId = `${id}-label`;
+const kind = destinationKindOf(value);
+
+const groups: { heading: string; options: { value: string; label: string; kind: string }[] }[] = ZONE_KIND_ORDER.map(
+  (group) => ({
+    heading: dict.destinationKinds[group],
+    options: zonesOfKind(group).map((zone) => ({ value: zone, label: dict.zones[zone], kind: group })),
+  }),
+);
+if (includeTours) {
+  groups.push({
+    heading: dict.destinationKinds.tours,
+    options: TOUR_IDS.map((tour) => ({ value: tourDestValue(tour), label: dict.tours[tour].name, kind: 'tours' })),
+  });
+}
+
+const optionClass = (selected: boolean) =>
+  `block w-full cursor-pointer border-0 px-3 py-1.5 text-left font-sans text-sm ${
+    selected ? 'bg-sand font-extrabold text-brand' : 'bg-transparent font-semibold text-ink hover:bg-sand'
+  }`;
+---
+
+<div class="field-label min-w-0" data-destination-select>
+  <span id={labelId}>{label}</span>
+  <div class="relative min-w-0 w-full">
+    <input type="hidden" name={name} value={value} data-ds-input />
+    <button
+      type="button"
+      aria-labelledby={labelId}
+      aria-expanded="false"
+      aria-haspopup="listbox"
+      aria-controls={listId}
+      data-ds-trigger
+      class:list={[selectClass, 'flex min-w-0 cursor-pointer appearance-none items-center gap-2 text-left']}
+    >
+      <span class="shrink-0 text-brand">
+        {DESTINATION_KINDS.map((k) => <DestinationIcon kind={k} class="h-[18px] w-[18px]" data-ds-icon={k} hidden={k !== kind} />)}
+      </span>
+      <span class="min-w-0 flex-1 truncate" data-ds-label>{destinationLabel(dict, value)}</span>
+      <svg viewBox="0 0 12 12" aria-hidden="true" data-ds-chevron class="h-2.5 w-2.5 shrink-0 text-ink-mute transition-transform">
+        <path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path>
+      </svg>
+    </button>
+
+    <ul
+      id={listId}
+      role="listbox"
+      aria-labelledby={labelId}
+      hidden
+      data-ds-list
+      class="absolute top-[calc(100%+4px)] right-0 left-0 z-[70] max-h-64 overflow-y-auto rounded-[10px] border border-line bg-surface py-1 shadow-popover"
+    >
+      {
+        groups.map((group) => (
+          <>
+            <li role="presentation" class="px-3 pt-2 pb-1 text-[11px] font-extrabold tracking-[0.04em] text-ink-mute uppercase">
+              {group.heading}
+            </li>
+            {group.options.map((option) => (
+              <li role="none">
+                <button
+                  type="button"
+                  role="option"
+                  aria-selected={option.value === value ? 'true' : 'false'}
+                  data-ds-option
+                  data-value={option.value}
+                  data-kind={option.kind}
+                  class={optionClass(option.value === value)}
+                >
+                  {option.label}
+                </button>
+              </li>
+            ))}
+          </>
+        ))
+      }
+    </ul>
+  </div>
+</div>
+
+<script>
+  import '@/scripts/destination-select';
+</script>

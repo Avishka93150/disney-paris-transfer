@@ -1,0 +1,43 @@
+---
+import '@/styles/globals.css';
+import { getDictionary } from '@/lib/i18n';
+import { DEFAULT_LOCALE } from '@/lib/i18n/config';
+import { path } from '@/lib/i18n/routes';
+
+/**
+ * 404 page, served for every unknown URL (Astro renders it whenever a route
+ * answers 404). English, like the default locale.
+ */
+const dict = getDictionary(DEFAULT_LOCALE);
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>404 — {dict.common.brand} {dict.common.brandAccent}</title>
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <main class="mx-auto flex min-h-screen max-w-[640px] flex-col items-center justify-center gap-5 px-6 text-center">
+      <div class="font-display text-[64px] text-brand">404</div>
+      <h1 class="m-0 font-display text-[28px]">
+        {dict.common.brand} <span class="text-brand">{dict.common.brandAccent}</span>
+      </h1>
+      <p class="m-0 text-base text-ink-soft">{dict.routes.otherLead}</p>
+      <div class="flex flex-wrap justify-center gap-3">
+        <a href={path(DEFAULT_LOCALE, 'home')} class="rounded-full bg-brand px-7 py-3.5 font-extrabold text-surface no-underline hover:bg-brand-dark">
+          {dict.nav.home}
+        </a>
+        <a
+          href={path(DEFAULT_LOCALE, 'contact')}
+          class="rounded-full border-2 border-brand bg-surface px-6 py-3 font-extrabold text-brand no-underline hover:bg-sand"
+        >
+          {dict.nav.contact}
+        </a>
+      </div>
+    </main>
+  </body>
+</html>

@@ -176,9 +176,9 @@
 
   <div class="cover-meta">
     <div>Product<b>disneyparistransfers.com</b></div>
-    <div>Stack<b>Next.js 15 · React 19 · TypeScript</b></div>
-    <div>Languages<b>7 · English default</b></div>
-    <div>Document<b>v1.0</b></div>
+    <div>Stack<b>Astro 7 · server-rendered HTML · TypeScript</b></div>
+    <div>Languages<b>9 · English default</b></div>
+    <div>Document<b>v2.0</b></div>
   </div>
 </div>
 
@@ -269,8 +269,10 @@
 
   <table>
     <tr><th style="width:24%">Layer</th><th>Choice</th></tr>
-    <tr><td>Framework</td><td>Next.js 15 — App Router, React 19, TypeScript in strict mode</td></tr>
-    <tr><td>Styling</td><td>Tailwind CSS v4, CSS-based config in <code>src/app/globals.css</code></td></tr>
+    <tr><td>Framework</td><td>Astro 7, server output on the Node adapter — no React, no client framework. TypeScript in strict mode</td></tr>
+    <tr><td>Client JS</td><td>A few vanilla TypeScript scripts in <code>src/scripts/</code> (menus, calculator, booking form) — about 10 kB in total</td></tr>
+    <tr><td>Styling</td><td>Tailwind CSS v4, CSS-based config in <code>src/styles/globals.css</code></td></tr>
+    <tr><td>Fonts</td><td>Self-hosted <code>.woff2</code> in <code>public/fonts/</code>, no request to Google</td></tr>
     <tr><td>Database</td><td>SQLite via <code>better-sqlite3</code>, single file at <code>data/app.db</code></td></tr>
     <tr><td>Email</td><td>Plain SMTP via <code>nodemailer</code> — the host's own mailbox, no third party</td></tr>
     <tr><td>Payment</td><td>Stripe Checkout, switchable on/off from the admin</td></tr>
@@ -299,9 +301,10 @@
 
   <h3>Rendering strategy</h3>
   <ul>
-    <li>Server Components by default. <code>"use client"</code> only where interaction demands it: the price calculator, language selector, phone popover, booking form and admin screens.</li>
-    <li>Public pages are statically rendered with <code>revalidate = 3600</code>.</li>
-    <li>Admin writes call <code>revalidatePath('/', 'layout')</code>, so a price change is live immediately. The hourly expiry is a safety net for a missed invalidation, not the main mechanism.</li>
+    <li>Every page is rendered on the server as complete HTML: title, description, canonical, <code>hreflang</code> × 9, Open Graph, JSON-LD and the full content — including the calculator's default price and every fare on the prices page. Nothing is left for a crawler to execute.</li>
+    <li>Public pages are kept in an in-process cache (<code>src/lib/cache.ts</code>) and answer from memory like static files. Pages with a query string (the booking page) are never cached.</li>
+    <li>Admin writes call <code>invalidatePages()</code>, so a price change is live immediately. The hourly expiry is a safety net for a missed invalidation, not the main mechanism.</li>
+    <li>Browser scripts only enhance what is already in the HTML: the calculator, the destination picker, the booking form's steps and live estimate, the menus. One script per widget, in <code>src/scripts/</code>.</li>
   </ul>
 </section>
 
@@ -312,7 +315,7 @@
 
   <p class="lead">
     Twenty tokens, taken verbatim from the prototypes. They are defined once in
-    <code>src/app/globals.css</code> under <code>@theme</code> and consumed as Tailwind
+    <code>src/styles/globals.css</code> under <code>@theme</code> and consumed as Tailwind
     utilities. <strong>Do not introduce a colour that is not on this page.</strong>
   </p>
 
@@ -391,11 +394,11 @@
   </table>
 
   <div class="box warn">
-    <span class="box-t">Load fonts through next/font only</span>
+    <span class="box-t">Fonts are self-hosted</span>
     <p>
-      Both are loaded with <code>next/font/google</code> in <code>src/lib/fonts.ts</code>.      <strong>Never add a <code>&lt;link&gt;</code> to Google Fonts</strong> — it reintroduces
-      the layout shift and the third-party request that <code>next/font</code> exists to remove.
-      Nunito is subset to <code>latin</code>, <code>latin-ext</code> and <code>cyrillic</code>;
+      Both are served from <code>public/fonts/</code> (Google's own files under the Open Font License, one <code>.woff2</code> per script; Nunito is the variable font) and declared with <code>@font-face</code> at the top of <code>src/styles/globals.css</code>, with metric-matched fallback faces so nothing shifts while they load. <strong>Never add a <code>&lt;link&gt;</code> to Google Fonts</strong> — it reintroduces
+      the layout shift and the third-party request that self-hosting exists to remove.
+      Nunito is subset to <code>latin</code>, <code>latin-ext</code>, <code>cyrillic</code> and <code>vietnamese</code>;
       Chinese and Japanese deliberately fall back to system fonts, because shipping full CJK
       subsets would cost several megabytes.
     </p>
@@ -481,12 +484,13 @@
   </p>
 
   <div class="box warn">
-    <span class="box-t">Admin forms must use controlled inputs</span>
+    <span class="box-t">Admin forms are plain HTML forms</span>
     <p>
-      React 19 resets uncontrolled fields after a server action completes. In the admin that
-      means the driver saves a price, the action succeeds, and the old value reappears in the
-      box — which reads exactly like a failed save. Every admin form field is therefore bound
-      to <code>useState</code>. Keep it that way.
+      Each admin form posts to its own page. A successful save answers with a redirect
+      (<code>?saved=…</code>), so a browser refresh never re-submits; a failed save re-renders
+      the page with the values the driver typed and the error next to that form
+      (<code>src/lib/admin/page.ts</code>). Astro's built-in CSRF check requires a matching
+      <code>Origin</code> header on form posts — browsers always send it. Keep it that way.
     </p>
   </div>
 
@@ -657,8 +661,8 @@
 
   <h3>Only two page files</h3>
   <p>
-    <code>src/app/[locale]/page.tsx</code> renders the home page. Everything else goes through
-    <code>src/app/[locale]/[...segments]/page.tsx</code>, which maps the URL segment back to a
+    <code>src/pages/[locale]/index.astro</code> renders the home page. Everything else goes through
+    <code>src/pages/[locale]/[...segments].astro</code>, which maps the URL segment back to a
     page key. This indirection exists because translated segments cannot be expressed as a
     folder structure — <code>/en/prices</code>, <code>/fr/tarifs</code> and
     <code>/es/precios</code> are one page.
@@ -666,7 +670,7 @@
 
   <h4>To add a page</h4>
   <ol>
-    <li>Add its key to <code>PAGE_KEYS</code> and its 7 segments to <code>SEGMENTS</code>.</li>
+    <li>Add its key to <code>PAGE_KEYS</code> and its 9 segments to <code>SEGMENTS</code>.</li>
     <li>Add its copy to the <code>Dictionary</code> type, then to all 7 dictionaries — the build stays broken until every language has it, which is intentional.</li>
     <li>Create the server component under <code>src/components/pages/</code>.</li>
     <li>Wire it into the <code>switch</code> and into <code>generateStaticParams</code>.</li>
@@ -734,8 +738,8 @@
   <h2>Admin back office</h2>
 
   <p class="lead">
-    At <code>/admin</code>, English only and never translated. Excluded from the middleware
-    matcher, and <code>robots: noindex</code>. Session is a 12-hour HMAC-signed cookie scoped
+    At <code>/admin</code>, English only and never translated. Excluded from the middleware's
+    locale redirect and page cache, and <code>robots: noindex</code>. Session is a 12-hour HMAC-signed cookie scoped
     to <code>/admin</code>; the password is <code>scrypt</code>-hashed in an env var.
   </p>
 
@@ -761,7 +765,7 @@
 
   <h3>Admin UX rules</h3>
   <ul>
-    <li><strong>Every change is live immediately</strong>, in all 7 languages. Actions call <code>revalidatePath</code>; there is no publish step and there should not be one.</li>
+    <li><strong>Every change is live immediately</strong>, in all 9 languages. Writes call <code>invalidatePages()</code>; there is no publish step and there should not be one.</li>
     <li><strong>Explain in plain words, not jargon.</strong> The settings screen says "Pickups from 22:00 in the evening through to 05:30 the next morning are charged +35 %. An €80 transfer becomes 108 €." The driver is not a developer and should never have to reason about a wrapping time window.</li>
     <li><strong>Every action returns a visible result</strong> — "Rate grid saved.", "Package created." Silence reads as failure.</li>
     <li><strong>Destructive actions confirm.</strong> Deleting a package or add-on asks first.</li>
@@ -863,9 +867,10 @@
 
   <h3>Performance</h3>
   <ul>
-    <li>Server Components by default; <code>"use client"</code> only where interaction demands it.</li>
-    <li>Public pages static with <code>revalidate = 3600</code>; admin writes revalidate immediately.</li>
-    <li>Only the booking page reads the query string, so the others stay statically rendered.</li>
+    <li>No client framework: a public page ships one stylesheet and at most three small scripts.</li>
+    <li>Public pages are served from the in-process cache; admin writes invalidate it immediately.</li>
+    <li>Only the booking page reads the query string, so the others are always cacheable.</li>
+    <li>Fonts are preloaded and metric-matched fallbacks avoid layout shift.</li>
   </ul>
 </section>
 
@@ -884,7 +889,8 @@
     <tr><td><code>SMTP_HOST</code> <code>SMTP_PORT</code><br><code>SMTP_USER</code> <code>SMTP_PASS</code> <code>SMTP_SECURE</code></td><td>Mailbox. Leave <code>SMTP_HOST</code> empty to log to console instead</td></tr>
     <tr><td><code>MAIL_FROM</code> <code>MAIL_TO</code></td><td>Sender identity, and where requests are delivered</td></tr>
     <tr><td><code>STRIPE_SECRET_KEY</code><br><code>STRIPE_WEBHOOK_SECRET</code></td><td>Optional. Without them the admin's payment switch stays greyed out</td></tr>
-    <tr><td><code>NEXT_PUBLIC_PHONE</code><br><code>NEXT_PUBLIC_PHONE_DISPLAY</code><br><code>NEXT_PUBLIC_WHATSAPP</code><br><code>NEXT_PUBLIC_EMAIL</code></td><td>Public contact details, shown on every page</td></tr>
+    <tr><td><code>SITE_PHONE</code><br><code>SITE_PHONE_DISPLAY</code><br><code>SITE_WHATSAPP</code><br><code>SITE_EMAIL</code></td><td>Public contact details, shown on every page. Read at request time: edit, restart, no rebuild</td></tr>
+    <tr><td><code>PORT</code> <code>HOST</code></td><td>Optional. Where <code>npm start</code> listens (default 3000 on all interfaces)</td></tr>
     <tr><td><code>DATABASE_PATH</code></td><td>Optional. Defaults to <code>./data/app.db</code></td></tr>
   </table>
 
@@ -892,16 +898,16 @@
   <table>
     <tr><th style="width:38%">Command</th><th>Does</th></tr>
     <tr><td><code>npm run dev</code></td><td>Development server on :3000</td></tr>
-    <tr><td><code>npm run build</code></td><td>Production build</td></tr>
-    <tr><td><code>npm start</code></td><td>Production server</td></tr>
+    <tr><td><code>npm run build</code></td><td>Production build → <code>dist/</code></td></tr>
+    <tr><td><code>npm start</code></td><td>Production server (<code>node server.mjs</code>, reads <code>.env</code>)</td></tr>
     <tr><td><code>npm run lint</code></td><td>ESLint</td></tr>
-    <tr><td><code>npm run typecheck</code></td><td><code>tsc --noEmit</code></td></tr>
+    <tr><td><code>npm run check</code></td><td><code>astro check</code> — TypeScript on <code>.astro</code> and <code>.ts</code> files</td></tr>
     <tr><td><code>npm run admin:hash -- 'password'</code></td><td>Generates <code>ADMIN_PASSWORD_HASH</code></td></tr>
   </table>
 
   <h3>Before shipping any change</h3>
   <p>
-    <code>npm run typecheck</code>, <code>npm run lint</code> and <code>npm run build</code>
+    <code>npm run check</code>, <code>npm run lint</code> and <code>npm run build</code>
     must all pass. There is no automated test suite — that is the honest state of the project,
     and it means the three commands above plus a manual pass through the booking flow are the
     whole safety net.
