@@ -1,0 +1,64 @@
+---
+import Button from '@/components/Button.astro';
+import PageHero from '@/components/PageHero.astro';
+import SiteFooter from '@/components/SiteFooter.astro';
+import SiteHeader from '@/components/SiteHeader.astro';
+import PublicLayout from '@/layouts/PublicLayout.astro';
+import { getDictionary } from '@/lib/i18n';
+import type { Locale } from '@/lib/i18n/config';
+import { path } from '@/lib/i18n/routes';
+import { localBusinessJsonLd, pageMetadata } from '@/lib/seo';
+import { site } from '@/lib/site';
+
+/** Contact — carried over from `project/Contact.dc.html`. */
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const dict = getDictionary(locale);
+const meta = pageMetadata({ locale, page: 'contact' });
+
+const cards = [
+  { href: site.phoneHref, icon: '📞', title: dict.contact.phoneTitle, value: site.phoneDisplay, note: dict.contact.phoneNote, external: false },
+  { href: site.whatsappHref, icon: '💬', title: dict.contact.whatsappTitle, value: site.phone, note: dict.contact.whatsappNote, external: true },
+  { href: `mailto:${site.email}`, icon: '✉️', title: dict.contact.emailTitle, value: site.email, note: dict.contact.emailNote, external: false },
+];
+---
+
+<PublicLayout locale={locale} meta={meta} structuredData={[localBusinessJsonLd(locale)]}>
+  <SiteHeader locale={locale} active="contact" />
+
+  <main id="contenu">
+    <PageHero title={dict.contact.h1} lead={dict.contact.lead} />
+
+    <div class="mx-auto grid max-w-[1200px] gap-5 px-6 py-14 md:grid-cols-3">
+      {
+        cards.map((card) => (
+          <a
+            href={card.href}
+            {...(card.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+            class="flex flex-col gap-2.5 rounded-[20px] border border-line bg-surface p-8 text-ink no-underline hover:border-brand hover:shadow-card"
+          >
+            <span aria-hidden="true" class="text-[30px]">
+              {card.icon}
+            </span>
+            <span class="text-[19px] font-extrabold">{card.title}</span>
+            <span class="break-all font-display text-[18px] text-brand sm:text-[22px]">{card.value}</span>
+            <span class="text-sm text-ink-soft">{card.note}</span>
+          </a>
+        ))
+      }
+    </div>
+
+    <section class="mx-auto max-w-[900px] px-6 pb-16 text-center">
+      <div class="rounded-3xl bg-ink px-8 py-12">
+        <h2 class="m-0 mb-3 font-display text-[28px] text-surface">{dict.contact.ctaTitle}</h2>
+        <p class="m-0 mb-6 text-base text-cream-soft">{dict.contact.ctaLead}</p>
+        <Button href={path(locale, 'booking')} class="bg-gold! px-7! py-3.5! text-base! text-ink! hover:bg-gold-dark!">{dict.contact.ctaBtn}</Button>
+      </div>
+    </section>
+  </main>
+
+  <SiteFooter locale={locale} />
+</PublicLayout>

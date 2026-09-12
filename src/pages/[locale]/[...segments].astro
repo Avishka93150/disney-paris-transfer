@@ -1,0 +1,67 @@
+---
+import AboutPage from '@/components/pages/AboutPage.astro';
+import BookingPage from '@/components/pages/BookingPage.astro';
+import ContactPage from '@/components/pages/ContactPage.astro';
+import FaqPage from '@/components/pages/FaqPage.astro';
+import LegalPage from '@/components/pages/LegalPage.astro';
+import PricesPage from '@/components/pages/PricesPage.astro';
+import RouteDetailPage from '@/components/pages/RouteDetailPage.astro';
+import RoutesPage from '@/components/pages/RoutesPage.astro';
+import { isLocale, type Locale } from '@/lib/i18n/config';
+import { PAGE_KEYS, SEGMENTS, type PageKey } from '@/lib/i18n/routes';
+import { findRoutePage, type RoutePage } from '@/lib/prices';
+
+/**
+ * Router for the public pages.
+ *
+ * URL segments are translated (`/en/prices`, `/es/precios`, `/ja/prices`),
+ * which no static folder structure can express: this file maps them back using
+ * the `SEGMENTS` table, the single source of truth. Any locale/segment
+ * combination that does not exist is a 404 — deliberately, so Google never
+ * sees two URLs for the same content.
+ */
+type Resolved = { kind: 'page'; locale: Locale; page: PageKey } | { kind: 'route'; locale: Locale; route: RoutePage };
+
+function resolve(localeParam: string | undefined, segments: string[]): Resolved | null {
+  if (!localeParam || !isLocale(localeParam)) return null;
+  const locale = localeParam;
+
+  const [first, second, ...extra] = segments;
+  if (!first || extra.length > 0) return null;
+
+  const page = PAGE_KEYS.find((key) => key !== 'home' && SEGMENTS[key][locale] === first);
+  if (!page) return null;
+
+  if (second === undefined) return { kind: 'page', locale, page };
+
+  // Only route pages have a further level.
+  if (page !== 'routes') return null;
+  const route = findRoutePage(second);
+  return route ? { kind: 'route', locale, route } : null;
+}
+
+const segments = (Astro.params.segments ?? '').split('/').filter(Boolean);
+const resolved = resolve(Astro.params.locale, segments);
+
+if (!resolved) return new Response(null, { status: 404 });
+---
+
+{
+  resolved.kind === 'route' ? (
+    <RouteDetailPage locale={resolved.locale} route={resolved.route} />
+  ) : resolved.page === 'routes' ? (
+    <RoutesPage locale={resolved.locale} />
+  ) : resolved.page === 'prices' ? (
+    <PricesPage locale={resolved.locale} />
+  ) : resolved.page === 'about' ? (
+    <AboutPage locale={resolved.locale} />
+  ) : resolved.page === 'faq' ? (
+    <FaqPage locale={resolved.locale} />
+  ) : resolved.page === 'contact' ? (
+    <ContactPage locale={resolved.locale} />
+  ) : resolved.page === 'booking' ? (
+    <BookingPage locale={resolved.locale} searchParams={Astro.url.searchParams} />
+  ) : (
+    <LegalPage locale={resolved.locale} kind={resolved.page as 'terms' | 'privacy' | 'cookies'} />
+  )
+}

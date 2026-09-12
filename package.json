@@ -1,37 +1,40 @@
 {
   "name": "disney-paris-transfers",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
-  "description": "Site VTC Disney Paris Transfers — transferts aéroports Paris ↔ Disneyland Paris",
+  "type": "module",
+  "description": "Disney Paris Transfers — private chauffeur transfers between the Paris airports, central Paris and Disneyland Paris. Server-rendered HTML, no client framework.",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
+    "dev": "astro dev",
+    "build": "astro build",
+    "start": "node server.mjs",
+    "preview": "astro preview",
+    "check": "astro check",
+    "typecheck": "astro check",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit",
     "admin:hash": "node scripts/hash-password.mjs"
   },
   "dependencies": {
-    "better-sqlite3": "^11.8.1",
-    "next": "^15.1.6",
-    "nodemailer": "^7.0.13",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "server-only": "^0.0.1",
-    "stripe": "^17.6.0",
-    "zod": "^3.24.1"
+    "@astrojs/node": "^11.1.5",
+    "@tailwindcss/vite": "^4.1.0",
+    "astro": "^7.3.2",
+    "better-sqlite3": "^13.0.3",
+    "nodemailer": "^10.0.9",
+    "stripe": "^18.5.0",
+    "tailwindcss": "^4.1.0",
+    "zod": "^3.25.0"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^3.3.6",
-    "@tailwindcss/postcss": "^4.0.0",
-    "@types/better-sqlite3": "^7.6.12",
-    "@types/node": "^22.13.0",
+    "@astrojs/check": "^0.9.10",
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^22.17.0",
     "@types/nodemailer": "^6.4.17",
-    "@types/react": "^19.0.8",
-    "@types/react-dom": "^19.0.3",
-    "eslint": "^9.19.0",
-    "eslint-config-next": "^15.1.6",
-    "tailwindcss": "^4.0.0",
-    "typescript": "^5.7.3"
+    "eslint": "^10.0.0",
+    "eslint-plugin-astro": "^3.1.0",
+    "typescript": "^5.9.0",
+    "typescript-eslint": "^8.61.0"
+  },
+  "engines": {
+    "node": ">=22.12"
   }
 }

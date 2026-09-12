@@ -1,0 +1,133 @@
+---
+import AdminLayout from '@/layouts/AdminLayout.astro';
+import { getSession } from '@/lib/auth';
+import { countByStatus, listBookings } from '@/lib/booking';
+import { destinationLabel } from '@/lib/i18n';
+import { en } from '@/lib/i18n/dictionaries/en';
+
+if (!getSession(Astro.cookies)) return Astro.redirect('/admin/login');
+
+const STATUS_LABELS: Record<string, string> = {
+  new: 'New',
+  quoted: 'Quoted',
+  confirmed: 'Confirmed',
+  cancelled: 'Cancelled',
+};
+
+const STATUS_STYLES: Record<string, string> = {
+  new: 'bg-sand text-brand',
+  quoted: 'bg-cream text-ink-soft',
+  confirmed: 'bg-whatsapp text-success-text',
+  cancelled: 'bg-line text-ink-mute',
+};
+
+const PAYMENT_LABELS: Record<string, string> = {
+  unpaid: 'Unpaid',
+  pending: 'Pending',
+  paid: 'Paid',
+  refunded: 'Refunded',
+};
+
+const zone = (id: string) => destinationLabel(en, id);
+const euros = (cents: number | null) => (cents == null ? '—' : `${Math.round(cents / 100)} €`);
+const formatDate = (iso: string) =>
+  new Date(iso).toLocaleString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' });
+
+const status = Astro.url.searchParams.get('status') ?? 'all';
+const bookings = listBookings({ status });
+const counts = countByStatus();
+const total = Object.values(counts).reduce((sum, n) => sum + n, 0);
+
+const filters = [
+  { key: 'all', label: 'All', count: total },
+  ...Object.keys(STATUS_LABELS).map((key) => ({ key, label: STATUS_LABELS[key] ?? key, count: counts[key] ?? 0 })),
+];
+---
+
+<AdminLayout title="Bookings" signedIn>
+  <main class="mx-auto max-w-[1100px] px-6 py-10">
+    <h1 class="m-0 mb-6 font-display text-[28px]">Booking requests</h1>
+
+    <div class="mb-6 flex flex-wrap gap-2">
+      {
+        filters.map((filter) => (
+          <a
+            href={filter.key === 'all' ? '/admin' : `/admin?status=${filter.key}`}
+            class:list={[
+              'rounded-full border px-4 py-2 text-[13px] font-bold no-underline',
+              filter.key === status ? 'border-brand bg-brand text-surface' : 'border-line bg-surface text-ink',
+            ]}
+          >
+            {filter.label} ({filter.count})
+          </a>
+        ))
+      }
+    </div>
+
+    {
+      bookings.length === 0 ? (
+        <p class="rounded-2xl border border-line bg-surface p-6 text-[15px] text-ink-soft">No booking matches this filter.</p>
+      ) : (
+        <div class="overflow-x-auto rounded-2xl border border-line bg-surface">
+          <table class="w-full min-w-[820px] border-collapse text-sm">
+            <thead>
+              <tr class="border-b border-line bg-cream text-left">
+                <th class="px-4 py-3 font-extrabold">Received</th>
+                <th class="px-4 py-3 font-extrabold">Reference</th>
+                <th class="px-4 py-3 font-extrabold">Customer</th>
+                <th class="px-4 py-3 font-extrabold">Trip</th>
+                <th class="px-4 py-3 font-extrabold">Pax</th>
+                <th class="px-4 py-3 font-extrabold">Price</th>
+                <th class="px-4 py-3 font-extrabold">Payment</th>
+                <th class="px-4 py-3 font-extrabold">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {bookings.map((booking) => (
+                <tr class="border-b border-line-strong last:border-0">
+                  <td class="whitespace-nowrap px-4 py-3 text-ink-soft">{formatDate(booking.created_at)}</td>
+                  <td class="px-4 py-3">
+                    <a href={`/admin/bookings/${booking.id}`} class="font-mono font-bold text-brand no-underline">
+                      {booking.reference}
+                    </a>
+                  </td>
+                  <td class="px-4 py-3">
+                    <div class="font-bold">{booking.customer_name}</div>
+                    <div class="text-[13px] text-ink-mute">{booking.customer_phone}</div>
+                  </td>
+                  <td class="px-4 py-3">
+                    {booking.package_name ? (
+                      <span class="font-bold">{booking.package_name}</span>
+                    ) : (
+                      <>
+                        {zone(booking.from_zone)} → {zone(booking.to_zone)}
+                      </>
+                    )}
+                    <div class="text-[13px] text-ink-mute">
+                      {booking.trip === 'rt' ? 'Round trip' : 'One way'}
+                      {booking.travel_date ? ` · ${booking.travel_date}` : ''}
+                      {booking.night_surcharge_cents ? ' · night' : ''}
+                    </div>
+                  </td>
+                  <td class="px-4 py-3">{booking.pax}</td>
+                  <td class="whitespace-nowrap px-4 py-3 font-bold">{euros(booking.quoted_price_cents)}</td>
+                  <td class="whitespace-nowrap px-4 py-3 text-[13px]">{PAYMENT_LABELS[booking.payment_status] ?? booking.payment_status}</td>
+                  <td class="px-4 py-3">
+                    <span
+                      class:list={[
+                        'inline-block whitespace-nowrap rounded-full px-3 py-1 text-xs font-extrabold',
+                        STATUS_STYLES[booking.status] ?? 'bg-cream text-ink',
+                      ]}
+                    >
+                      {STATUS_LABELS[booking.status] ?? booking.status}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )
+    }
+  </main>
+</AdminLayout>

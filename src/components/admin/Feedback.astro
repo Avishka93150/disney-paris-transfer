@@ -1,0 +1,14 @@
+---
+import type { ActionState } from '@/lib/admin/actions';
+
+/** The line under a form after a save: red for an error, green for a success. */
+interface Props {
+  state: ActionState;
+  class?: string;
+}
+
+const { state, class: className = 'm-0' } = Astro.props;
+---
+
+{state.error ? <p role="alert" class:list={[className, 'text-sm font-bold text-brand']}>{state.error}</p> : null}
+{state.success ? <p role="status" class:list={[className, 'text-sm font-bold text-success-text']}>{state.success}</p> : null}

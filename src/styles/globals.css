@@ -1,0 +1,244 @@
+@import 'tailwindcss';
+
+/*
+  Self-hosted fonts (no request to Google Fonts), served from `public/fonts/`:
+  Bree Serif for headings, Nunito (variable, weights 400–800) for everything
+  else. Both are Google's own current files under the Open Font License, split
+  per script the way Google serves them: only the subsets a page actually uses
+  are downloaded. `cyrillic` is needed for Russian; Chinese and Japanese fall
+  back to the system fonts, which is standard practice (shipping full CJK
+  subsets would cost several megabytes).
+
+  The two "Fallback" faces are metric-matched system fonts (same ascent, descent
+  and width as the web font) shown while the real file loads, so the page does
+  not shift when the swap happens.
+*/
+@font-face {
+  font-family: 'Bree Serif';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/bree-serif-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Bree Serif';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/bree-serif-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Bree Serif Fallback';
+  src: local('Times New Roman');
+  ascent-override: 97.23%;
+  descent-override: 25.37%;
+  line-gap-override: 0%;
+  size-adjust: 110.77%;
+}
+
+@font-face {
+  font-family: 'Nunito';
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url('/fonts/nunito-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Nunito';
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url('/fonts/nunito-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Nunito';
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url('/fonts/nunito-cyrillic.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Nunito';
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url('/fonts/nunito-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Nunito';
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url('/fonts/nunito-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Nunito Fallback';
+  src: local('Arial');
+  ascent-override: 99.71%;
+  descent-override: 34.82%;
+  line-gap-override: 0%;
+  size-adjust: 101.39%;
+}
+
+/*
+  Design tokens taken verbatim from the Claude Design mockups (project/*.dc.html).
+  Do not introduce a new colour without updating CLAUDE.md.
+*/
+@theme {
+  --color-cream: #fbf6ed; /* page background */
+  --color-sand: #f6e9d8; /* section background */
+  --color-surface: #fffdf9; /* cards, header */
+  --color-line: #ebdfc9; /* borders */
+  --color-line-strong: #f0e2cc; /* table separators */
+  --color-stripe: #e7d5b8; /* hatching in photo placeholders */
+
+  --color-brand: #b4552d; /* terracotta — primary accent */
+  --color-brand-dark: #8f3f1e; /* hover */
+
+  --color-ink: #3a2e24; /* body text, footer */
+  --color-ink-light: #524334; /* hover on brown */
+  --color-ink-soft: #6b5641; /* running text */
+  --color-ink-mute: #8f7455; /* tertiary text */
+  --color-ink-faint: #9b8468; /* captions */
+  --color-cream-soft: #c9b79e; /* text on brown */
+
+  --color-gold: #d9a441; /* CTA on brown */
+  --color-gold-dark: #c4902f;
+
+  --color-whatsapp: #e8f0dc;
+  --color-whatsapp-dark: #d8e5c5;
+  --color-success-border: #b7cc96;
+  --color-success-text: #4a6327;
+
+  --font-sans: 'Nunito', 'Nunito Fallback', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Bree Serif', 'Bree Serif Fallback', Georgia, serif;
+
+  --shadow-card: 0 12px 24px -14px rgb(58 46 36 / 0.3);
+  --shadow-lifted: 0 24px 48px -20px rgb(58 46 36 / 0.35);
+  --shadow-popover: 0 16px 32px -12px rgb(58 46 36 / 0.35);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  select {
+    field-sizing: fixed;
+    max-width: 100%;
+  }
+
+  body {
+    background-color: var(--color-cream);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: pretty;
+  }
+
+  /* Visible focus ring matching the palette, for keyboard accessibility. */
+  :focus-visible {
+    outline: 2px solid var(--color-brand);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  ::selection {
+    background: var(--color-sand);
+    color: var(--color-ink);
+  }
+
+  /* Astro components toggle visibility with the `hidden` attribute. */
+  [hidden] {
+    display: none !important;
+  }
+}
+
+@layer components {
+  /* Photo placeholders from the mockups: 45° hatching until real images arrive. */
+  .photo-placeholder {
+    background: repeating-linear-gradient(
+      45deg,
+      var(--color-line-strong),
+      var(--color-line-strong) 14px,
+      var(--color-stripe) 14px,
+      var(--color-stripe) 28px
+    );
+  }
+
+  .field {
+    border: 1px solid var(--color-line);
+    border-radius: 10px;
+    background: var(--color-cream);
+    padding: 0.75rem;
+    font-size: 0.9375rem;
+    font-family: var(--font-sans);
+    color: var(--color-ink);
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    field-sizing: fixed;
+  }
+
+  .field:focus {
+    outline: 2px solid var(--color-brand);
+    outline-offset: -1px;
+  }
+
+  .field-label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    font-weight: 700;
+    font-size: 0.875rem;
+    min-width: 0;
+    width: 100%;
+  }
+
+  /* Easy Go-style hover mega-menu: panel is a child of the trigger wrapper. */
+  .mega-panel {
+    display: none;
+  }
+
+  .mega-item:hover > .mega-panel,
+  .mega-item:focus-within > .mega-panel {
+    display: block;
+  }
+
+  /* Shared button recipes (kept identical to the previous implementation). */
+  .btn {
+    display: inline-block;
+    border-radius: 9999px;
+    text-align: center;
+    font-weight: 800;
+    text-decoration: none;
+    transition-property: color, background-color, border-color;
+    transition-duration: 150ms;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

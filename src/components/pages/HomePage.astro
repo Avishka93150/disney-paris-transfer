@@ -1,0 +1,213 @@
+---
+import Button from '@/components/Button.astro';
+import DarkCta from '@/components/DarkCta.astro';
+import HeroSlideshow from '@/components/HeroSlideshow.astro';
+import PhotoPlaceholder from '@/components/PhotoPlaceholder.astro';
+import PriceCalculator from '@/components/PriceCalculator.astro';
+import SiteFooter from '@/components/SiteFooter.astro';
+import SiteHeader from '@/components/SiteHeader.astro';
+import TransferPhoto from '@/components/TransferPhoto.astro';
+import PublicLayout from '@/layouts/PublicLayout.astro';
+import { getRates } from '@/lib/db';
+import { fill, formatDistance, formatDuration, getDictionary } from '@/lib/i18n';
+import type { Locale } from '@/lib/i18n/config';
+import { path, routePath } from '@/lib/i18n/routes';
+import { ROUTE_PAGES, activeVehicles } from '@/lib/prices';
+import { localBusinessJsonLd, pageMetadata, websiteJsonLd } from '@/lib/seo';
+import { getVehicleFleet, nightRule } from '@/lib/settings';
+import { site } from '@/lib/site';
+
+/** Home page — carried over from `project/Accueil.dc.html`. */
+interface Props {
+  locale: Locale;
+}
+
+/** Service icons — decorative, so they stay out of the dictionary. */
+const SERVICE_ICONS = ['✈️', '🪧', '👶', '💳', '🗓️', '💧'];
+
+const { locale } = Astro.props;
+const dict = getDictionary(locale);
+const rates = getRates();
+const night = nightRule();
+const vehicles = getVehicleFleet();
+const home = dict.home;
+
+const featured = ROUTE_PAGES.filter((route) => route.featured);
+const fleet = activeVehicles(vehicles).map((vehicle) => ({ id: vehicle.id, ...dict.vehicles[vehicle.id] }));
+const meta = pageMetadata({ locale, page: 'home' });
+---
+
+<PublicLayout locale={locale} meta={meta} structuredData={[localBusinessJsonLd(locale), websiteJsonLd(locale)]}>
+  <SiteHeader locale={locale} active="home" />
+
+  <main id="contenu">
+    {/* ── Hero + calculator ──────────────────────────────────────── */}
+    <section class="relative overflow-hidden">
+      <HeroSlideshow />
+      <div class="relative z-[1] mx-auto grid max-w-[1200px] min-w-0 items-center gap-10 px-6 pb-16 pt-[72px] lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:gap-14">
+        <div class="min-w-0 text-surface">
+          <div class="mb-5 inline-block rounded-full border border-white/25 bg-surface/15 px-4 py-[7px] text-[13px] font-extrabold text-gold">
+            {home.badge}
+          </div>
+          <h1 class="m-0 mb-[18px] font-display text-[34px] leading-[1.15] text-surface sm:text-[46px]">{home.h1}</h1>
+          <p class="m-0 mb-7 max-w-[520px] text-[18px] leading-[1.7] text-cream-soft">{home.lead}</p>
+          <div class="mb-7 flex flex-wrap gap-3.5">
+            <Button href={path(locale, 'booking')}>{home.ctaPrimary}</Button>
+            <Button href={site.whatsappHref} variant="outline" class="border-cream-soft! bg-transparent! text-surface! hover:bg-white/10!">
+              {home.ctaSecondary}
+            </Button>
+          </div>
+          <div class="flex flex-wrap gap-6 text-sm font-bold text-cream-soft">
+            {home.perks.map((perk) => <span>✓ {perk}</span>)}
+          </div>
+        </div>
+
+        <div class="min-w-0 w-full max-w-full">
+          <PriceCalculator dict={dict} rates={rates} night={night} vehicles={vehicles} bookingHref={path(locale, 'booking')} variant="hero" />
+        </div>
+      </div>
+    </section>
+
+    {/* ── Most requested routes ──────────────────────────────────── */}
+    <section class="py-[72px]">
+      <div class="mx-auto max-w-[1200px] px-6">
+        <h2 class="m-0 mb-2 font-display text-[32px]">{home.routesTitle}</h2>
+        <p class="m-0 mb-8 text-base text-ink-soft">{home.routesLead}</p>
+
+        <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {
+            featured.map((route) => (
+              <a
+                href={routePath(locale, route.slug)}
+                class="flex flex-col overflow-hidden rounded-[18px] border border-line bg-surface no-underline hover:border-brand hover:shadow-card"
+              >
+                <TransferPhoto
+                  image={route.image}
+                  alt={fill(dict.routeDetail.imageAlt, { from: dict.zones[route.from], to: dict.zones[route.to] })}
+                  class="aspect-[16/9]"
+                />
+                <div class="flex flex-col gap-2.5 p-6">
+                  <div class="font-display text-xl text-ink">
+                    {dict.zones[route.from]} ↔ {dict.zones[route.to]}
+                  </div>
+                  <div class="flex gap-3.5 text-sm font-bold text-ink-soft">
+                    <span>🕐 {formatDuration(dict, route.durationMin)}</span>
+                    <span>📍 {formatDistance(dict, route.distanceKm)}</span>
+                  </div>
+                  <div class="text-sm font-extrabold text-brand">{home.seeRoute}</div>
+                </div>
+              </a>
+            ))
+          }
+
+          <a
+            href={path(locale, 'prices')}
+            class="flex flex-col gap-2.5 rounded-[18px] border border-line bg-surface p-6 no-underline hover:border-brand hover:shadow-card"
+          >
+            <div class="font-display text-xl text-ink">{home.excursionsCard.title}</div>
+            <div class="flex gap-3.5 text-sm font-bold text-ink-soft">
+              <span>🕐 {home.excursionsCard.duration}</span>
+              <span>📍 {home.excursionsCard.note}</span>
+            </div>
+            <div class="text-sm font-extrabold text-brand">{home.seeRoute}</div>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    {/* ── Booking is simple ──────────────────────────────────────── */}
+    <section class="border-y border-line bg-surface">
+      <div class="mx-auto max-w-[1200px] px-6 py-[72px]">
+        <h2 class="m-0 mb-8 text-center font-display text-[32px]">{home.stepsTitle}</h2>
+        <div class="grid gap-8 md:grid-cols-3">
+          {
+            home.steps.map((step, index) => (
+              <div class="flex flex-col items-center gap-2.5 text-center">
+                <div class="flex h-14 w-14 items-center justify-center rounded-full bg-sand font-display text-2xl text-brand">{index + 1}</div>
+                <div class="text-lg font-extrabold">{step.title}</div>
+                <p class="m-0 text-[15px] leading-[1.6] text-ink-soft">{step.text}</p>
+              </div>
+            ))
+          }
+        </div>
+      </div>
+    </section>
+
+    {/* ── Built for families ─────────────────────────────────────── */}
+    <section class="py-[72px]">
+      <div class="mx-auto grid max-w-[1200px] items-center gap-14 px-6 lg:grid-cols-2">
+        <PhotoPlaceholder label={home.familyPhoto} class="rounded-3xl" />
+        <div>
+          <h2 class="m-0 mb-6 font-display text-[32px]">{home.familyTitle}</h2>
+          <div class="flex flex-col gap-4">
+            {
+              home.services.map((service, index) => (
+                <div class="flex items-start gap-3.5">
+                  <div aria-hidden="true" class="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-[10px] bg-sand text-base">
+                    {SERVICE_ICONS[index]}
+                  </div>
+                  <div>
+                    <span class="font-extrabold">{service.title}</span> <span class="text-ink-soft">— {service.text}</span>
+                  </div>
+                </div>
+              ))
+            }
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {/* ── Fleet ──────────────────────────────────────────────────── */}
+    {
+      fleet.length > 0 ? (
+        <section class="bg-sand">
+          <div class="mx-auto max-w-[1200px] px-6 py-[72px]">
+            <h2 class="m-0 mb-2 font-display text-[32px]">{home.fleetTitle}</h2>
+            <p class="m-0 mb-8 text-base text-ink-soft">{home.fleetLead}</p>
+            <div class:list={['grid gap-5', fleet.length >= 4 ? 'md:grid-cols-2 lg:grid-cols-4' : 'md:grid-cols-3']}>
+              {fleet.map((vehicle) => (
+                <div class="flex flex-col gap-3 rounded-[18px] bg-surface p-6">
+                  <PhotoPlaceholder label={fill(home.fleetPhoto, { vehicle: vehicle.short })} aspect="aspect-[16/9]" class="rounded-xl" />
+                  <div class="font-display text-xl">{vehicle.label}</div>
+                  <div class="flex gap-3.5 text-sm font-bold text-ink-soft">
+                    <span>👤 {vehicle.pax}</span>
+                    <span>🧳 {vehicle.bags}</span>
+                  </div>
+                  <p class="m-0 text-sm leading-[1.6] text-ink-soft">{vehicle.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : null
+    }
+
+    {/* ── Reviews ────────────────────────────────────────────────── */}
+    <section class="py-[72px]">
+      <div class="mx-auto max-w-[1200px] px-6">
+        <h2 class="m-0 mb-2 text-center font-display text-[32px]">{home.reviewsTitle}</h2>
+        <p class="m-0 mb-8 text-center font-mono text-[15px] text-ink-soft">{home.reviewsNote}</p>
+        <div class="grid gap-5 md:grid-cols-3">
+          {
+            home.reviews.map((review) => (
+              <div class="flex flex-col gap-3 rounded-[18px] border border-line bg-surface p-6">
+                <div aria-hidden="true" class="text-base tracking-[2px] text-gold">
+                  ★★★★★
+                </div>
+                <p class="m-0 text-[15px] italic leading-[1.6] text-ink-soft">{review.text}</p>
+                <div class="text-sm font-extrabold">{review.name}</div>
+              </div>
+            ))
+          }
+        </div>
+      </div>
+    </section>
+
+    <DarkCta title={home.finalTitle} lead={home.finalLead}>
+      <Button href={path(locale, 'booking')} variant="gold">{home.finalBook}</Button>
+      <Button href={site.phoneHref} variant="goldOutline">📞 {site.phoneDisplay}</Button>
+    </DarkCta>
+  </main>
+
+  <SiteFooter locale={locale} />
+</PublicLayout>

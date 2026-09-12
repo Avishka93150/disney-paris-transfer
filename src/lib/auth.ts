@@ -1,7 +1,4 @@
-import 'server-only';
 import { createHmac, randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
-import { cookies } from 'next/headers';
-import { redirect } from 'next/navigation';
 import { getAdminPasswordHash } from './settings';
 
 /**
@@ -16,6 +13,13 @@ const COOKIE = 'dpt_admin';
 const MAX_AGE_SECONDS = 12 * 60 * 60;
 const SCRYPT_KEYLEN = 64;
 export const MIN_PASSWORD_LENGTH = 10;
+
+/** The slice of Astro's cookie API this module needs (`Astro.cookies`). */
+export type CookieJar = {
+  get(name: string): { value: string } | undefined;
+  set(name: string, value: string, options: Record<string, unknown>): void;
+  delete(name: string, options?: Record<string, unknown>): void;
+};
 
 function secret(): string {
   const value = process.env.SESSION_SECRET;
@@ -99,9 +103,8 @@ export function checkCredentials(email: string, password: string): boolean {
   return emailOk && passwordOk;
 }
 
-export async function createSession(email: string): Promise<void> {
-  const store = await cookies();
-  store.set(COOKIE, serialize(email), {
+export function createSession(cookies: CookieJar, email: string): void {
+  cookies.set(COOKIE, serialize(email), {
     httpOnly: true,
     sameSite: 'lax',
     secure: process.env.NODE_ENV === 'production',
@@ -110,13 +113,12 @@ export async function createSession(email: string): Promise<void> {
   });
 }
 
-export async function destroySession(): Promise<void> {
-  const store = await cookies();
-  store.delete({ name: COOKIE, path: '/admin' });
+export function destroySession(cookies: CookieJar): void {
+  cookies.delete(COOKIE, { path: '/admin' });
 }
 
-export async function getSession(): Promise<{ sub: string } | null> {
-  const token = (await cookies()).get(COOKIE)?.value;
+export function getSession(cookies: CookieJar): { sub: string } | null {
+  const token = cookies.get(COOKIE)?.value;
   if (!token) return null;
 
   try {
@@ -125,13 +127,6 @@ export async function getSession(): Promise<{ sub: string } | null> {
     // SESSION_SECRET missing: simply treat it as no session at all.
     return null;
   }
-}
-
-/** Call this at the top of every admin page and every admin action. */
-export async function requireAdmin(): Promise<{ sub: string }> {
-  const session = await getSession();
-  if (!session) redirect('/admin/login');
-  return session;
 }
 
 /** The admin is unusable until the account is configured. */

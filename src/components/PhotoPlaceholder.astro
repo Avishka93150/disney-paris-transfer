@@ -1,0 +1,14 @@
+---
+/** Hatched photo placeholder, waiting for the client's real images. */
+interface Props {
+  label: string;
+  aspect?: string;
+  class?: string;
+}
+
+const { label, aspect = 'aspect-[4/3]', class: className = '' } = Astro.props;
+---
+
+<div class:list={['photo-placeholder flex items-center justify-center overflow-hidden', aspect, className]}>
+  <span class="rounded-lg bg-surface px-3.5 py-2 font-mono text-[13px] text-ink-mute">{label}</span>
+</div>

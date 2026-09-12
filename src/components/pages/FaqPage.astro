@@ -1,0 +1,49 @@
+---
+import Button from '@/components/Button.astro';
+import PageHero from '@/components/PageHero.astro';
+import SiteFooter from '@/components/SiteFooter.astro';
+import SiteHeader from '@/components/SiteHeader.astro';
+import PublicLayout from '@/layouts/PublicLayout.astro';
+import { getDictionary } from '@/lib/i18n';
+import type { Locale } from '@/lib/i18n/config';
+import { faqJsonLd, pageMetadata } from '@/lib/seo';
+import { site } from '@/lib/site';
+
+/** FAQ — carried over from `project/FAQ.dc.html`, with `FAQPage` markup. */
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const dict = getDictionary(locale);
+const meta = pageMetadata({ locale, page: 'faq' });
+---
+
+<PublicLayout locale={locale} meta={meta} structuredData={[faqJsonLd(dict.faq.items)]}>
+  <SiteHeader locale={locale} active="faq" />
+
+  <main id="contenu">
+    <PageHero title={dict.faq.h1} lead={dict.faq.lead} narrow />
+
+    <section class="mx-auto flex max-w-[900px] flex-col gap-3 px-6 py-14">
+      {
+        dict.faq.items.map((item) => (
+          <details class="rounded-[14px] border border-line bg-surface px-[22px] py-[18px]">
+            <summary class="cursor-pointer text-[17px] font-extrabold">{item.q}</summary>
+            <p class="mb-0 mt-3 text-[15px] leading-[1.75] text-ink-soft">{item.a}</p>
+          </details>
+        ))
+      }
+
+      <div class="mt-6 text-center">
+        <p class="m-0 mb-4 text-base text-ink-soft">{dict.faq.moreTitle}</p>
+        <div class="flex flex-wrap justify-center gap-3.5">
+          <Button href={site.whatsappHref} variant="primary" class="px-[26px]! py-[13px]! text-base!">{dict.common.writeWhatsapp}</Button>
+          <Button href={site.phoneHref} variant="outline" class="px-[22px]! py-[11px]! text-base!">📞 {site.phoneDisplay}</Button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <SiteFooter locale={locale} />
+</PublicLayout>

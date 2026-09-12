@@ -1,0 +1,37 @@
+---
+/**
+ * The site's CTAs, carried over from the mockups. `primary` and `outline` sit
+ * on light backgrounds, `gold` and `goldOutline` on the deep-brown bands.
+ *
+ * Pass `class` to nudge the padding / font size on a given page (the callers
+ * use Tailwind's `!` suffix for that, e.g. `px-7! text-base!`).
+ */
+interface Props {
+  href: string;
+  variant?: 'primary' | 'outline' | 'gold' | 'goldOutline';
+  class?: string;
+  /** Force `target="_blank"`; `http(s)` links get it automatically. */
+  external?: boolean;
+  [key: string]: unknown;
+}
+
+const { href, variant = 'primary', class: className = '', external, ...rest } = Astro.props;
+
+const styles = {
+  primary: 'bg-brand px-[30px] py-[15px] text-[17px] text-surface hover:bg-brand-dark',
+  outline: 'border-2 border-brand bg-surface px-[26px] py-[13px] text-[17px] text-brand hover:bg-sand',
+  gold: 'bg-gold px-[30px] py-[15px] text-[17px] text-ink hover:bg-gold-dark',
+  goldOutline: 'border-2 border-gold px-[26px] py-[13px] text-[17px] text-gold hover:bg-ink-light',
+}[variant];
+
+const isExternal = external ?? href.startsWith('http');
+---
+
+<a
+  href={href}
+  class:list={['btn', styles, className]}
+  {...(isExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+  {...rest}
+>
+  <slot />
+</a>

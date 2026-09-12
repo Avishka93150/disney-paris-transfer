@@ -1,0 +1,262 @@
+---
+import Feedback from '@/components/admin/Feedback.astro';
+import AdminLayout from '@/layouts/AdminLayout.astro';
+import { addRateAction, saveRatesAction, saveVehiclesAction } from '@/lib/admin/actions';
+import { feedbackFor, handlePost, submitted, submittedChecked } from '@/lib/admin/page';
+import { getSession } from '@/lib/auth';
+import { getRates } from '@/lib/db';
+import { en } from '@/lib/i18n/dictionaries/en';
+import { TIER_LABELS, ZONE_IDS, type ZoneId } from '@/lib/prices';
+import { getSettings, getVehicleFleet } from '@/lib/settings';
+
+if (!getSession(Astro.cookies)) return Astro.redirect('/admin/login');
+
+const { redirect, feedback } = await handlePost(Astro, (form) => {
+  switch (form.get('action')) {
+    case 'vehicles':
+      return { key: 'vehicles', state: saveVehiclesAction(form) };
+    case 'rates':
+      return { key: 'rates', state: saveRatesAction(form) };
+    case 'add':
+      return { key: 'add', state: addRateAction(form) };
+    default:
+      return null;
+  }
+});
+if (redirect) return redirect;
+
+const rates = getRates();
+const settings = getSettings();
+const fleet = getVehicleFleet();
+const zone = (id: string) => en.zones[id as ZoneId] ?? id;
+
+const rows = Object.entries(rates)
+  .map(([pair, prices]) => {
+    const [from, to] = pair.split('-');
+    return {
+      pair,
+      label: `${zone(from ?? '')} ↔ ${zone(to ?? '')}`,
+      prices: prices.map((price, index) => submitted(feedback, 'rates', `price:${pair}:${index}`) ?? String(price)),
+    };
+  })
+  .sort((a, b) => a.label.localeCompare(b.label, 'en'));
+
+const zones = ZONE_IDS.map((id) => ({ id, label: en.zones[id] }));
+
+const vehicles = fleet.map((vehicle) => ({
+  id: vehicle.id,
+  label: en.vehicles[vehicle.id].label,
+  pax: en.vehicles[vehicle.id].pax,
+  bags: en.vehicles[vehicle.id].bags,
+  active: submittedChecked(feedback, 'vehicles', `vehicleActive:${vehicle.id}`) ?? vehicle.active,
+  mult: submitted(feedback, 'vehicles', `vehicleMult:${vehicle.id}`) ?? vehicle.mult.toFixed(2),
+}));
+
+const EXAMPLE_BASE = 80;
+const newPrices = TIER_LABELS.map((_, index) => submitted(feedback, 'add', `newPrice:${index}`) ?? '');
+const newFrom = submitted(feedback, 'add', 'from') ?? 'cdg';
+const newTo = submitted(feedback, 'add', 'to') ?? 'disney';
+---
+
+<AdminLayout title="Rates" signedIn>
+  <main class="mx-auto max-w-[1100px] px-6 py-10">
+    <h1 class="m-0 mb-2 font-display text-[28px]">Rates</h1>
+    <p class="m-0 mb-6 max-w-[680px] text-[15px] leading-[1.7] text-ink-soft">
+      These prices feed the home page calculator, the prices page and the route pages, in all 9 languages. Changes are live on the site
+      immediately.
+    </p>
+
+    <p class="mb-8 rounded-[10px] bg-sand p-4 text-sm leading-[1.6] text-ink-soft">
+      {
+        settings.nightSurchargeEnabled ? (
+          <>
+            A <strong>night supplement of +{settings.nightSurchargePercent} %</strong> is currently applied on top of these prices for pickups
+            between <strong>{settings.nightStart}</strong> and <strong>{settings.nightEnd}</strong>. Enter daytime prices here.
+          </>
+        ) : (
+          <>The night supplement is switched off — these prices apply at any hour.</>
+        )
+      }{' '}
+      <a href="/admin/settings" class="font-bold text-brand">Change night hours</a>
+    </p>
+
+    <div class="flex flex-col gap-8">
+      <form method="post" class="rounded-2xl border border-line bg-surface p-6" data-vehicles-form data-example={EXAMPLE_BASE}>
+        <input type="hidden" name="action" value="vehicles" />
+        <h2 class="m-0 mb-2 font-display text-xl">Vehicles</h2>
+        <p class="m-0 mb-5 text-sm leading-[1.6] text-ink-soft">
+          Untick a vehicle to hide it from the calculator, the booking form and the fleet section. The price factor multiplies the grid:{' '}
+          <strong>1.00</strong> is the listed fare, <strong>1.10</strong> is +10&nbsp;%, <strong>1.50</strong> is +50&nbsp;%.
+        </p>
+
+        <div class="overflow-x-auto">
+          <table class="w-full min-w-[640px] border-collapse text-sm">
+            <thead>
+              <tr class="border-b border-line text-left">
+                <th class="py-2 pr-3 font-extrabold">Vehicle</th>
+                <th class="px-2 py-2 text-center font-extrabold">Offered</th>
+                <th class="px-2 py-2 font-extrabold">Price factor</th>
+                <th class="px-2 py-2 text-right font-extrabold">€{EXAMPLE_BASE} becomes</th>
+              </tr>
+            </thead>
+            <tbody>
+              {
+                vehicles.map((row) => {
+                  const mult = Number.parseFloat(row.mult.replace(',', '.'));
+                  const example = Number.isFinite(mult) ? `${Math.round(EXAMPLE_BASE * mult)} €` : '—';
+                  return (
+                    <tr class="border-b border-line-strong last:border-0">
+                      <td class="py-3 pr-3">
+                        <div class="font-bold">{row.label}</div>
+                        <div class="text-[12px] font-bold text-ink-mute">
+                          {row.pax} · {row.bags}
+                        </div>
+                      </td>
+                      <td class="px-2 py-3 text-center">
+                        <input
+                          type="checkbox"
+                          name={`vehicleActive:${row.id}`}
+                          checked={row.active}
+                          class="h-5 w-5 accent-[#B4552D]"
+                          aria-label={`Offer ${row.label}`}
+                        />
+                      </td>
+                      <td class="px-2 py-3">
+                        <input
+                          name={`vehicleMult:${row.id}`}
+                          value={row.mult}
+                          inputmode="decimal"
+                          data-vehicle-mult={row.id}
+                          class="field max-w-[120px] px-3 py-2 font-mono"
+                          aria-label={`${row.label} price factor`}
+                        />
+                      </td>
+                      <td class="px-2 py-3 text-right font-extrabold text-brand" data-vehicle-example={row.id}>
+                        {example}
+                      </td>
+                    </tr>
+                  );
+                })
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <button
+          type="submit"
+          class="mt-6 cursor-pointer rounded-full border-none bg-brand px-6 py-3 font-sans text-[15px] font-extrabold text-surface hover:bg-brand-dark disabled:opacity-60"
+        >
+          Save vehicles
+        </button>
+        <Feedback state={feedbackFor(feedback, 'vehicles')} class="mb-0 mt-4" />
+      </form>
+
+      <form method="post" class="rounded-2xl border border-line bg-surface p-6">
+        <input type="hidden" name="action" value="rates" />
+        <h2 class="m-0 mb-2 font-display text-xl">Rate grid</h2>
+        <p class="m-0 mb-5 text-sm leading-[1.6] text-ink-soft">
+          One row per connection, six boxes in passenger-tier order: <strong>1–3, 4, 5, 6, 7, 8</strong> passengers. Prices are in whole
+          euros, one-way. Round trips are calculated automatically (×2). Clear every box on a row to remove the connection — it then becomes
+          “on request”.
+        </p>
+
+        <div class="overflow-x-auto">
+          <table class="w-full min-w-[720px] border-collapse text-sm">
+            <thead>
+              <tr class="border-b border-line text-left">
+                <th class="py-2 pr-3 font-extrabold">Connection</th>
+                {
+                  TIER_LABELS.map((tier) => (
+                    <th class="px-1 py-2 text-center font-extrabold">
+                      {tier}
+                      <span class="block text-[11px] font-bold text-ink-mute">pax</span>
+                    </th>
+                  ))
+                }
+              </tr>
+            </thead>
+            <tbody>
+              {
+                rows.map((row) => (
+                  <tr class="border-b border-line-strong last:border-0">
+                    <td class="py-2 pr-3">
+                      <label for={`price:${row.pair}:0`} class="text-sm font-bold">
+                        {row.label}
+                      </label>
+                      <input type="hidden" name="pair" value={row.pair} />
+                    </td>
+                    {TIER_LABELS.map((tier, index) => (
+                      <td class="px-1 py-1.5">
+                        <input
+                          id={`price:${row.pair}:${index}`}
+                          name={`price:${row.pair}:${index}`}
+                          value={row.prices[index] ?? ''}
+                          inputmode="numeric"
+                          class="field px-2 py-2 text-center font-mono text-[15px]"
+                          aria-label={`${row.label}, ${tier} passengers`}
+                        />
+                      </td>
+                    ))}
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <button
+          type="submit"
+          class="mt-6 cursor-pointer rounded-full border-none bg-brand px-6 py-3 font-sans text-[15px] font-extrabold text-surface hover:bg-brand-dark disabled:opacity-60"
+        >
+          Save the grid
+        </button>
+        <Feedback state={feedbackFor(feedback, 'rates')} class="mb-0 mt-4" />
+      </form>
+
+      <form method="post" class="rounded-2xl border border-line bg-surface p-6">
+        <input type="hidden" name="action" value="add" />
+        <h2 class="m-0 mb-4 font-display text-xl">Add a connection</h2>
+
+        <div class="grid gap-4 sm:grid-cols-2">
+          <label class="field-label">
+            From
+            <select name="from" class="field">
+              {zones.map((z) => <option value={z.id} selected={z.id === newFrom}>{z.label}</option>)}
+            </select>
+          </label>
+
+          <label class="field-label">
+            To
+            <select name="to" class="field">
+              {zones.map((z) => <option value={z.id} selected={z.id === newTo}>{z.label}</option>)}
+            </select>
+          </label>
+        </div>
+
+        <p class="mb-2 mt-5 text-[13px] font-bold">Prices (one-way, €)</p>
+        <div class="grid grid-cols-3 gap-2 sm:grid-cols-6">
+          {
+            TIER_LABELS.map((tier, index) => (
+              <label class="field-label text-center text-[12px]">
+                {tier}
+                <input name={`newPrice:${index}`} value={newPrices[index]} inputmode="numeric" placeholder="0" class="field px-2 py-2 text-center font-mono" />
+              </label>
+            ))
+          }
+        </div>
+
+        <button
+          type="submit"
+          class="mt-5 cursor-pointer rounded-full border border-brand bg-surface px-6 py-3 font-sans text-[15px] font-extrabold text-brand hover:bg-sand disabled:opacity-60"
+        >
+          Add
+        </button>
+        <Feedback state={feedbackFor(feedback, 'add')} class="mb-0 mt-4" />
+      </form>
+    </div>
+  </main>
+
+  <script>
+    import '@/scripts/admin';
+  </script>
+</AdminLayout>

@@ -1,6 +1,9 @@
 # Installation guide — Disney Paris Transfers
 
 > 🇫🇷 Version française : [`GUIDE-INSTALLATION.md`](./GUIDE-INSTALLATION.md)
+>
+> **On a server managed with Plesk?** Use [`DEPLOY-PLESK.md`](./DEPLOY-PLESK.md) instead of
+> section 4 below.
 
 Private chauffeur website in 9 languages, with a live price calculator, a quote form, a
 back office and optional online payment.
@@ -38,9 +41,12 @@ disney-paris-transfers/
 │   └── schema.sql                ← database structure (documentation)
 ├── CLAUDE.md   CLAUDE.fr.md      ← technical documentation (for a developer)
 ├── src/                          ← the website code
-│   ├── app/                      ← the pages and the back office
-│   ├── components/               ← reusable visual pieces
+│   ├── pages/                    ← the pages, the back office and the API
+│   ├── components/  layouts/     ← reusable visual pieces
+│   ├── scripts/                  ← the few browser scripts (calculator, form, menus)
 │   └── lib/                      ← prices, translations, database, email, payment
+├── public/                       ← photos and fonts
+├── server.mjs                    ← what `npm start` runs
 ├── project/                      ← the original mockups (visual reference)
 ├── package.json                  ← list of components to install
 └── scripts/hash-password.mjs     ← password-changing tool
@@ -62,7 +68,7 @@ Two files need your attention straight away:
 
 | Item                 | Detail                                                                      |
 | -------------------- | --------------------------------------------------------------------------- |
-| **Node.js 20 or newer** | Free — <https://nodejs.org> (choose the "LTS" version)                    |
+| **Node.js 22.12 or newer** | Free — <https://nodejs.org> (choose the "LTS" version)                 |
 | **Hosting**          | A server that runs Node.js **continuously**: OVH, Hetzner, Scaleway VPS…    |
 | **Your domain name** | `disneyparistransfers.com`, which you already own                           |
 | **A mailbox**        | `contact@disneyparistransfers.com` at your host                              |
@@ -95,7 +101,7 @@ Before deploying, run the site locally to get familiar with it.
 cd path/to/disney-paris-transfers
 ```
 
-**3.** Check Node is installed — this must print `v20…` or higher:
+**3.** Check Node is installed — this must print `v22…` or higher:
 
 ```bash
 node -v
@@ -122,11 +128,11 @@ npm run dev
 
 **7.** Open <http://localhost:3000> in your browser.
 
-The site is there, in French. Try:
+The site is there, in English (your browser's language decides). Try:
 
 - the **price calculator** at the top of the home page (change the passenger count: vehicles
   that are too small grey themselves out);
-- the **language selector** in the top right — all 7 languages are written;
+- the **language selector** in the top right — all 9 languages are written;
 - the **booking form**: send yourself a test request;
 - the **back office** at <http://localhost:3000/admin>, using the credentials in
   `CREDENTIALS.txt`. Your test request should be listed there.
@@ -147,8 +153,8 @@ Example on an Ubuntu VPS. Adjust the paths if your host differs.
 Connect over SSH, then:
 
 ```bash
-# Node.js 20
-curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+# Node.js 22
+curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
 sudo apt-get install -y nodejs
 
 # Build tools (for the database) and web server
@@ -163,12 +169,12 @@ sudo npm install -g pm2
 From **your own computer**, send the folder (without the generated files):
 
 ```bash
-rsync -av --exclude node_modules --exclude .next --exclude .git \
+rsync -av --exclude node_modules --exclude dist --exclude .git \
   ./disney-paris-transfers/ root@YOUR-IP:/var/www/disneyparistransfers/
 ```
 
 *(No `rsync`? A plain FTP/SFTP upload of the folder works too — just leave out
-`node_modules` and `.next` if they exist.)*
+`node_modules` and `dist` if they exist.)*
 
 ### 4.3 Install and build
 
@@ -184,7 +190,7 @@ npm ci            # install the components
 npm run build     # build the site (1–2 minutes)
 ```
 
-The build must end with `✓ Generating static pages (113/113)`.
+The build must end with `[build] Complete!` and create a `dist/` folder.
 
 ### 4.4 Start it, and keep it running
 
@@ -417,7 +423,7 @@ of waiting, meet and greet at arrivals. Set a price, and:
 Add-ons are **never night-surcharged**: a child seat costs the same at 3 am as at 3 pm.
 
 > ⚠️ Package and add-on names are shown to visitors **exactly as you type them**, in all
-> 7 languages — they do not go through the site's translations. Write them in the language
+> 9 languages — they do not go through the site's translations. Write them in the language
 > most of your customers read.
 
 Untick *Visible on the site* / *Offered at booking* to retire a package or an add-on without
@@ -442,7 +448,7 @@ on the outbound pickup time.
 A booking with no pickup time is never surcharged — there is nothing to judge it by. That is
 deliberate: quote those by hand.
 
-Every change on all four screens is **live immediately**, in all 7 languages.
+Every change on all four screens is **live immediately**, in all 9 languages.
 
 ---
 
@@ -486,7 +492,7 @@ After editing `.env`:
 pm2 restart disneyparistransfers
 ```
 
-After editing the code (`src/`):
+After editing the code (`src/`) or the photos and fonts (`public/`):
 
 ```bash
 npm run build && pm2 restart disneyparistransfers
@@ -553,8 +559,8 @@ In order of importance:
    the market. Every other one (Orly, Beauvais, Paris, Versailles…) was **estimated** and
    needs confirming. → Back office → Rates.
 
-2. **Have the translations proofread.** All 7 languages are fully written, but the
-   **Russian, Chinese and Japanese** versions have not been reviewed by a native speaker. Get
+2. **Have the translations proofread.** All 9 languages are fully written, but the
+   **German, Portuguese, Russian, Chinese and Japanese** versions have not been reviewed by a native speaker. Get
    them checked before you advertise in those markets.
 
 3. **Supply your photos**: vehicle interior with child seats, airport meet and greet, driver
@@ -570,7 +576,7 @@ In order of importance:
    yet: have it added before you start trading.
 
 7. **Register the site** with Google Search Console and submit the sitemap:
-   `https://disneyparistransfers.com/sitemap.xml` (105 addresses across 7 languages).
+   `https://disneyparistransfers.com/sitemap.xml` (270 addresses across 9 languages).
 
 ---
 

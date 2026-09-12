@@ -1,4 +1,3 @@
-import 'server-only';
 import nodemailer, { type Transporter } from 'nodemailer';
 import { bookingExtras } from './booking';
 import { euros } from './catalog';

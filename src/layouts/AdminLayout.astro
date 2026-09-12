@@ -1,0 +1,64 @@
+---
+import '@/styles/globals.css';
+
+/**
+ * Back-office shell. English only, never indexed. The navigation only shows
+ * once signed in.
+ */
+interface Props {
+  title: string;
+  signedIn: boolean;
+}
+
+const { title, signedIn } = Astro.props;
+
+const LINKS = [
+  { href: '/admin', label: 'Bookings' },
+  { href: '/admin/rates', label: 'Rates' },
+  { href: '/admin/packages', label: 'Packages & add-ons' },
+  { href: '/admin/settings', label: 'Settings' },
+];
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title} — Admin — Disney Paris Transfers</title>
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body class="bg-cream">
+    {
+      signedIn ? (
+        <header class="border-b border-line bg-surface">
+          <div class="mx-auto flex max-w-[1100px] flex-wrap items-center gap-5 px-6 py-3">
+            <a href="/admin" class="font-display text-lg text-ink no-underline">
+              Disney Paris <span class="text-brand">Transfers</span>
+            </a>
+
+            <nav class="flex flex-wrap gap-4">
+              {LINKS.map((link) => (
+                <a href={link.href} class="text-sm font-bold text-ink no-underline hover:text-brand">
+                  {link.label}
+                </a>
+              ))}
+            </nav>
+
+            <form method="post" action="/admin/logout" class="ml-auto">
+              <button
+                type="submit"
+                class="cursor-pointer rounded-full border border-line bg-cream px-4 py-2 font-sans text-[13px] font-bold text-ink-soft hover:border-brand hover:text-brand"
+              >
+                Sign out
+              </button>
+            </form>
+          </div>
+        </header>
+      ) : null
+    }
+
+    <slot />
+  </body>
+</html>

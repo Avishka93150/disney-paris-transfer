@@ -1,0 +1,72 @@
+---
+import AdminLayout from '@/layouts/AdminLayout.astro';
+import { adminConfigured, checkCredentials, createSession, getSession } from '@/lib/auth';
+import { clientIp, rateLimit } from '@/lib/ratelimit';
+
+if (getSession(Astro.cookies)) return Astro.redirect('/admin');
+
+let error: string | null = null;
+let email = '';
+
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData();
+  email = String(form.get('email') ?? '');
+  const password = String(form.get('password') ?? '');
+
+  const limit = rateLimit(`admin-login:${clientIp(Astro.request.headers)}`, 8, 15 * 60 * 1000);
+  if (!limit.ok) {
+    error = 'Too many attempts. Try again in a few minutes.';
+  } else if (!checkCredentials(email, password)) {
+    error = 'Incorrect credentials.';
+  } else {
+    createSession(Astro.cookies, email);
+    return Astro.redirect('/admin', 303);
+  }
+}
+---
+
+<AdminLayout title="Sign in" signedIn={false}>
+  <main class="mx-auto flex min-h-screen max-w-[420px] flex-col justify-center px-6 py-16">
+    <h1 class="m-0 mb-2 font-display text-[26px]">
+      Disney Paris <span class="text-brand">Transfers</span>
+    </h1>
+    <p class="m-0 mb-7 text-[15px] text-ink-soft">Admin area.</p>
+
+    {
+      adminConfigured() ? (
+        <form method="post" class="flex flex-col gap-4 rounded-2xl border border-line bg-surface p-6">
+          <label class="field-label">
+            Email
+            <input type="email" name="email" required autocomplete="username" value={email} class="field" />
+          </label>
+
+          <label class="field-label">
+            Password
+            <input type="password" name="password" required autocomplete="current-password" class="field" />
+          </label>
+
+          <button
+            type="submit"
+            class="cursor-pointer rounded-full border-none bg-brand px-6 py-3 font-sans text-base font-extrabold text-surface hover:bg-brand-dark disabled:opacity-60"
+          >
+            Sign in
+          </button>
+
+          {error ? (
+            <p role="alert" class="m-0 text-sm font-bold text-brand">
+              {error}
+            </p>
+          ) : null}
+        </form>
+      ) : (
+        <div class="rounded-2xl border border-line bg-surface p-6 text-[15px] leading-[1.7] text-ink-soft">
+          <p class="m-0 mb-3 font-bold text-ink">Account not configured</p>
+          <p class="m-0 mb-3">
+            Set <code>ADMIN_EMAIL</code>, <code>ADMIN_PASSWORD_HASH</code> and <code>SESSION_SECRET</code> in your <code>.env</code> file.
+          </p>
+          <p class="m-0 rounded-[10px] bg-cream p-3 font-mono text-[13px]">npm run admin:hash -- 'your-password'</p>
+        </div>
+      )
+    }
+  </main>
+</AdminLayout>

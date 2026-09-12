@@ -1,6 +1,9 @@
 # Guide d'installation — Disney Paris Transfers
 
 > 🇬🇧 English version: [`INSTALLATION-GUIDE.md`](./INSTALLATION-GUIDE.md)
+>
+> **Serveur administré avec Plesk ?** Suivez [`DEPLOIEMENT-PLESK.md`](./DEPLOIEMENT-PLESK.md)
+> à la place de la section 4.
 
 Site de chauffeur privé VTC, 9 langues, calculateur de prix, formulaire de devis,
 espace de gestion et paiement en ligne facultatif.
@@ -38,9 +41,12 @@ disney-paris-transfers/
 │   └── schema.sql                ← structure de la base de données (documentation)
 ├── CLAUDE.md   CLAUDE.fr.md      ← documentation technique (pour un développeur)
 ├── src/                          ← le code du site
-│   ├── app/                      ← les pages et l'espace de gestion
-│   ├── components/               ← les éléments visuels réutilisables
+│   ├── pages/                    ← les pages, l'espace de gestion et l'API
+│   ├── components/  layouts/     ← les éléments visuels réutilisables
+│   ├── scripts/                  ← les quelques scripts navigateur (calculateur, formulaire, menus)
 │   └── lib/                      ← tarifs, traductions, base, emails, paiement
+├── public/                       ← photos et polices
+├── server.mjs                    ← ce que `npm start` lance
 ├── project/                      ← les maquettes d'origine (référence visuelle)
 ├── package.json                  ← liste des composants à installer
 └── scripts/hash-password.mjs     ← outil de changement de mot de passe
@@ -62,7 +68,7 @@ Deux fichiers demandent votre attention immédiate :
 
 | Élément            | Détail                                                                    |
 | ------------------ | ------------------------------------------------------------------------- |
-| **Node.js 20 ou +**| Gratuit — <https://nodejs.org> (prenez la version « LTS »)                 |
+| **Node.js 22.12 ou +**| Gratuit — <https://nodejs.org> (prenez la version « LTS »)              |
 | **Un hébergement** | Un serveur qui exécute Node.js **en continu** : VPS OVH, Hetzner, Scaleway, o2switch… |
 | **Le nom de domaine** | `disneyparistransfers.com`, déjà à vous                                |
 | **Une boîte email**| `contact@disneyparistransfers.com` chez votre hébergeur                    |
@@ -97,7 +103,7 @@ dans le dossier du site :
 cd chemin/vers/disney-paris-transfers
 ```
 
-**3.** Vérifiez que Node est bien installé — la commande doit afficher `v20…` ou plus :
+**3.** Vérifiez que Node est bien installé — la commande doit afficher `v22…` ou plus :
 
 ```bash
 node -v
@@ -128,7 +134,7 @@ Le site est là, en français. Essayez :
 
 - le **calculateur de prix** en haut de l'accueil (changez les passagers : les
   véhicules trop petits se grisent tout seuls) ;
-- le **sélecteur de langue** en haut à droite — les 7 langues sont rédigées ;
+- le **sélecteur de langue** en haut à droite — les 9 langues sont rédigées ;
 - le **formulaire de réservation** : envoyez une demande de test ;
 - l'**espace de gestion** sur <http://localhost:3000/admin>, avec les identifiants
   du fichier `CREDENTIALS.txt`. Votre demande de test doit s'y trouver.
@@ -150,8 +156,8 @@ Exemple sur un VPS Ubuntu. Adaptez les chemins si votre hébergeur diffère.
 Connectez-vous en SSH, puis :
 
 ```bash
-# Node.js 20
-curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+# Node.js 22
+curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
 sudo apt-get install -y nodejs
 
 # Outils de compilation (pour la base de données) et serveur web
@@ -166,12 +172,12 @@ sudo npm install -g pm2
 Depuis **votre ordinateur**, envoyez le dossier (sans les fichiers temporaires) :
 
 ```bash
-rsync -av --exclude node_modules --exclude .next --exclude .git \
+rsync -av --exclude node_modules --exclude dist --exclude .git \
   ./disney-paris-transfers/ root@VOTRE-IP:/var/www/disneyparistransfers/
 ```
 
 *(Sans `rsync`, un simple envoi par FTP/SFTP du dossier convient aussi — en
-excluant `node_modules` et `.next` s'ils existent.)*
+excluant `node_modules` et `dist` s'ils existent.)*
 
 ### 4.3 Installer et compiler
 
@@ -187,7 +193,7 @@ npm ci            # installe les composants
 npm run build     # compile le site (1 à 2 minutes)
 ```
 
-La compilation doit se terminer par `✓ Generating static pages (113/113)`.
+La compilation doit se terminer par `[build] Complete!` et créer un dossier `dist/`.
 
 ### 4.4 Démarrer et rendre permanent
 
@@ -435,7 +441,7 @@ Les options ne sont **jamais majorées la nuit** : un siège enfant coûte le m�
 prix à 3 h du matin qu'à 15 h.
 
 > ⚠️ Les noms des forfaits et des options sont affichés aux visiteurs
-> **exactement tels que vous les saisissez**, dans les 7 langues — ils ne
+> **exactement tels que vous les saisissez**, dans les 9 langues — ils ne
 > passent pas par les traductions du site. Rédigez-les dans la langue que lisent
 > la plupart de vos clients.
 
@@ -466,7 +472,7 @@ Une demande sans heure de prise en charge n'est jamais majorée — il n'y a rie
 sur quoi se fonder. C'est volontaire : traitez celles-là à la main.
 
 Toutes les modifications, sur les quatre pages, sont **visibles immédiatement**
-sur le site, dans les 7 langues.
+sur le site, dans les 9 langues.
 
 ---
 
@@ -580,8 +586,8 @@ Par ordre d'importance :
    Versailles…) ont été **estimées** et doivent être confirmées.
    → Gestion → Rates.
 
-2. **Faire relire les traductions.** Les 7 langues sont entièrement rédigées, mais
-   les versions **russe, chinoise et japonaise** n'ont pas été relues par un
+2. **Faire relire les traductions.** Les 9 langues sont entièrement rédigées, mais
+   les versions **allemande, portugaise, russe, chinoise et japonaise** n'ont pas été relues par un
    locuteur natif. Une relecture est recommandée avant de communiquer dessus.
 
 3. **Fournir vos photos** : intérieur du véhicule avec sièges enfants, accueil
@@ -599,7 +605,7 @@ Par ordre d'importance :
    ajouter avant l'ouverture commerciale.
 
 7. **Déclarer le site** à la Google Search Console et y soumettre le plan du site :
-   `https://disneyparistransfers.com/sitemap.xml` (105 adresses, 7 langues).
+   `https://disneyparistransfers.com/sitemap.xml` (270 adresses, 9 langues).
 
 ---
 

@@ -1,8 +1,7 @@
 node_modules/
-.next/
-out/
+dist/
+.astro/
 build/
-next-env.d.ts
 *.tsbuildinfo
 
 # SQLite database (the folder is created on first run)

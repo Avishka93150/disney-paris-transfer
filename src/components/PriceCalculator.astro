@@ -1,0 +1,173 @@
+---
+import DestinationSelect from '@/components/DestinationSelect.astro';
+import { computeCalculator, labelsFromDictionary, type CalcConfig, type CalcState } from '@/lib/calculator';
+import { fill } from '@/lib/i18n';
+import type { Dictionary } from '@/lib/i18n/types';
+import { MAX_PAX, NIGHT_RULE_OFF, VEHICLES, activeVehicles, type NightRule, type Vehicle, type ZoneId } from '@/lib/prices';
+import { site } from '@/lib/site';
+
+/**
+ * "Your price, live" — the calculator in the home page hero and on the route
+ * pages.
+ *
+ * The rate grid, the night rule and the fleet all come from the server (the
+ * admin can change them). The price shown here is indicative and
+ * **recalculated server-side** before anything is stored or charged.
+ *
+ * The initial state is rendered into the HTML; `src/scripts/calculator.ts`
+ * re-runs `computeCalculator()` on every change.
+ */
+interface Props {
+  dict: Dictionary;
+  rates: Record<string, readonly number[]>;
+  night?: NightRule;
+  vehicles?: readonly Vehicle[];
+  bookingHref: string;
+  initialFrom?: ZoneId;
+  initialTo?: string;
+  /** `hero` = slightly transparent, for the photo background on the home page. */
+  variant?: 'card' | 'hero';
+}
+
+const {
+  dict,
+  rates,
+  night = NIGHT_RULE_OFF,
+  vehicles = VEHICLES,
+  bookingHref,
+  initialFrom = 'cdg',
+  initialTo = 'disney',
+  variant = 'card',
+} = Astro.props;
+
+const config: CalcConfig = {
+  rates,
+  night,
+  vehicles,
+  bookingHref,
+  whatsappHref: site.whatsappHref,
+  labels: labelsFromDictionary(dict),
+};
+
+const state: CalcState = { from: initialFrom, to: initialTo, pax: 2, trip: 'ow', vehicleId: 'saloon', time: '' };
+const view = computeCalculator(state, config);
+const calc = dict.home.calc;
+const fleet = activeVehicles(vehicles);
+
+const selectClass =
+  'box-border w-full min-w-0 max-w-full rounded-[10px] border border-line bg-cream p-[11px] font-sans text-sm text-ink';
+const labelClass = 'flex min-w-0 w-full flex-col gap-[5px] text-[13px] font-bold';
+
+const configJson = JSON.stringify(config).replace(/</g, '\\u003c');
+---
+
+<div
+  data-calc
+  class:list={[
+    'flex min-w-0 w-full max-w-full flex-col gap-4 overflow-visible rounded-3xl border border-line p-5 shadow-lifted sm:p-7',
+    variant === 'hero' ? 'bg-surface/85 backdrop-blur-md' : 'bg-surface',
+  ]}
+>
+  <script is:inline type="application/json" data-calc-config set:html={configJson} />
+
+  <div class="font-display text-[22px]">{calc.title}</div>
+
+  <div class="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2">
+    <DestinationSelect label={calc.fromLabel} name="from" value={state.from} dict={dict} selectClass={selectClass} />
+    <DestinationSelect label={calc.toLabel} name="to" value={state.to} dict={dict} includeTours selectClass={selectClass} />
+
+    <label class={labelClass}>
+      {calc.paxLabel}
+      <select name="pax" class={selectClass}>
+        {Array.from({ length: MAX_PAX }, (_, index) => index + 1).map((n) => <option value={n} selected={n === state.pax}>{n}</option>)}
+      </select>
+    </label>
+
+    <label class={labelClass}>
+      {calc.tripLabel}
+      <select name="trip" class={selectClass}>
+        <option value="ow" selected>{calc.oneWay}</option>
+        <option value="rt">{calc.roundTrip}</option>
+      </select>
+    </label>
+
+    {
+      /* Only worth asking for the time when it can change the price. */
+      night.enabled ? (
+        <label class:list={[labelClass, 'sm:col-span-2']}>
+          {dict.pricing.timeLabel}
+          <input type="time" name="time" class={selectClass} value="" />
+        </label>
+      ) : null
+    }
+  </div>
+
+  {
+    fleet.length > 0 ? (
+      <div class="flex flex-col gap-[5px]">
+        <span class="text-[13px] font-bold">{calc.vehicleLabel}</span>
+        <div class="grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-2">
+          {view.options.map((option) => (
+            <button
+              type="button"
+              disabled={!option.fits}
+              aria-pressed={option.active ? 'true' : 'false'}
+              data-calc-vehicle={option.id}
+              class:list={[
+                'min-w-0 rounded-xl border-2 px-3 py-[9px] text-left font-sans',
+                option.active ? 'border-brand bg-sand' : 'border-line bg-surface',
+                option.fits ? 'cursor-pointer' : 'cursor-not-allowed opacity-45',
+              ]}
+            >
+              <div class="flex min-w-0 items-baseline justify-between gap-2">
+                <span class="min-w-0 truncate text-[13px] font-extrabold text-ink">{option.label}</span>
+                <span class="shrink-0 text-[13px] font-extrabold text-brand" data-calc-vehicle-price>
+                  {option.priceLabel}
+                </span>
+              </div>
+              <div class="text-[11px] font-bold text-ink-mute">{option.desc}</div>
+            </button>
+          ))}
+        </div>
+      </div>
+    ) : null
+  }
+
+  <div aria-live="polite" class="flex min-w-0 items-center justify-between gap-3 rounded-[14px] bg-sand px-4 py-4 sm:px-5">
+    <div class="min-w-0">
+      <div class="text-[13px] font-bold text-ink-soft" data-calc-summary>{view.summaryLabel}</div>
+      <div class="font-display text-[30px] text-brand" data-calc-price>{view.priceLabel}</div>
+      <div class="text-[12px] font-bold text-ink-mute" data-calc-night-line hidden={view.nightLine == null}>
+        {view.nightLine}
+      </div>
+    </div>
+    <div class="max-w-[150px] text-right text-xs leading-[1.5] text-ink-mute">{calc.priceNote}</div>
+  </div>
+
+  <p class="m-0 text-[12px] font-bold text-ink-mute" data-calc-night-note hidden={!view.showNightNote}>
+    {fill(dict.pricing.nightNote, { percent: night.percent, start: night.start, end: night.end })}
+  </p>
+
+  <div class="flex min-w-0 flex-col gap-2.5 sm:flex-row">
+    <a
+      href={view.bookingUrl}
+      data-calc-book
+      class="flex-1 rounded-full bg-brand py-[13px] text-center text-[15px] font-extrabold text-surface no-underline hover:bg-brand-dark"
+    >
+      {calc.book}
+    </a>
+    <a
+      href={view.whatsappUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      data-calc-wa
+      class="flex-1 rounded-full border-2 border-brand bg-transparent py-[11px] text-center text-[15px] font-extrabold text-brand no-underline hover:bg-sand"
+    >
+      {calc.confirmWhatsapp}
+    </a>
+  </div>
+</div>
+
+<script>
+  import '@/scripts/calculator';
+</script>

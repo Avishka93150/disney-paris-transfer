@@ -1,0 +1,18 @@
+---
+/** The sand-coloured title band on inner pages. */
+interface Props {
+  title: string;
+  lead?: string;
+  narrow?: boolean;
+}
+
+const { title, lead, narrow = false } = Astro.props;
+---
+
+<section class="bg-sand px-6 py-14">
+  <div class:list={['mx-auto', narrow ? 'max-w-[900px]' : 'max-w-[1200px]']}>
+    <slot />
+    <h1 class="m-0 mb-3 font-display text-[32px] leading-tight sm:text-[40px]">{title}</h1>
+    {lead ? <p class="m-0 max-w-[680px] text-[17px] leading-[1.7] text-ink-soft">{lead}</p> : null}
+  </div>
+</section>

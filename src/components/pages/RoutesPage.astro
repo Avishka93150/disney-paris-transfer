@@ -1,0 +1,90 @@
+---
+import PageHero from '@/components/PageHero.astro';
+import SiteFooter from '@/components/SiteFooter.astro';
+import SiteHeader from '@/components/SiteHeader.astro';
+import TransferPhoto from '@/components/TransferPhoto.astro';
+import PublicLayout from '@/layouts/PublicLayout.astro';
+import { getRates } from '@/lib/db';
+import { fill, formatDistance, formatDuration, getDictionary, routeDescription } from '@/lib/i18n';
+import type { Locale } from '@/lib/i18n/config';
+import { path, routePath } from '@/lib/i18n/routes';
+import { ROUTE_PAGES, startingPrice } from '@/lib/prices';
+import { breadcrumbJsonLd, pageMetadata } from '@/lib/seo';
+import { absoluteUrl, site } from '@/lib/site';
+
+/** Every transfer — carried over from `project/Trajets.dc.html`. */
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const dict = getDictionary(locale);
+const rates = getRates();
+const meta = pageMetadata({ locale, page: 'routes' });
+const breadcrumb = breadcrumbJsonLd([
+  { name: dict.nav.home, url: absoluteUrl(path(locale, 'home')) },
+  { name: dict.routes.h1, url: absoluteUrl(path(locale, 'routes')) },
+]);
+---
+
+<PublicLayout locale={locale} meta={meta} structuredData={[breadcrumb]}>
+  <SiteHeader locale={locale} active="routes" />
+
+  <main id="contenu">
+    <PageHero title={dict.routes.h1} lead={dict.routes.lead} />
+
+    <section class="mx-auto flex max-w-[1200px] flex-col gap-5 px-6 py-14">
+      {
+        ROUTE_PAGES.map((route) => {
+          const fromName = dict.zones[route.from];
+          const toName = dict.zones[route.to];
+          const cheapest = startingPrice(route.from, route.to, rates);
+          return (
+            <article class="grid overflow-hidden rounded-[18px] border border-line bg-surface lg:grid-cols-[220px_1fr_auto]">
+              <TransferPhoto
+                image={route.image}
+                alt={fill(dict.routeDetail.imageAlt, { from: fromName, to: toName })}
+                class="aspect-[16/10] min-h-[160px] lg:aspect-auto lg:min-h-full"
+                sizes="(max-width: 1024px) 100vw, 220px"
+              />
+              <div class="flex flex-col justify-center gap-2 p-6">
+                <h2 class="m-0 font-display text-[22px]">
+                  {fromName} ↔ {toName}
+                </h2>
+                <p class="m-0 text-[15px] leading-[1.6] text-ink-soft">{routeDescription(dict, route.slug, fromName, toName)}</p>
+                <div class="flex flex-wrap gap-5 text-sm font-bold text-ink-soft">
+                  <span>🕐 {formatDuration(dict, route.durationMin)}</span>
+                  <span>📍 {formatDistance(dict, route.distanceKm)}</span>
+                  {cheapest != null ? (
+                    <span class="text-brand">
+                      {dict.common.from} {cheapest} €
+                    </span>
+                  ) : null}
+                </div>
+              </div>
+              <div class="flex items-center p-6">
+                <a
+                  href={routePath(locale, route.slug)}
+                  class="whitespace-nowrap rounded-full bg-brand px-5 py-[11px] text-center text-sm font-extrabold text-surface no-underline hover:bg-brand-dark"
+                >
+                  {dict.routes.see}
+                </a>
+              </div>
+            </article>
+          );
+        })
+      }
+
+      <p class="mb-0 mt-4 text-center text-[15px] text-ink-soft">
+        {dict.routes.otherLead}{' '}
+        <a href={site.whatsappHref} target="_blank" rel="noopener noreferrer" class="font-extrabold">{dict.routes.otherLink}</a>
+      </p>
+
+      <p class="m-0 text-center text-[15px]">
+        <a href={path(locale, 'prices')} class="font-extrabold">{dict.prices.h1}</a>
+      </p>
+    </section>
+  </main>
+
+  <SiteFooter locale={locale} />
+</PublicLayout>

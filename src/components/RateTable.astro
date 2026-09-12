@@ -1,0 +1,65 @@
+---
+import type { Dictionary } from '@/lib/i18n/types';
+
+export type RateRow = { tier: string; ow: number; rt: number; pax: number };
+
+/**
+ * Fare table where the whole row is a booking link (passengers + one-way),
+ * and the return price books the same route as a round trip.
+ */
+interface Props {
+  dict: Dictionary;
+  rows: RateRow[];
+  hrefFor: (row: RateRow, trip: 'ow' | 'rt') => string;
+  caption?: string;
+}
+
+const { dict, rows, hrefFor, caption } = Astro.props;
+---
+
+<div class="overflow-hidden rounded-xl border border-line">
+  <table class="w-full border-collapse text-sm">
+    {caption ? <caption class="sr-only">{caption}</caption> : null}
+    <thead>
+      <tr class="bg-sand text-left">
+        <th class="px-3.5 py-[9px] font-extrabold">{dict.prices.colPax}</th>
+        <th class="px-3.5 py-[9px] font-extrabold">{dict.prices.colOneWay}</th>
+        <th class="px-3.5 py-[9px] font-extrabold">{dict.prices.colRoundTrip}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {
+        rows.map((row) => {
+          const oneWay = hrefFor(row, 'ow');
+          const roundTrip = hrefFor(row, 'rt');
+          const prefix = `${dict.prices.bookThis}: ${caption ? `${caption}, ` : ''}${row.tier}, `;
+          const oneWayLabel = `${prefix}${dict.prices.colOneWay} ${row.ow} €`;
+          const roundTripLabel = `${prefix}${dict.prices.colRoundTrip} ${row.rt} €`;
+          return (
+            <tr class="border-t border-line-strong hover:bg-sand">
+              <td class="p-0">
+                <a href={oneWay} aria-label={oneWayLabel} class="block cursor-pointer px-3.5 py-2.5 font-bold text-ink no-underline">
+                  {row.tier}
+                </a>
+              </td>
+              <td class="p-0">
+                <a href={oneWay} aria-label={oneWayLabel} class="block cursor-pointer px-3.5 py-2.5 font-extrabold text-brand no-underline hover:underline">
+                  {row.ow} €
+                </a>
+              </td>
+              <td class="p-0">
+                <a
+                  href={roundTrip}
+                  aria-label={roundTripLabel}
+                  class="block cursor-pointer px-3.5 py-2.5 font-bold text-ink-soft no-underline hover:text-brand hover:underline"
+                >
+                  {row.rt} €
+                </a>
+              </td>
+            </tr>
+          );
+        })
+      }
+    </tbody>
+  </table>
+</div>

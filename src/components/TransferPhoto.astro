@@ -1,0 +1,32 @@
+---
+import { transferImageSrc, type RouteImage } from '@/lib/prices';
+
+/**
+ * Hero / card photo for a priced connection. A plain `<img>` with explicit
+ * dimensions so the browser reserves the space (no layout shift), lazy-loaded
+ * unless it is the page's main image.
+ */
+interface Props {
+  image: RouteImage;
+  alt: string;
+  class?: string;
+  priority?: boolean;
+  sizes?: string;
+}
+
+const { image, alt, class: className = '', priority = false, sizes = '(max-width: 768px) 100vw, 720px' } = Astro.props;
+---
+
+<div class:list={['relative overflow-hidden bg-sand', className]}>
+  <img
+    src={transferImageSrc(image)}
+    alt={alt}
+    width="1600"
+    height="900"
+    sizes={sizes}
+    loading={priority ? 'eager' : 'lazy'}
+    fetchpriority={priority ? 'high' : 'auto'}
+    decoding="async"
+    class="absolute inset-0 h-full w-full object-cover"
+  />
+</div>
