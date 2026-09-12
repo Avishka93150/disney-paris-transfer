@@ -96,7 +96,36 @@ Ouvrez `https://disneyparistransfers.com` — le site est en ligne. Connectez-vo
 *Sites web & Domaines → Certificats SSL/TLS → Let's Encrypt* : émettez un certificat pour
 le domaine et `www`, et cochez *Rediriger HTTP vers HTTPS* dans *Paramètres d'hébergement*.
 
-## 5. Mettre le site à jour ensuite
+## 5. Mettre le site à jour ensuite — en une commande
+
+Depuis le dossier du projet, sur votre propre ordinateur :
+
+```bash
+npm run deploy
+```
+
+Cette seule commande vérifie et compile le site, puis le livre. La façon de livrer dépend
+de deux lignes de votre `.env` local (voir `.env.example`, section *Deployment*) :
+
+- **`DEPLOY_SSH=utilisateur@disneyparistransfers.com`** — le site est copié directement
+  sur le serveur et `deploy.sh` s'y exécute (installation + redémarrage). Rien ne passe par
+  GitHub. L'utilisateur est l'utilisateur système du domaine, avec *Accès via SSH :
+  /bin/bash* dans Plesk, et la clé SSH de votre ordinateur ajoutée dans *Sites web &
+  Domaines → Accès SSH* (ou un mot de passe). Facultatif : `DEPLOY_PATH` si l'application
+  n'est pas dans `httpdocs`.
+- **Pas de `DEPLOY_SSH`** — le site compilé est poussé sur la branche `deploy` de GitHub,
+  et si `PLESK_WEBHOOK_URL` est renseignée (l'*URL de webhook* affichée sur la page Git du
+  dépôt dans Plesk), Plesk est prévenu et récupère puis redémarre aussitôt. Sans l'URL,
+  Plesk récupère lors de son prochain déploiement automatique ou quand vous cliquez
+  *Récupérer les mises à jour*.
+
+Options utiles : `--skip-check` (sauter la vérification des types), `--skip-build`
+(redéployer la dernière compilation), `--dry-run` (montrer ce qui se passerait),
+`--method=git` (forcer la voie GitHub même avec SSH configuré).
+
+### … ou laisser GitHub s'en charger
+
+Sans rien lancer vous-même :
 
 1. Fusionnez la modification dans `main` sur GitHub → l'action recompile la branche
    `deploy` (environ deux minutes).

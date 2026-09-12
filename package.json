@@ -12,6 +12,7 @@
     "check": "astro check",
     "typecheck": "astro check",
     "lint": "eslint .",
+    "deploy": "node scripts/deploy.mjs",
     "admin:hash": "node scripts/hash-password.mjs"
   },
   "dependencies": {

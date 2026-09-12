@@ -93,7 +93,34 @@ Open `https://disneyparistransfers.com` — the site is live. Sign in at `/admin
 *Websites & Domains → SSL/TLS Certificates → Let's Encrypt*: issue a certificate for the
 domain and `www`, and tick *Redirect from HTTP to HTTPS* in *Hosting Settings*.
 
-## 5. Updating the site later
+## 5. Updating the site later — one command
+
+From the project folder on your own computer:
+
+```bash
+npm run deploy
+```
+
+That single command checks and builds the site, then delivers it. Which way depends on
+two lines in your local `.env` (see `.env.example`, section *Deployment*):
+
+- **`DEPLOY_SSH=user@disneyparistransfers.com`** — the site is copied straight to the
+  server and `deploy.sh` runs there (install + restart). Nothing goes through GitHub. The
+  user is the domain's system user, with *Access over SSH: /bin/bash* in Plesk, and your
+  computer's SSH key added under *Websites & Domains → SSH Access* (or use a password).
+  Optional: `DEPLOY_PATH` if the application is not in `httpdocs`.
+- **No `DEPLOY_SSH`** — the built site is pushed to the `deploy` branch on GitHub, and if
+  `PLESK_WEBHOOK_URL` is set (the *Webhook URL* shown on the repository's Git page in Plesk)
+  Plesk is told to pull and restart at once. Without the URL, Plesk pulls on its next
+  automatic deployment or when you click *Pull Updates*.
+
+Useful flags: `--skip-check` (skip the type check), `--skip-build` (redeploy the last build),
+`--dry-run` (show what would happen), `--method=git` (force the GitHub route even with SSH
+configured).
+
+### …or let GitHub do it
+
+Without running anything yourself:
 
 1. Merge the change into `main` on GitHub → the Action rebuilds the `deploy` branch
    (about two minutes).

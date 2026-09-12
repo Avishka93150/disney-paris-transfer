@@ -323,11 +323,15 @@ Trois voies prises en charge, toutes documentées pour le client dans `delivery/
 
 - **VPS** (`GUIDE-INSTALLATION.md`) : `npm ci && npm run build`, puis `npm start` sous pm2
   derrière nginx.
-- **Plesk** (`DEPLOIEMENT-PLESK.md`) — le serveur du client : le site est **compilé par
-  GitHub, pas par le serveur**. `.github/workflows/deploy-branch.yml` compile à chaque push
-  sur `main` et pousse (en force) une branche `deploy` prête à l'emploi (`dist/`,
-  `server.mjs`, `package*.json`, `scripts/`, plus `deploy/plesk/deploy.sh`). L'outil Git de
-  Plesk récupère cette branche dans `httpdocs` (automatiquement via un webhook GitHub, ou
+- **Plesk** (`DEPLOIEMENT-PLESK.md`) — le serveur du client : le site n'est **jamais
+  compilé sur le serveur**. `npm run deploy` (`scripts/deploy.mjs`) vérifie, compile,
+  assemble l'arborescence prête à l'emploi dans `out/` (`scripts/assemble-deploy.mjs` :
+  `dist/`, `server.mjs`, `package*.json`, `scripts/`, `deploy/plesk/deploy.sh`, `BUILD`) et
+  la livre soit directement au serveur via SSH (`DEPLOY_SSH`, tar sur ssh + `deploy.sh`),
+  soit en poussant (en force) la branche `deploy` puis en appelant `PLESK_WEBHOOK_URL`.
+  `.github/workflows/deploy-branch.yml` fait le même assemblage + push à chaque fusion dans
+  `main`, avec le même `assemble-deploy.mjs`. L'outil Git de Plesk récupère cette branche
+  dans `httpdocs` (automatiquement via un webhook GitHub, ou
   au clic) et lance `deploy.sh` comme action de déploiement : il place
   `/opt/plesk/node/22/bin` dans le PATH, lance `npm ci --omit=dev` et touche
   `tmp/restart.txt` pour Passenger. L'écran Node.js du domaine pointe la *racine de
@@ -351,6 +355,7 @@ npm run build        # build de production → dist/
 npm start            # serveur de production (node server.mjs, lit .env, port 3000)
 npm run check        # astro check — TypeScript sur les fichiers .astro et .ts
 npm run lint         # ESLint
+npm run deploy       # vérifier + compiler + livrer au serveur Plesk (voir Déploiement)
 npm run admin:hash   # générer un ADMIN_PASSWORD_HASH
 ```
 

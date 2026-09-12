@@ -310,10 +310,14 @@ Three supported routes, all documented for the client under `delivery/`:
 
 - **VPS** (`INSTALLATION-GUIDE.md`): `npm ci && npm run build`, then `npm start` under pm2
   behind nginx.
-- **Plesk** (`DEPLOY-PLESK.md`) — the client's server: the site is **built by GitHub, not
-  by the server**. `.github/workflows/deploy-branch.yml` builds on every push to `main` and
-  force-pushes a ready-to-run `deploy` branch (`dist/`, `server.mjs`, `package*.json`,
-  `scripts/`, plus `deploy/plesk/deploy.sh`). Plesk's Git tool pulls that branch into
+- **Plesk** (`DEPLOY-PLESK.md`) — the client's server: the site is **never built on the
+  server**. `npm run deploy` (`scripts/deploy.mjs`) checks, builds, assembles the
+  ready-to-run tree in `out/` (`scripts/assemble-deploy.mjs`: `dist/`, `server.mjs`,
+  `package*.json`, `scripts/`, `deploy/plesk/deploy.sh`, `BUILD`) and delivers it either
+  straight to the server over SSH (`DEPLOY_SSH`, tar over ssh + `deploy.sh`) or by
+  force-pushing the `deploy` branch and pinging `PLESK_WEBHOOK_URL`.
+  `.github/workflows/deploy-branch.yml` does the same assemble + push on every merge to
+  `main`, with the same `assemble-deploy.mjs`. Plesk's Git tool pulls that branch into
   `httpdocs` (automatically through a GitHub webhook, or on click) and runs `deploy.sh` as
   its deployment action: it puts `/opt/plesk/node/22/bin` on the PATH, runs
   `npm ci --omit=dev` and touches `tmp/restart.txt` for Passenger. The domain's Node.js
@@ -338,6 +342,7 @@ npm run build        # production build → dist/
 npm start            # production server (node server.mjs, reads .env, port 3000)
 npm run check        # astro check — TypeScript on .astro and .ts files
 npm run lint         # ESLint
+npm run deploy       # check + build + deliver to the Plesk server (see Deployment)
 npm run admin:hash   # generate an ADMIN_PASSWORD_HASH
 ```
 

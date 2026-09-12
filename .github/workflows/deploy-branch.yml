@@ -37,11 +37,7 @@ jobs:
 
       - name: Assemble the deploy tree
         run: |
-          rm -rf out
-          mkdir out
-          cp -R dist server.mjs scripts package.json package-lock.json out/
-          cp -R deploy/plesk/. out/
-          echo "${GITHUB_SHA}" > out/BUILD
+          node scripts/assemble-deploy.mjs
           ls -la out
 
       - name: Push the deploy branch
